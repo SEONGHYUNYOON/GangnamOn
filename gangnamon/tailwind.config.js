@@ -1,0 +1,18 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+     content: [
+          "./index.html",
+          "./src/**/*.{js,ts,jsx,tsx}",
+     ],
+     theme: {
+          extend: {
+               fontFamily: {
+                    sans: ['Pretendard', 'sans-serif'],
+               },
+               colors: {
+                    // Custom colors if needed, but white minimal background is requested.
+               }
+          },
+     },
+     plugins: [],
+}
