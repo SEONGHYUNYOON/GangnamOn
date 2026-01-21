@@ -93,8 +93,15 @@ const PajuBlockGame = ({ onClose, user }) => {
           }
 
           if (lines > 0) {
-               setScore(prev => prev + (lines * 100)); // Simple scoring
-               setDropTime(prev => Math.max(100, prev - (lines * 10)));
+               setScore(prev => {
+                    const newScore = prev + (lines * 100 * (lines === 4 ? 2 : 1)); // Bonus for Tetris
+                    // Speed up logic: Every 500 points, speed increases
+                    const newLevel = Math.floor(newScore / 500) + 1;
+                    const newSpeed = Math.max(100, 800 - (newLevel * 50));
+
+                    setDropTime(newSpeed);
+                    return newScore;
+               });
           }
 
           setGrid(newGrid);
@@ -259,6 +266,41 @@ const PajuBlockGame = ({ onClose, user }) => {
                               <div className="flex justify-between"><span>이동</span> <span className="text-white font-bold">← ↓ →</span></div>
                               <div className="flex justify-between"><span>회전</span> <span className="text-white font-bold">↑</span></div>
                               <div className="flex justify-between"><span>한방에 내리기</span> <span className="text-yellow-400 font-bold">Space</span></div>
+                         </div>
+
+                         {/* Mock Leaderboard */}
+                         <div className="bg-gray-800/50 rounded-xl p-4 border border-white/5 w-full">
+                              <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
+                                   <Trophy className="w-4 h-4 text-yellow-400" />
+                                   <span className="text-xs font-bold text-gray-400 tracking-wider">HALL OF FAME</span>
+                              </div>
+                              <div className="space-y-2">
+                                   {[
+                                        { rank: 1, name: '파주불주먹', score: 12500 },
+                                        { rank: 2, name: '운정테트신', score: 8900 },
+                                        { rank: 3, name: '교하짱', score: 5400 },
+                                   ].map((user) => (
+                                        <div key={user.rank} className="flex justify-between items-center text-sm">
+                                             <div className="flex items-center gap-2">
+                                                  <span className={`w-5 h-5 flex items-center justify-center rounded-full text-xs font-bold ${user.rank === 1 ? 'bg-yellow-500 text-black' :
+                                                       user.rank === 2 ? 'bg-gray-400 text-black' :
+                                                            'bg-orange-700 text-white'
+                                                       }`}>{user.rank}</span>
+                                                  <span className="text-gray-300 font-medium">{user.name}</span>
+                                             </div>
+                                             <span className="text-gray-500 font-mono text-xs">{user.score.toLocaleString()}</span>
+                                        </div>
+                                   ))}
+                                   <div className="border-t border-white/5 pt-2 mt-2">
+                                        <div className="flex justify-between items-center text-sm opacity-50">
+                                             <div className="flex items-center gap-2">
+                                                  <span className="w-5 text-center text-xs text-gray-500">-</span>
+                                                  <span className="text-gray-400">나</span>
+                                             </div>
+                                             <span className="font-mono text-xs">{score > 0 ? score.toLocaleString() : '-'}</span>
+                                        </div>
+                                   </div>
+                              </div>
                          </div>
                     </div>
 
