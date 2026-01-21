@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Download, ChevronRight, Send, User } from 'lucide-react';
+import KakaoMap from './KakaoMap';
 
 const NoteCard = ({ note, onOpenMinihome }) => {
      const [isLiked, setIsLiked] = useState(false);
@@ -10,6 +11,7 @@ const NoteCard = ({ note, onOpenMinihome }) => {
           { id: 2, user: '산책러', text: '이번 주말에 들를게요~', time: '5분 전' }
      ]);
      const [newComment, setNewComment] = useState('');
+     const [showMap, setShowMap] = useState(false);
 
      const handleLike = () => {
           setIsLiked(!isLiked);
@@ -167,10 +169,24 @@ const NoteCard = ({ note, onOpenMinihome }) => {
                               </button>
                          )}
 
-                         <button className="flex items-center justify-center gap-2 py-3 border border-stone-200 text-stone-600 font-bold rounded-xl hover:bg-stone-50 transition-colors group/btn text-sm">
-                              가게 구경하기 <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                         <button
+                              onClick={() => setShowMap(!showMap)}
+                              className={`flex items-center justify-center gap-2 py-3 border font-bold rounded-xl transition-colors group/btn text-sm ${showMap ? 'bg-gray-900 text-white border-gray-900' : 'border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+                         >
+                              {showMap ? '지도 닫기' : '위치 보기'}
+                              <MapPin className={`w-4 h-4 transition-transform ${showMap ? 'text-white' : 'text-gray-400'}`} />
                          </button>
                     </div>
+
+                    {showMap && (
+                         <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                              <KakaoMap
+                                   latitude={37.751853}
+                                   longitude={126.764666}
+                                   style={{ width: '100%', height: '200px' }}
+                              />
+                         </div>
+                    )}
 
                     {/* Timestamp */}
                     <p className="text-[10px] text-stone-400 mt-4 text-right uppercase tracking-wider">

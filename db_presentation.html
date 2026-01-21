@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>PajuOn DB Architecture</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/dracula.min.css">
+     <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+     <style>
+          .reveal h1,
+          .reveal h2,
+          .reveal h3 {
+               font-family: 'Pretendard', sans-serif;
+          }
+
+          .reveal p,
+          .reveal li {
+               font-size: 0.8em;
+               line-height: 1.6;
+          }
+
+          .text-left {
+               text-align: left;
+          }
+
+          .highlight {
+               color: #f1c40f;
+               font-weight: bold;
+          }
+
+          .db-table {
+               font-size: 0.6em;
+               width: 100%;
+               border-collapse: collapse;
+               margin-top: 20px;
+          }
+
+          .db-table th,
+          .db-table td {
+               border: 1px solid #555;
+               padding: 10px;
+          }
+
+          .db-table th {
+               background: #444;
+               color: #fff;
+          }
+     </style>
+</head>
+
+<body>
+     <div class="reveal">
+          <div class="slides">
+
+               <!-- Slide 1: Title -->
+               <section>
+                    <h1>PajuOn DB Architecture</h1>
+                    <h3>데이터베이스 구축 현황 및 구조 리뷰</h3>
+                    <p>2026. 01. 16 | Frontend/DB Team</p>
+               </section>
+
+               <!-- Slide 2: Overview -->
+               <section>
+                    <h2>🏗️ 아키텍처 개요 (Overview)</h2>
+                    <div class="text-left">
+                         <p><strong>Platform:</strong> Supabase (PostgreSQL 기반 BaaS)</p>
+                         <p><strong>Auth:</strong> Supabase Auth (이메일/패스워드)</p>
+                         <p><strong>Connection:</strong> <code>supabase-js</code> Direct Connect</p>
+                         <hr>
+                         <ul>
+                              <li><span class="highlight">Serverless:</span> 별도 백엔드 없이 프론트에서 직접 제어</li>
+                              <li><span class="highlight">RLS (Row Level Security):</span> DB 레벨의 강력한 보안 정책</li>
+                         </ul>
+                    </div>
+               </section>
+
+               <!-- Slide 3: ERD -->
+               <section>
+                    <h2>🗺️ ERD 구조 (Entity Relationship)</h2>
+                    <p>"User 중심의 스타 스키마 구조"</p>
+                    <div class="text-left"
+                         style="font-size: 0.8em; background: #222; padding: 20px; border-radius: 10px;">
+                         <p>🔹 <strong>Profiles (Core):</strong> 사용자 상세 정보 & 콩(화폐)</p>
+                         <p>🔹 <strong>Posts (Content):</strong> 중고마켓, 소모임 통합 관리</p>
+                         <p>🔹 <strong>Chat System:</strong> Rooms - Participants - Messages</p>
+                         <p>🔹 <strong>Schools:</strong> Schools - Alumni (동창생)</p>
+                    </div>
+               </section>
+
+               <!-- Slide 4: Profiles Table -->
+               <section>
+                    <h2>👤 핵심 테이블: Profiles</h2>
+                    <p>사용자 자산(콩) 및 프로필 관리</p>
+                    <table class="db-table">
+                         <thead>
+                              <tr>
+                                   <th>Column</th>
+                                   <th>Type</th>
+                                   <th>Description</th>
+                              </tr>
+                         </thead>
+                         <tbody>
+                              <tr>
+                                   <td>id (PK)</td>
+                                   <td>UUID</td>
+                                   <td>auth.users ID와 매핑 (FK)</td>
+                              </tr>
+                              <tr>
+                                   <td>username</td>
+                                   <td>Text</td>
+                                   <td>사용자 닉네임 (Unique)</td>
+                              </tr>
+                              <tr>
+                                   <td class="highlight">beans</td>
+                                   <td class="highlight">Integer</td>
+                                   <td class="highlight">핵심 재화 (Default: 1250)</td>
+                              </tr>
+                              <tr>
+                                   <td>gallery_urls</td>
+                                   <td>Text[]</td>
+                                   <td>미니홈피 갤러리 이미지</td>
+                              </tr>
+                         </tbody>
+                    </table>
+               </section>
+
+               <!-- Slide 5: Posts Table -->
+               <section>
+                    <h2>📝 핵심 테이블: Posts (통합 피드)</h2>
+                    <p>'Type' 컬럼을 이용한 다형성(Polymorphic) 설계</p>
+                    <table class="db-table">
+                         <thead>
+                              <tr>
+                                   <th>Column</th>
+                                   <th>Desc</th>
+                              </tr>
+                         </thead>
+                         <tbody>
+                              <tr>
+                                   <td class="highlight">type</td>
+                                   <td class="highlight">'market' | 'gathering' | 'club'</td>
+                              </tr>
+                              <tr>
+                                   <td>price</td>
+                                   <td>중고 거래 가격 (Market 전용)</td>
+                              </tr>
+                              <tr>
+                                   <td>participants</td>
+                                   <td>현재 참여 인원 (Gathering 전용)</td>
+                              </tr>
+                              <tr>
+                                   <td>location</td>
+                                   <td>거래/모임 장소</td>
+                              </tr>
+                         </tbody>
+                    </table>
+               </section>
+
+               <!-- Slide 6: Chat System -->
+               <section>
+                    <h2>💬 채팅 시스템 구조</h2>
+                    <div class="text-left">
+                         <h3>1. 1:1 Chat</h3>
+                         <ul>
+                              <li><strong>Rooms:</strong> 채팅방 ID 생성</li>
+                              <li><strong>Participants:</strong> (Room_ID, User_ID) 매핑</li>
+                              <li><strong>Messages:</strong> 대화 내용 및 읽음(is_read) 상태</li>
+                         </ul>
+                         <br>
+                         <h3>2. Guestbook (방명록)</h3>
+                         <ul>
+                              <li>Host(주인) - Author(글쓴이) 구조</li>
+                              <li><code>is_secret</code> 컬럼으로 비밀글 기능 지원</li>
+                         </ul>
+                    </div>
+               </section>
+
+               <!-- Slide 7: Data Sync Logic -->
+               <section>
+                    <h2>🔄 데이터 동기화 로직 (App.jsx)</h2>
+                    <div class="text-left">
+                         <p><strong>1. 화폐(Beans) 동기화</strong></p>
+                         <pre><code class="javascript" data-trim>
+const updateBeanCount = async (delta) => {
+    // 1. 화면 즉시 반영 (Optimistic UI)
+    setBeanCount(prev => prev + delta);
+    
+    // 2. DB 비동기 저장
+    supabase.from('profiles').update({ beans: newValue })...
+};
+                    </code></pre>
+                         <p><strong>2. 아바타 구매 내역</strong></p>
+                         <ul>
+                              <li>DB Table이 아닌 <code>auth.user_metadata</code>에 JSON 저장</li>
+                              <li>로그인 세션(Session)에 포함되어 빠른 접근 가능</li>
+                         </ul>
+                    </div>
+               </section>
+
+               <!-- Slide 8: Security (RLS) -->
+               <section>
+                    <h2>🛡️ 보안 정책 (RLS)</h2>
+                    <p>클라이언트 직접 접근을 위한 필수 보안 설정</p>
+                    <div class="text-left" style="background: #1e1e1e; padding: 15px; border-radius: 8px;">
+                         <p>✅ <strong>Public Read:</strong> 프로필/게시글은 누구나 조회</p>
+                         <p>🔒 <strong>Private Write:</strong></p>
+                         <ul>
+                              <li>내 프로필은 <strong>나(auth.uid)</strong>만 수정 가능</li>
+                              <li>내 글은 <strong>작성자</strong>만 수정/삭제 가능</li>
+                              <li>채팅은 <strong>참여자</strong>만 조회 가능</li>
+                         </ul>
+                    </div>
+               </section>
+
+               <!-- Slide 9: Future Tasks -->
+               <section>
+                    <h2>🚀 향후 과제 (Refactoring)</h2>
+                    <ul>
+                         <li>[DB] <code>transaction_logs</code> 테이블 추가 (사용 내역 기록)</li>
+                         <li>[Web] Supabase Realtime 구독 연결 (실시간 채팅)</li>
+                         <li>[Storage] 이미지 버킷 정책(Bucket Policy) 점검</li>
+                    </ul>
+               </section>
+
+          </div>
+     </div>
+
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/highlight/highlight.min.js"></script>
+     <script>
+          Reveal.initialize({
+               hash: true,
+               plugins: [RevealHighlight]
+          });
+     </script>
+</body>
+
+</html>

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { User, MapPin } from 'lucide-react';
+import KakaoMap from './KakaoMap';
 
 const DiningCompanion = () => {
     const [filter, setFilter] = useState('all'); // all, korean, western, cafe
     const [genderFilter, setGenderFilter] = useState('all'); // all, mixed, male, female
+    const [activeMapId, setActiveMapId] = useState(null);
 
     // Mock Data
     const companions = [
@@ -140,8 +142,8 @@ const DiningCompanion = () => {
                         key={cat}
                         onClick={() => setFilter(cat)}
                         className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shadow-sm ${filter === cat
-                                ? 'bg-gray-900 text-white'
-                                : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
+                            ? 'bg-gray-900 text-white'
+                            : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
                             }`}
                     >
                         {cat === 'all' && '전체 메뉴'}
@@ -170,8 +172,8 @@ const DiningCompanion = () => {
 
                             {/* Gender Badge on Card */}
                             <div className={`absolute bottom-3 right-3 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 ${item.gender === 'female' ? 'bg-pink-100 text-pink-600'
-                                    : item.gender === 'male' ? 'bg-blue-100 text-blue-600'
-                                        : 'bg-purple-100 text-purple-600'
+                                : item.gender === 'male' ? 'bg-blue-100 text-blue-600'
+                                    : 'bg-purple-100 text-purple-600'
                                 }`}>
                                 {item.gender === 'female' ? '👩 여성'
                                     : item.gender === 'male' ? '👨 남성'
@@ -211,12 +213,32 @@ const DiningCompanion = () => {
                             </div>
 
                             {/* Action Button */}
-                            <button className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2 group-hover:shadow-md ${item.category === 'cafe'
-                                    ? 'bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white'
-                                    : 'bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white'
-                                }`}>
-                                {item.category === 'cafe' ? '같이 가요 ☕' : '밥 먹자! 🍴'}
-                            </button>
+                            {activeMapId === item.id ? (
+                                <div className="mt-3 animate-in fade-in slide-in-from-bottom-2">
+                                    <div className="relative rounded-xl overflow-hidden border border-gray-200">
+                                        <KakaoMap
+                                            latitude={37.751853} // Dummy Logic
+                                            longitude={126.764666}
+                                            style={{ width: '100%', height: '150px' }}
+                                        />
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setActiveMapId(null); }}
+                                            className="absolute top-2 right-2 bg-white/80 p-1 rounded-full text-gray-600 shadow-sm hover:bg-white"
+                                        >
+                                            <MapPin className="w-4 h-4 text-gray-500" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setActiveMapId(item.id)}
+                                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2 group-hover:shadow-md ${item.category === 'cafe'
+                                        ? 'bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white'
+                                        : 'bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white'
+                                        }`}>
+                                    {item.category === 'cafe' ? '같이 가요 ☕' : '밥 먹자! 🍴'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}

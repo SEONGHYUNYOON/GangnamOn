@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Database } from 'lucide-react';
 
 const LeftSidebar = ({ activeTab, setActiveTab }) => {
      // State to manage expanded sections
@@ -11,7 +11,8 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           'culture': true,
           'life': true,
           'school': true,
-          'my': true
+          'my': true,
+          'project': true
      });
 
      const toggleSection = (id) => {
@@ -87,11 +88,18 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                items: [
                     { id: 'admin', label: '관리자 홈', icon: Shield, subtext: '현황/통계' }
                ]
+          },
+          {
+               id: 'project',
+               title: '[프로젝트 문서]',
+               items: [
+                    { id: 'db_presentation', label: 'DB 구축 PPT', icon: Database, subtext: '상세 설계서' },
+               ]
           }
      ];
 
      return (
-          <div className="hidden md:flex flex-col w-full h-full p-6 border-r border-gray-100 bg-white sticky top-0 overflow-y-auto scrollbar-hide">
+          <div className="flex flex-col w-full h-full p-6 border-r border-gray-100 bg-white sticky top-0 overflow-y-auto scrollbar-hide">
                {/* Logo */}
                <div className="mb-8 px-2 flex items-center justify-center">
                     <h1 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-[Pretendard] cursor-pointer" onClick={() => setActiveTab('home')}>

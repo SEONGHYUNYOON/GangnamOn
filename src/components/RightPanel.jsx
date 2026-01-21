@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import AuthWidget from './AuthWidget';
 import PajuTraffic from './PajuTraffic';
 
-const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount }) => {
+const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, updateBeanCount }) => {
      const [onlineCount, setOnlineCount] = useState(1204);
      const [trafficStatus, setTrafficStatus] = useState({
           jayuro: 'smooth',
@@ -175,8 +175,8 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           if (error) {
                alert("이름 변경 실패: " + error.message);
           } else {
-               // Deduct beans locally
-               setBeanCount(prev => prev - CHANGE_COST);
+               // Deduct beans safely
+               updateBeanCount(-CHANGE_COST);
                setUser(data.user);
                setIsEditingName(false);
                alert(`닉네임 변경 완료! -${CHANGE_COST}콩`);

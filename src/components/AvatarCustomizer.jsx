@@ -65,9 +65,9 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
           }
      };
 
-     const executePurchase = () => {
+     const executePurchase = async () => {
           if (purchaseModalOpen) {
-               const success = onPurchaseStyle(purchaseModalOpen.id, purchaseModalOpen.price);
+               const success = await onPurchaseStyle(purchaseModalOpen.id, purchaseModalOpen.price);
                if (success) {
                     setStyle(purchaseModalOpen.id);
                     setPurchaseModalOpen(null);
@@ -113,8 +113,8 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
                               <button
                                    onClick={() => setActiveTab('customize')}
                                    className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'customize'
-                                             ? 'bg-white text-gray-900 shadow-sm'
-                                             : 'text-gray-400 hover:text-gray-600'
+                                        ? 'bg-white text-gray-900 shadow-sm'
+                                        : 'text-gray-400 hover:text-gray-600'
                                         }`}
                               >
                                    <Palette className="w-4 h-4" /> 내 파우더룸
@@ -122,8 +122,8 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
                               <button
                                    onClick={() => setActiveTab('shop')}
                                    className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'shop'
-                                             ? 'bg-white text-pink-600 shadow-sm'
-                                             : 'text-gray-400 hover:text-gray-600'
+                                        ? 'bg-white text-pink-600 shadow-sm'
+                                        : 'text-gray-400 hover:text-gray-600'
                                         }`}
                               >
                                    <ShoppingBag className="w-4 h-4" /> 스타일 상점
@@ -182,8 +182,8 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
                                                        key={s.id}
                                                        onClick={() => setStyle(s.id)}
                                                        className={`p-4 rounded-2xl border-2 text-left transition-all relative overflow-hidden group ${style === s.id
-                                                                 ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200 ring-offset-2'
-                                                                 : 'border-white bg-white shadow-sm hover:border-purple-100'
+                                                            ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200 ring-offset-2'
+                                                            : 'border-white bg-white shadow-sm hover:border-purple-100'
                                                             }`}
                                                   >
                                                        <div className="flex justify-between items-start mb-2">

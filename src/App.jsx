@@ -22,6 +22,7 @@ import CultureClass from './components/CultureClass'
 import AdminDashboard from './components/AdminDashboard'
 import PajuLounge from './components/PajuLounge'
 import OwnersNote from './components/OwnersNote'
+import DbPresentation from './components/DbPresentation'
 
 function App() {
      const [activeTab, setActiveTab] = useState('home');
@@ -54,70 +55,8 @@ function App() {
      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
      // --- 1. Data State ---
-     const [marketItems, setMarketItems] = useState([
-          { id: 1, title: '감성 캠핑 의자 세트', price: '45,000', location: '금촌동', likes: 12, image: 'https://images.unsplash.com/photo-1628144211608-410c2c31c463?q=80&w=500&auto=format&fit=crop' },
-          { id: 2, title: '애플워치 스트랩', price: '15,000', location: '운정1동', likes: 5, image: 'https://images.unsplash.com/photo-1551816230-ef5deaed4a26?q=80&w=500&auto=format&fit=crop' },
-          { id: 3, title: '빈티지 필름카메라', price: '120,000', location: '문산읍', likes: 48, image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=500&auto=format&fit=crop' },
-          { id: 4, title: '마샬 스피커 인테리어', price: '210,000', location: '야당동', likes: 89, image: 'https://images.unsplash.com/photo-1615557766860-2622700f1352?q=80&w=500&auto=format&fit=crop' },
-          { id: 5, title: '아이패드 에어 4세대', price: '450,000', location: '금촌2동', likes: 21, image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=500&auto=format&fit=crop' },
-          { id: 6, title: '자전거 (픽시)', price: '80,000', location: '교하동', likes: 8, image: 'https://images.unsplash.com/photo-1576435728678-38d01d52e3bf?q=80&w=500&auto=format&fit=crop' },
-     ]);
-
-     const [meetingItems, setMeetingItems] = useState([
-          {
-               id: 1,
-               category: '⛰️ 산타는 파주',
-               title: '이번 주말 심학산 둘레길 가볍게 도실 분!',
-               host: '산다람쥐',
-               hostBadge: '파주 등산왕',
-               date: '10월 28일 (토) 10:00 AM',
-               location: '#심학산_배수지 #둘레길',
-               participants: 3,
-               maxParticipants: 5,
-               isHot: true,
-               image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=600&h=400'
-          },
-          {
-               id: 2,
-               category: '⚽️ FC 파주',
-               title: '운정 호수공원 야간 런닝 크루 모집합니다 (초보환영)',
-               host: '런닝맨',
-               hostBadge: '파주 리더',
-               date: '매주 화/목 20:00',
-               location: '#운정호수공원 #야간런닝',
-               participants: 12,
-               maxParticipants: 20,
-               isHot: false,
-               image: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=600&h=400'
-          },
-          {
-               id: 3,
-               category: '🍷 밤의 미식회',
-               title: '헤이리 마을 분위기 좋은 와인바 벙개 🍷',
-               host: '와인러버',
-               hostBadge: '미식가',
-               date: '10월 27일 (금) 19:00',
-               location: '#헤이리 #와인바',
-               participants: 3,
-               maxParticipants: 4,
-               isHot: true,
-               status: 'imminent',
-               image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&q=80&w=600&h=400'
-          },
-          {
-               id: 4,
-               category: '🐶 멍냥회관',
-               title: '운정 건강공원 강아지 산책 친구 구해요~',
-               host: '멍멍이맘',
-               hostBadge: '활동왕',
-               date: '평일 오후 6시',
-               location: '#운정건강공원 #반려견산책',
-               participants: 1,
-               maxParticipants: 3,
-               isHot: false,
-               image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=600&h=400'
-          }
-     ]);
+     const [marketItems, setMarketItems] = useState([]);
+     const [meetingItems, setMeetingItems] = useState([]);
 
      useEffect(() => {
           // Check active session
@@ -150,16 +89,23 @@ function App() {
                     }
                });
 
-          // Sync Profile Logic (Fix for 0 users issue)
-          const syncProfile = async () => {
+          // Sync Profile Logic & Load Data
+          const fetchUserData = async () => {
                if (user) {
+                    // 1. Fetch Profile (Beans, etc)
                     const { data: profile } = await supabase
                          .from('profiles')
-                         .select('id')
+                         .select('*')
                          .eq('id', user.id)
                          .single();
 
-                    if (!profile) {
+                    if (profile) {
+                         setBeanCount(profile.beans || 0);
+                         if (profile.unlocked_styles && Array.isArray(profile.unlocked_styles)) {
+                              setUnlockedStyles(prev => [...new Set([...prev, ...profile.unlocked_styles])]);
+                         }
+                    } else {
+                         // Create profile if missing
                          const { error } = await supabase
                               .from('profiles')
                               .insert({
@@ -168,24 +114,67 @@ function App() {
                                    full_name: user.user_metadata?.full_name || '',
                                    avatar_url: user.user_metadata?.avatar_url || '',
                                    location: user.user_metadata?.region || '파주',
-                                   beans: 1250
+                                   beans: 1250,
+                                   unlocked_styles: ['lorelei', 'avataaars']
                               });
                          if (!error) {
-                              console.log("Profile auto-created for existing user.");
-                         } else {
-                              console.error("Failed to auto-create profile:", error);
+                              setBeanCount(1250);
                          }
                     }
                }
           };
-          syncProfile();
+          fetchUserData();
+
+          // Fetch Feed Data
+          const fetchFeeds = async () => {
+               // Market
+               const { data: markets } = await supabase
+                    .from('posts')
+                    .select('*, author:profiles(username, avatar_url)')
+                    .eq('type', 'market')
+                    .order('created_at', { ascending: false });
+
+               if (markets) {
+                    setMarketItems(markets.map(m => ({
+                         id: m.id,
+                         title: m.title,
+                         price: m.price?.toLocaleString() || '0',
+                         location: m.location || '파주',
+                         likes: m.likes_count || 0,
+                         image: m.image_urls?.[0] || 'https://via.placeholder.com/500',
+                         seller: m.author?.username
+                    })));
+               }
+
+               // Gatherings
+               const { data: gatherings } = await supabase
+                    .from('posts')
+                    .select('*, author:profiles(username, avatar_url)')
+                    .in('type', ['gathering', 'hiking', 'sports', 'pet', 'wine']) // Fetch all gathering sub-types
+                    .order('created_at', { ascending: false });
+
+               if (gatherings) {
+                    setMeetingItems(gatherings.map(g => ({
+                         id: g.id,
+                         category: g.type === 'gathering' ? '⚡ 번개' : g.type,
+                         title: g.title,
+                         host: g.author?.username || '익명',
+                         hostBadge: '파주 이웃',
+                         // Parse content for date/time if stored there, or use specific columns if added
+                         date: new Date(g.created_at).toLocaleDateString(),
+                         location: g.location || '장소미정',
+                         participants: g.current_participants || 1,
+                         maxParticipants: g.max_participants || 4,
+                         isHot: (g.current_participants / g.max_participants) > 0.8,
+                         image: g.image_urls?.[0] || 'https://via.placeholder.com/600'
+                    })));
+               }
+          };
+          fetchFeeds();
 
           // --- History Logic: Standard Trap ---
-          // Goal: 1. Home -> Back -> Home (Stay). 2. Feature -> Back -> Main.
-
           const initHistory = () => {
                if (!window.history.state) {
-                    // Initial Load: Create a [Backstop, Home] stack
                     window.history.replaceState({ tab: 'home' }, '', '');
                     window.history.pushState({ tab: 'home' }, '', '');
                }
@@ -194,14 +183,9 @@ function App() {
 
           const handlePopState = (event) => {
                const tab = event.state?.tab;
-               console.log("📍 PopState:", tab || "TRAP HIT");
-
                if (tab) {
-                    // Normal Navigation (e.g., 'home', 'paju_lounge')
                     setActiveTab(tab);
                } else {
-                    // Trap Hit (State is null or invalid) -> Force Stay on Home
-                    // We hit the bottom, so push Home again to keep the trap active
                     window.history.pushState({ tab: 'home' }, '', '');
                     setActiveTab('home');
                }
@@ -216,114 +200,175 @@ function App() {
           };
      }, [user]);
 
-     // Handler for changing tabs with History Push
+     // Helper to update beans safely in DB and State
+     const updateBeanCount = async (delta) => {
+          setBeanCount(prev => {
+               const newValue = prev + delta;
+               if (user) {
+                    supabase.from('profiles').update({ beans: newValue }).eq('id', user.id).then();
+               }
+               return newValue;
+          });
+     };
+
+     // Handler for changing tabs
      const handleTabChange = (newTab) => {
           if (newTab === activeTab) return;
-
-          // Sibling Navigation Strategy:
-          // If we are moving between feature tabs (not Home), REPLACE the state.
-          // This keeps the history stack flat: [Root, Home, CurrentTab].
-          // So 'Back' always goes to 'Home', never to the previous sibling tab.
           const isHome = activeTab === 'home';
-
           if (!isHome && newTab !== 'home') {
                window.history.replaceState({ tab: newTab }, '', '');
           } else {
                window.history.pushState({ tab: newTab }, '', '');
           }
-
           setActiveTab(newTab);
-          window.scrollTo(0, 0); // Ensure fresh scroll position
+          window.scrollTo(0, 0);
      };
 
      // --- 2. Share Logic ---
-     const handleShare = (category, data, image) => {
-          // Reward Logic
-          setBeanCount(prev => prev + 10);
+     const handleShare = async (category, data, image) => {
+          if (!user) {
+               setIsMobileLoginOpen(true);
+               return;
+          }
+
+          const priceInt = parseInt(data.price?.replace(/,/g, '') || '0');
+
+          let type = category;
+          // Map category to DB types if needed
+          if (category === 'market') type = 'market';
+          else type = 'gathering'; // Default for other tabs 
+
+          const newPost = {
+               author_id: user.id,
+               type: type,
+               title: data.title,
+               content: data.description || '',
+               price: priceInt,
+               location: data.location || '파주',
+               max_participants: data.maxMembers ? parseInt(data.maxMembers) : null,
+               image_urls: image ? [image] : [],
+               likes_count: 0
+          };
+
+          const { data: savedPost, error } = await supabase
+               .from('posts')
+               .insert(newPost)
+               .select('*, author:profiles(username)')
+               .single();
+
+          if (error) {
+               setToastMessage("등록 실패: " + error.message);
+               return;
+          }
+
+          updateBeanCount(10); // Reward
 
           if (category === 'market') {
                const newItem = {
-                    id: Date.now(),
-                    title: data.title,
-                    price: '35,000',
-                    location: '금촌동',
+                    id: savedPost.id,
+                    title: savedPost.title,
+                    price: savedPost.price?.toLocaleString(),
+                    location: savedPost.location,
                     likes: 0,
-                    image: image || 'https://via.placeholder.com/500'
+                    image: savedPost.image_urls?.[0],
+                    seller: savedPost.author?.username
                };
-               setMarketItems([newItem, ...marketItems]);
+               setMarketItems(prev => [newItem, ...prev]);
                setToastMessage("중고 물품 등록! +10 콩 획득! 🫘");
-          } else if (category === 'gathering') {
-               const newItem = {
-                    id: Date.now(),
-                    category: '⚡ 번개모임',
-                    title: data.title,
-                    host: '금촌사랑꾼',
-                    hostBadge: '신규',
-                    date: `${data.date || '날짜미정'} ${data.time || ''}`,
-                    location: `#${data.location || '장소미정'}`,
-                    participants: 1,
-                    maxParticipants: data.maxMembers || 4,
-                    isHot: true,
-                    image: image || 'https://via.placeholder.com/600'
-               };
-               setMeetingItems([newItem, ...meetingItems]);
-               setToastMessage("모임 개설! +10 콩 획득! 🎉");
           } else {
-               setToastMessage("작성 완료! +10 콩 획득! 🫘");
+               const newItem = {
+                    id: savedPost.id,
+                    category: '⚡ 번개',
+                    title: savedPost.title,
+                    host: savedPost.author?.username,
+                    hostBadge: '파주 이웃',
+                    date: new Date().toLocaleDateString(),
+                    location: savedPost.location,
+                    participants: 1,
+                    maxParticipants: savedPost.max_participants || 4,
+                    isHot: true,
+                    image: savedPost.image_urls?.[0]
+               };
+               setMeetingItems(prev => [newItem, ...prev]);
+               setToastMessage("모임 개설! +10 콩 획득! 🎉");
           }
 
           setIsCreateModalOpen(false);
      };
 
      const handleHeartClick = (cost) => {
-          setBeanCount(prev => prev + cost);
+          updateBeanCount(cost);
      };
 
      const handleRewardClaim = (amount) => {
-          setBeanCount(prev => prev + amount);
+          updateBeanCount(amount);
           // No toast needed here as the modal triggers a pulsing animation
      };
 
      const handleAvatarSave = async (newUrl) => {
           if (!user) return;
 
-          const { data, error } = await supabase.auth.updateUser({
+          // 1. Update Public Profile (Primary Source)
+          const { error: profileError } = await supabase
+               .from('profiles')
+               .update({ avatar_url: newUrl })
+               .eq('id', user.id);
+
+          if (profileError) {
+               setToastMessage("저장 실패: " + profileError.message);
+               return;
+          }
+
+          // 2. Sync Auth Metadata (Optional, for caching)
+          const { data, error: authError } = await supabase.auth.updateUser({
                data: { avatar_url: newUrl }
           });
 
-          if (!error && user) {
-               // Also sync to public.profiles
-               await supabase
-                    .from('profiles')
-                    .update({ avatar_url: newUrl })
-                    .eq('id', user.id);
-          }
-
-          if (error) {
-               setToastMessage("아바타 저장 실패: " + error.message);
-          } else {
-               setUser(data.user);
-               setToastMessage("캐릭터가 변경되었습니다! ✨");
-               setIsAvatarModalOpen(false);
-          }
+          setUser(data.user);
+          setToastMessage("캐릭터가 변경되었습니다! ✨");
+          setIsAvatarModalOpen(false);
      };
 
-     const handlePurchaseStyle = (styleId, price) => {
+     const handlePurchaseStyle = async (styleId, price) => {
+          if (!user) {
+               setToastMessage("로그인이 필요합니다!");
+               return false;
+          }
+
           if (beanCount < price) {
                setToastMessage("콩이 부족해요! 열심히 활동해서 모아보세요 🫘");
                return false;
           }
-          setBeanCount(prev => prev - price);
-          setUnlockedStyles(prev => [...prev, styleId]);
-          setToastMessage("새로운 스타일 구매 완료! ✨");
-          return true;
+
+          // Call RPC Function (Secure Transaction)
+          const { data: success, error } = await supabase.rpc('purchase_avatar_style', {
+               style_id: styleId,
+               price: price
+          });
+
+          if (error) {
+               console.error("Purchase error:", error);
+               setToastMessage("구매 중 오류가 발생했습니다.");
+               return false;
+          }
+
+          if (success) {
+               // Update Local State if successful
+               setBeanCount(prev => prev - price);
+               setUnlockedStyles(prev => [...prev, styleId]);
+               setToastMessage("새로운 스타일 구매 완료! ✨");
+               return true;
+          } else {
+               setToastMessage("잔액이 부족하거나 이미 보유한 스타일입니다.");
+               return false;
+          }
      };
 
      const handleBannerSubmit = (message) => {
           const cost = 500;
           if (beanCount < cost) return;
 
-          setBeanCount(prev => prev - cost);
+          updateBeanCount(-cost);
           setBannerMessages(prev => [message, ...prev]);
           setToastMessage(`배너 등록 완료! -${cost} 콩 💸`);
      };
@@ -356,7 +401,7 @@ function App() {
 
 
                {/* Central Container */}
-               <div className="w-full max-w-[1920px] flex min-h-screen relative pb-20 md:pb-0 px-2 lg:px-4 gap-4 xl:gap-8">
+               <div className="w-full max-w-[1920px] flex min-h-screen relative pt-20 lg:pt-0 pb-8 px-2 lg:px-4 gap-4 xl:gap-8">
 
                     {/* === Left Column (Fixed Width) === */}
                     <div className="w-[220px] xl:w-[260px] h-screen sticky top-0 hidden md:block overflow-y-auto no-scrollbar shrink-0 pt-4">
@@ -364,7 +409,7 @@ function App() {
                     </div>
 
                     {/* === Center Column (Flexible) === */}
-                    <main className="flex-1 min-w-0 py-8 h-full flex flex-col gap-6">
+                    <main className="flex-1 min-w-0 py-4 lg:py-8 h-full flex flex-col gap-6">
 
                          {/* Top Marquee Banner */}
                          <div className="relative group">
@@ -501,6 +546,11 @@ function App() {
                                    />
                               )}
 
+                              {/* 8. DB PRESENTATION (NEW) */}
+                              {activeTab === 'db_presentation' && (
+                                   <DbPresentation />
+                              )}
+
                               {/* 7. MY TAB */}
                               {(['badge', 'schedule'].includes(activeTab)) && (
                                    <div className="flex flex-col items-center justify-center h-[50vh] text-gray-400">
@@ -529,16 +579,21 @@ function App() {
                               onOpenAvatarCustomizer={() => setIsAvatarModalOpen(true)}
                               isDark={activeTab === 'romance'}
                               beanCount={beanCount}
-                              setBeanCount={setBeanCount}
+                              updateBeanCount={updateBeanCount}
                          />
                     </div>
                </div>
 
-               {/* === Mobile Bottom Nav (Fixed) === */}
-               <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 lg:hidden z-50 flex items-center justify-between px-6 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-                    <div className="flex items-center gap-1" onClick={() => handleTabChange('home')}>
-                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs">P</div>
-                         <span className="font-bold text-gray-900 text-lg">PajuOn</span>
+               {/* === Mobile Top Nav (Fixed) === */}
+               <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-100 p-3 lg:hidden z-50 flex items-center justify-between px-6 shadow-[0_5px_20px_rgba(0,0,0,0.05)]">
+                    <div className="flex items-center gap-3">
+                         <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-500 hover:text-gray-900 active:bg-gray-100 rounded-full">
+                              <Menu className="w-6 h-6" />
+                         </button>
+                         <div className="flex items-center gap-1" onClick={() => handleTabChange('home')}>
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs">P</div>
+                              <span className="font-bold text-gray-900 text-lg">PajuOn</span>
+                         </div>
                     </div>
 
                     <button
@@ -566,62 +621,106 @@ function App() {
                </div>
 
                {/* === Mobile Login Modal === */}
-               {isMobileLoginOpen && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                         <div className="w-full max-w-sm relative">
-                              <button
-                                   onClick={() => setIsMobileLoginOpen(false)}
-                                   className="absolute -top-12 right-0 text-white/80 hover:text-white p-2"
-                              >
-                                   <X className="w-8 h-8" />
-                              </button>
-                              <AuthWidget onLoginSuccess={() => setIsMobileLoginOpen(false)} />
+               {
+                    isMobileLoginOpen && (
+                         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                              <div className="w-full max-w-sm relative">
+                                   <button
+                                        onClick={() => setIsMobileLoginOpen(false)}
+                                        className="absolute -top-12 right-0 text-white/80 hover:text-white p-2"
+                                   >
+                                        <X className="w-8 h-8" />
+                                   </button>
+                                   <AuthWidget onLoginSuccess={() => setIsMobileLoginOpen(false)} />
+                              </div>
                          </div>
-                    </div>
-               )}
+                    )
+               }
+
+               {/* === Mobile Menu Drawer === */}
+               {
+                    isMobileMenuOpen && (
+                         <div className="fixed inset-0 z-[70] lg:hidden">
+                              {/* Backdrop */}
+                              <div
+                                   className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
+                                   onClick={() => setIsMobileMenuOpen(false)}
+                              />
+                              {/* Drawer */}
+                              <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-[300px] bg-white animate-in slide-in-from-left duration-300 flex flex-col shadow-2xl">
+                                   <div className="flex items-center justify-end p-4 border-b border-gray-100">
+                                        <button
+                                             onClick={() => setIsMobileMenuOpen(false)}
+                                             className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 text-gray-500"
+                                        >
+                                             <X className="w-5 h-5" />
+                                        </button>
+                                   </div>
+                                   <div className="flex-1 overflow-y-auto">
+                                        <LeftSidebar
+                                             activeTab={activeTab}
+                                             setActiveTab={(tab) => {
+                                                  handleTabChange(tab);
+                                                  setIsMobileMenuOpen(false);
+                                             }}
+                                        />
+                                   </div>
+                              </div>
+                         </div>
+                    )
+               }
 
                {/* Global Components */}
-               {isMiniHomeOpen && (
-                    <MiniHomepage
-                         user={miniHomeTargetUser}
-                         onClose={() => setIsMiniHomeOpen(false)}
-                         onOpenAvatarCustomizer={() => {
-                              setIsMiniHomeOpen(false);
-                              setIsAvatarModalOpen(true);
-                         }}
-                    />
-               )}       {isRewardCenterOpen && (
-                    <ActivityRewardCenter
-                         onClose={() => setIsRewardCenterOpen(false)}
-                         onRewardClaim={handleRewardClaim}
-                         onOpenCreatePost={() => setIsCreateModalOpen(true)}
-                         currentBeanCount={beanCount}
-                    />
-               )}
+               {
+                    isMiniHomeOpen && (
+                         <MiniHomepage
+                              user={miniHomeTargetUser || user}
+                              currentUser={user}
+                              onClose={() => setIsMiniHomeOpen(false)}
+                              onOpenAvatarCustomizer={() => {
+                                   setIsMiniHomeOpen(false);
+                                   setIsAvatarModalOpen(true);
+                              }}
+                         />
+                    )
+               } {
+                    isRewardCenterOpen && (
+                         <ActivityRewardCenter
+                              onClose={() => setIsRewardCenterOpen(false)}
+                              onRewardClaim={handleRewardClaim}
+                              onOpenCreatePost={() => setIsCreateModalOpen(true)}
+                              currentBeanCount={beanCount}
+                         />
+                    )
+               }
 
-               {isCreateModalOpen && (
-                    <CreatePostModal
-                         onClose={() => setIsCreateModalOpen(false)}
-                         onShare={handleShare}
-                         user={user}
-                    />
-               )}
+               {
+                    isCreateModalOpen && (
+                         <CreatePostModal
+                              onClose={() => setIsCreateModalOpen(false)}
+                              onShare={handleShare}
+                              user={user}
+                         />
+                    )
+               }
 
                {/* Avatar Customizer Modal */}
-               {isAvatarModalOpen && (
-                    <AvatarCustomizer
-                         onClose={() => setIsAvatarModalOpen(false)}
-                         onSave={handleAvatarSave}
-                         currentAvatarUrl={user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
-                         unlockedStyles={unlockedStyles}
-                         userBeanCount={beanCount}
-                         onPurchaseStyle={handlePurchaseStyle}
-                    />
-               )}
+               {
+                    isAvatarModalOpen && (
+                         <AvatarCustomizer
+                              onClose={() => setIsAvatarModalOpen(false)}
+                              onSave={handleAvatarSave}
+                              currentAvatarUrl={user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
+                              unlockedStyles={unlockedStyles}
+                              userBeanCount={beanCount}
+                              onPurchaseStyle={handlePurchaseStyle}
+                         />
+                    )
+               }
 
                <ChatWidget />
 
-          </div>
+          </div >
      )
 }
 

@@ -3,6 +3,7 @@ import {
      MapPin, Clock, Phone, Heart, Bookmark, MessageCircle,
      X, ChevronLeft, ChevronRight, Car, Store
 } from 'lucide-react';
+import KakaoMap from './KakaoMap';
 
 const LocalBiz = () => {
      const [activeCategory, setActiveCategory] = useState('전체');
@@ -137,8 +138,8 @@ const LocalBiz = () => {
                                    key={cat}
                                    onClick={() => setActiveCategory(cat)}
                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all border ${activeCategory === cat
-                                             ? 'bg-purple-600 text-white border-purple-600 shadow-md transform scale-105'
-                                             : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                                        ? 'bg-purple-600 text-white border-purple-600 shadow-md transform scale-105'
+                                        : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
                                         }`}
                               >
                                    {cat}
@@ -299,6 +300,16 @@ const LocalBiz = () => {
                                                        <p className="text-sm font-bold text-gray-900">{selectedStore.parking}</p>
                                                   </div>
                                              </div>
+                                        </div>
+
+                                        {/* Create Map Area */}
+                                        <div className="pt-2">
+                                             <h4 className="font-bold text-gray-900 mb-3 text-sm">위치 보기</h4>
+                                             {/* Pass dummy lat/lng for demo purposes since mock data doesn't have it yet */}
+                                             <KakaoMap
+                                                  latitude={selectedStore.lat || 37.751853}
+                                                  longitude={selectedStore.lng || 126.764666}
+                                             />
                                         </div>
                                    </div>
                               </div>

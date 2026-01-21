@@ -1,14 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { X, Heart, MoreHorizontal, Send, Mail, MapPin, Sparkles } from 'lucide-react';
 
-const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer }) => {
-     // Mock Data
-     const guestbookEntries = [
-          { id: 1, author: '금촌사랑꾼', content: '오늘 파주 날씨 너무 좋다! 산책 가자~ 🌸', date: '5분 전', color: 'bg-yellow-50' },
-          { id: 2, author: '운정댁', content: '주말에 뭐해? 같이 커피 한 잔? ☕', date: '30분 전', color: 'bg-pink-50' },
-          { id: 3, author: '파주지킴이', content: '1촌 신청 받아줘! ㅎㅎ', date: '2시간 전', color: 'bg-blue-50' },
-     ];
+const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) => {
+     // Guestbook State
+     const [guestbookEntries, setGuestbookEntries] = useState([]);
+     const [newComment, setNewComment] = useState('');
+     const [isPublic, setIsPublic] = useState(false);
+     const [ilchonCount] = useState(Math.floor(Math.random() * 50) + 10);
 
+     // Profile & Edit State
+     const [profileData, setProfileData] = useState(null);
+     const [isEditing, setIsEditing] = useState(false);
+     const [editForm, setEditForm] = useState({
+          location: '',
+          mbti: '',
+          job: '',
+          bio: ''
+     });
+
+     // Fetch Profile Data
+     useEffect(() => {
+          const fetchProfile = async () => {
+               if (!user?.id) return;
+               const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+               if (data) {
+                    setProfileData(data);
+                    setEditForm({
+                         location: data.location || '',
+                         mbti: data.mbti || '',
+                         job: data.job || '',
+                         bio: data.status_message || '' // mapping bio to status_message
+                    });
+               }
+          };
+          fetchProfile();
+     }, [user?.id]);
+
+     // Save Profile Data
+     const handleSaveProfile = async () => {
+          if (!currentUser || currentUser.id !== user.id) return;
+
+          const { error } = await supabase
+               .from('profiles')
+               .update({
+                    location: editForm.location,
+                    mbti: editForm.mbti,
+                    job: editForm.job,
+                    status_message: editForm.bio
+               })
+               .eq('id', user.id);
+
+          if (error) {
+               console.error("Profile update failed:", error);
+               alert("프로필 저장 실패");
+          } else {
+               // Update local state
+               setProfileData(prev => ({
+                    ...prev,
+                    location: editForm.location,
+                    mbti: editForm.mbti,
+                    job: editForm.job,
+                    status_message: editForm.bio,
+                    bio: editForm.bio // helper for UI
+               }));
+               setIsEditing(false);
+          }
+     };
+
+     // Mock Gallery Images (Keep for now, or fetch if we had a gallery table)
      const galleryImages = [
           'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?auto=format&fit=crop&q=80&w=300&h=300',
           'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=300&h=300',
@@ -18,8 +83,74 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer }) => {
           'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=300&h=300',
      ];
 
-     const [isPublic, setIsPublic] = useState(false);
-     const [ilchonCount] = useState(Math.floor(Math.random() * 50) + 10);
+     // Fetch Guestbook Entries
+     useEffect(() => {
+          const fetchGuestbook = async () => {
+               if (!user?.id) return;
+
+               const { data, error } = await supabase
+                    .from('guestbook_entries')
+                    .select(`
+                         *,
+                         author:profiles!author_id(username, avatar_url)
+                    `)
+                    .eq('host_id', user.id) // Messages for THIS profile
+                    .order('created_at', { ascending: false });
+
+               if (data) {
+                    setGuestbookEntries(data);
+               }
+          };
+
+          fetchGuestbook();
+
+          // Realtime Subscription
+          const channel = supabase
+               .channel('guestbook-updates')
+               .on(
+                    'postgres_changes',
+                    {
+                         event: 'INSERT',
+                         schema: 'public',
+                         table: 'guestbook_entries',
+                         filter: `host_id=eq.${user.id}`
+                    },
+                    (payload) => {
+                         // We need author details too, so simpler to re-fetch or optimistically add if we had author info in payload
+                         // For now, let's just re-fetch for simplicity
+                         fetchGuestbook();
+                    }
+               )
+               .subscribe();
+
+          return () => {
+               supabase.removeChannel(channel);
+          };
+     }, [user?.id]);
+
+     const handlePostComment = async () => {
+          if (!newComment.trim()) return;
+          if (!currentUser) {
+               alert("로그인이 필요합니다!");
+               return;
+          }
+
+          const { error } = await supabase
+               .from('guestbook_entries')
+               .insert({
+                    host_id: user.id, // Profile owner
+                    author_id: currentUser.id, // Writer
+                    content: newComment,
+                    is_secret: false
+               });
+
+          if (error) {
+               console.error("Guestbook error:", error);
+               alert("방명록 작성 실패");
+          } else {
+               setNewComment('');
+          }
+     };
 
      return (
           <div
@@ -68,7 +199,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer }) => {
                                              onClick={onOpenAvatarCustomizer}
                                         >
                                              <img
-                                                  src={user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
+                                                  src={profileData?.avatar_url || user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
                                                   alt="Profile"
                                                   className="w-full h-full object-cover"
                                              />
@@ -98,17 +229,69 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer }) => {
 
                                    {/* Name & Bio */}
                                    <div className="mt-8">
-                                        <h2 className="text-3xl font-black mb-2 flex items-center gap-2">
-                                             {user?.user_metadata?.username || user?.user_metadata?.full_name || '나의 파주 라이프 🏡'}
-                                        </h2>
-                                        <div className="flex items-center gap-1 text-sm text-gray-300 mb-4">
-                                             <MapPin className="w-3.5 h-3.5" />
-                                             {user?.user_metadata?.location || '파주 운정 1동 · ENFP'}
+                                        <div className="flex items-center justify-between mb-2">
+                                             <h2 className="text-3xl font-black flex items-center gap-2">
+                                                  {profileData?.full_name || profileData?.username || '나의 파주 라이프 🏡'}
+                                             </h2>
+
+                                             {/* Edit Button (Only for Owner) */}
+                                             {currentUser?.id === user?.id && (
+                                                  <button
+                                                       onClick={() => {
+                                                            if (isEditing) handleSaveProfile();
+                                                            setIsEditing(!isEditing);
+                                                       }}
+                                                       className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-xs font-bold backdrop-blur-md border border-white/20 transition-all"
+                                                  >
+                                                       {isEditing ? '저장 완료' : '프로필 편집'}
+                                                  </button>
+                                             )}
                                         </div>
-                                        <p className="text-base text-gray-200 leading-relaxed font-light mb-6">
-                                             "오늘도 평화로운 파주의 하루! 🌈<br />
-                                             맛집 탐방하고 사진 찍는 거 좋아해요 ✨"
-                                        </p>
+
+                                        {isEditing ? (
+                                             <div className="bg-black/40 backdrop-blur-md p-4 rounded-xl border border-white/10 space-y-3 mb-4">
+                                                  <div className="grid grid-cols-2 gap-3">
+                                                       <input
+                                                            value={editForm.location}
+                                                            onChange={e => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                                                            className="bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400"
+                                                            placeholder="지역 (예: 파주 운정)"
+                                                       />
+                                                       <input
+                                                            value={editForm.mbti}
+                                                            onChange={e => setEditForm(prev => ({ ...prev, mbti: e.target.value }))}
+                                                            className="bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400"
+                                                            placeholder="MBTI"
+                                                       />
+                                                       <input
+                                                            value={editForm.job}
+                                                            onChange={e => setEditForm(prev => ({ ...prev, job: e.target.value }))}
+                                                            className="bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400 col-span-2"
+                                                            placeholder="직업 / 하는 일"
+                                                       />
+                                                  </div>
+                                                  <textarea
+                                                       value={editForm.bio}
+                                                       onChange={e => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                                                       className="w-full bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400 h-20 resize-none"
+                                                       placeholder="자기소개를 입력하세요..."
+                                                  />
+                                             </div>
+                                        ) : (
+                                             <>
+                                                  <div className="flex items-center gap-1 text-sm text-gray-300 mb-4">
+                                                       <MapPin className="w-3.5 h-3.5" />
+                                                       {profileData?.location || '파주 미설정'}
+                                                       <span className="mx-1">·</span>
+                                                       {profileData?.mbti || 'MBTI 미설정'}
+                                                       <span className="mx-1">·</span>
+                                                       {profileData?.job || '직업 미설정'}
+                                                  </div>
+                                                  <p className="text-base text-gray-200 leading-relaxed font-light mb-6 whitespace-pre-wrap">
+                                                       {profileData?.status_message || profileData?.bio || "자기소개가 없습니다."}
+                                                  </p>
+                                             </>
+                                        )}
 
                                         {/* Privacy Toggle & Incentive */}
                                         <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 flex items-center justify-between">
@@ -155,15 +338,21 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer }) => {
                               {/* Input */}
                               <div className="flex items-center gap-3 mb-8">
                                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100">
-                                        <img src={user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Visitor"} className="w-full h-full" alt="me" />
+                                        <img src={currentUser?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Visitor"} className="w-full h-full" alt="me" />
                                    </div>
                                    <div className="flex-1 bg-gray-50 rounded-full px-5 py-3 flex items-center border border-gray-200 focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-50 transition-all shadow-sm">
                                         <input
                                              type="text"
                                              placeholder="따뜻한 한마디를 남겨주세요..."
                                              className="flex-1 bg-transparent text-sm focus:outline-none min-w-0 mr-2"
+                                             value={newComment}
+                                             onChange={(e) => setNewComment(e.target.value)}
+                                             onKeyPress={(e) => e.key === 'Enter' && handlePostComment()}
                                         />
-                                        <button className="text-white bg-purple-600 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-purple-700 transition-colors shrink-0 whitespace-nowrap shadow-md shadow-purple-200">
+                                        <button
+                                             onClick={handlePostComment}
+                                             className="text-white bg-purple-600 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-purple-700 transition-colors shrink-0 whitespace-nowrap shadow-md shadow-purple-200"
+                                        >
                                              게시
                                         </button>
                                    </div>
@@ -173,13 +362,17 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer }) => {
                               <div className="space-y-4">
                                    {guestbookEntries.map((entry) => (
                                         <div key={entry.id} className="flex gap-3 items-start group">
-                                             <div className={`w-8 h-8 rounded-full ${entry.color} flex items-center justify-center text-xs font-bold text-gray-600 shrink-0`}>
-                                                  {entry.author[0]}
+                                             <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center border border-gray-100 shrink-0">
+                                                  <img
+                                                       src={entry.author?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon"}
+                                                       className="w-full h-full object-cover"
+                                                       alt="author"
+                                                  />
                                              </div>
                                              <div className="flex-1">
                                                   <div className="flex items-baseline gap-2 mb-0.5">
-                                                       <span className="font-bold text-sm text-gray-900">{entry.author}</span>
-                                                       <span className="text-[10px] text-gray-400">{entry.date}</span>
+                                                       <span className="font-bold text-sm text-gray-900">{entry.author?.username || '익명'}</span>
+                                                       <span className="text-[10px] text-gray-400">{new Date(entry.created_at).toLocaleDateString()}</span>
                                                   </div>
                                                   <p className="text-sm text-gray-700 leading-relaxed">{entry.content}</p>
 

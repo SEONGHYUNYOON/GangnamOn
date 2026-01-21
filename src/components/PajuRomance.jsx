@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase'; // Ensure supabase is imported
 import { Heart, X, MessageCircle, MapPin, Zap, Star, Lock, Send, ChevronRight } from 'lucide-react';
 
 const PajuRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) => {
@@ -7,9 +8,11 @@ const PajuRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) => {
      const [lastAction, setLastAction] = useState(null); // 'like', 'superlike', 'pass', 'error'
      const [floatingTexts, setFloatingTexts] = useState([]);
      const [showLowBeanModal, setShowLowBeanModal] = useState(false);
+     const [isMatch, setIsMatch] = useState(false); // New Match State
+     const [realProfiles, setRealProfiles] = useState([]);
 
      // Mock Profiles (Total 12: 6 Male, 6 Female)
-     const allProfiles = [
+     const mockProfiles = [
           // Females
           {
                id: 1,
@@ -22,6 +25,7 @@ const PajuRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) => {
                tags: ['#운동하는여자', '#맛집탐방', '#맥주러버'],
                image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=600&h=800'
           },
+          // ... (Existing mocks will be spread below)
           {
                id: 3,
                name: '요가파이어',
@@ -147,20 +151,65 @@ const PajuRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) => {
           }
      ];
 
-     // Filter Logic: Show Opposite Gender
-     // Default to showing 'female' if user or gender is missing (assuming male common user base, or random)
-     // But better to safe guard.
+     const [allProfiles, setAllProfiles] = useState(mockProfiles);
+
+     // Fetch Real Profiles
+     useEffect(() => {
+          const fetchProfiles = async () => {
+               if (!user) return;
+
+               // 1. Get my interacted IDs
+               const { data: interactions } = await supabase
+                    .from('romance_interactions')
+                    .select('target_id')
+                    .eq('actor_id', user.id);
+
+               const interactedIds = interactions?.map(i => i.target_id) || [];
+
+               // 2. Fetch Candidates
+               // Note: In real app, filter by gender preferences. Here we fetch all except self.
+               const { data: candidates } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .neq('id', user.id)
+                    .not('id', 'in', `(${interactedIds.join(',')})`) // Simple exclusion
+                    .limit(10);
+
+               if (candidates) {
+                    const formattedCandidates = candidates.map(p => ({
+                         id: p.id, // UUID
+                         name: p.full_name || p.username || '알 수 없음',
+                         age: p.birth_year ? new Date().getFullYear() - p.birth_year : 25, // Default age
+                         gender: p.gender || 'unknown',
+                         location: p.location || '파주',
+                         mbti: p.mbti || 'MBTI',
+                         job: p.job || '파주 주민',
+                         tags: p.interests || ['#신비주의'],
+                         image: p.avatar_url || 'https://via.placeholder.com/600x800'
+                    }));
+                    setRealProfiles(formattedCandidates);
+               }
+          };
+          fetchProfiles();
+     }, [user]);
+
+     // Merge Mocks + Real
+     // In a real scenario, you might replace mocks entirely or interleave.
+     // Here we put Real profiles FIRST.
+     const displayPool = [...realProfiles, ...mockProfiles];
+
+     // Filter Logic: Show Opposite Gender (Mock Only for now as Real might lack gender)
      const myGender = user?.user_metadata?.gender;
      const targetGender = myGender === 'female' ? 'male' : 'female';
 
-     // 1. Filter by gender
-     // 2. Fallback to all profiles if no match (e.g. user gender error) or show oppositeDefault
-     const filteredProfiles = allProfiles.filter(p => p.gender === targetGender);
+     // Only filter MOCKS by strict gender. Show ALL real profiles found (since gender might be null)
+     const filteredDisplay = displayPool.filter(p => {
+          if (typeof p.id === 'string') return true; // Always show real users for now
+          return p.gender === targetGender;
+     });
 
-     // Safety check if filtered is empty (should not happen with our data, but for robustness)
-     const displayProfiles = filteredProfiles.length > 0 ? filteredProfiles : allProfiles;
-
-     const currentProfile = displayProfiles[currentCardIndex % displayProfiles.length];
+     const safeDisplayProfiles = filteredDisplay.length > 0 ? filteredDisplay : mockProfiles;
+     const currentProfile = safeDisplayProfiles[currentCardIndex % safeDisplayProfiles.length];
 
      const lightnings = [
           {
@@ -189,9 +238,19 @@ const PajuRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) => {
           }
      ];
 
-     const handleAction = (type, cost) => {
+     const handleAction = async (type, cost) => {
           if (type === 'pass') {
                setLastAction('pass');
+
+               // Save Pass to DB if real user
+               if (user && typeof currentProfile.id === 'string') {
+                    await supabase.from('romance_interactions').insert({
+                         actor_id: user.id,
+                         target_id: currentProfile.id,
+                         action_type: 'pass'
+                    });
+               }
+
                setTimeout(() => {
                     setCurrentCardIndex(prev => prev + 1);
                     setLastAction(null);
@@ -219,10 +278,55 @@ const PajuRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) => {
 
           // Card transition for major actions
           if (type === 'like' || type === 'superlike') {
-               setTimeout(() => {
-                    setCurrentCardIndex(prev => prev + 1);
-                    setLastAction(null);
-               }, 800);
+
+               // Save Like/Superlike to DB if real user
+               if (user && typeof currentProfile.id === 'string') {
+                    // 1. Insert Interaction
+                    const { error } = await supabase.from('romance_interactions').insert({
+                         actor_id: user.id,
+                         target_id: currentProfile.id,
+                         action_type: type
+                    });
+
+                    if (!error) {
+                         // 2. Check for Mutual Match
+                         const { data: mutual } = await supabase
+                              .from('romance_interactions')
+                              .select('*')
+                              .eq('actor_id', currentProfile.id) // They liked me?
+                              .eq('target_id', user.id)
+                              .in('action_type', ['like', 'superlike'])
+                              .single();
+
+                         if (mutual) {
+                              // 3. It's a Match!
+                              setIsMatch(true);
+
+                              // 4. Create Chat Room
+                              // Check if room already exists? (For simplicity, just create new for now or rely on constraint)
+                              // Simple approach: Create a room
+                              const { data: room } = await supabase
+                                   .from('chat_rooms')
+                                   .insert({})
+                                   .select()
+                                   .single();
+
+                              if (room) {
+                                   await supabase.from('chat_participants').insert([
+                                        { room_id: room.id, user_id: user.id },
+                                        { room_id: room.id, user_id: currentProfile.id }
+                                   ]);
+                              }
+                         }
+                    }
+               }
+
+               if (!isMatch) {
+                    setTimeout(() => {
+                         setCurrentCardIndex(prev => prev + 1);
+                         setLastAction(null);
+                    }, 800);
+               }
           } else {
                // For unlock/dm, just show success temporarily
                setTimeout(() => setLastAction(null), 1000);
@@ -292,6 +396,47 @@ const PajuRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) => {
                                         className="flex-1 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-sm shadow-lg shadow-orange-500/20"
                                    >
                                         콩 벌러가기 ⚡
+                                   </button>
+                              </div>
+                         </div>
+                    </div>
+               )}
+
+               {/* Match Modal */}
+               {isMatch && (
+                    <div className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-500">
+                         <div className="text-center animate-in zoom-in-50 duration-500">
+                              <div className="text-6xl mb-4 relative inline-block">
+                                   💘
+                                   <Sparkles className="absolute -top-4 -right-4 w-12 h-12 text-yellow-400 animate-pulse" />
+                              </div>
+                              <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 mb-4 drop-shadow-sm">
+                                   It's a Match!
+                              </h2>
+                              <p className="text-white text-lg md:text-xl mb-8 font-medium">
+                                   <span className="text-pink-400 font-bold">{currentProfile.name}</span>님도 회원님을 좋아해요!
+                              </p>
+
+                              <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
+                                   <button
+                                        className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl font-bold text-white shadow-xl shadow-purple-500/30 hover:scale-105 transition-transform flex items-center justify-center gap-2"
+                                        onClick={() => {
+                                             setIsMatch(false);
+                                             setCurrentCardIndex(prev => prev + 1);
+                                             setLastAction(null);
+                                        }}
+                                   >
+                                        <MessageCircle className="w-5 h-5" /> 채팅 자로 시작하기
+                                   </button>
+                                   <button
+                                        onClick={() => {
+                                             setIsMatch(false);
+                                             setCurrentCardIndex(prev => prev + 1);
+                                             setLastAction(null);
+                                        }}
+                                        className="w-full py-4 bg-gray-800 rounded-2xl font-bold text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+                                   >
+                                        계속 구경하기
                                    </button>
                               </div>
                          </div>
