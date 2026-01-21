@@ -173,7 +173,7 @@ const NoteCard = ({ note, onOpenMinihome }) => {
                               onClick={() => setShowMap(!showMap)}
                               className={`flex items-center justify-center gap-2 py-3 border font-bold rounded-xl transition-colors group/btn text-sm ${showMap ? 'bg-gray-900 text-white border-gray-900' : 'border-stone-200 text-stone-600 hover:bg-stone-50'}`}
                          >
-                              {showMap ? '지도 닫기' : '위치 보기'}
+                              {showMap ? '지도 닫기' : '가게 구경하기'}
                               <MapPin className={`w-4 h-4 transition-transform ${showMap ? 'text-white' : 'text-gray-400'}`} />
                          </button>
                     </div>
