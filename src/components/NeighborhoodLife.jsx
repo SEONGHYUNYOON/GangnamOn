@@ -19,30 +19,41 @@ const NeighborhoodLife = ({ filter }) => {
                     .from('posts')
                     .select(`
                          *,
-                         profiles (username, location)
+                         profiles:author_id (username, location)
                     `)
-                    .in('type', ['life', 'question', 'news']) // Fetch life-related types
+                    .in('type', ['life', 'question', 'news', 'town_story', 'paju_pick', 'daily_photo']) // Fetch all life/community types
                     .order('created_at', { ascending: false });
 
                if (error) {
                     console.error("Error fetching neighborhood posts:", error);
                } else {
                     // Adapt DB data to UI model
-                    const mappedPosts = data.map(p => ({
-                         id: p.id,
-                         type: p.type === 'life' ? 'news' : p.type, // Map 'life' type to a UI category
-                         badge: p.title.includes('?') ? '질문' : '소식', // Simple heuristic for badge
-                         author: p.profiles?.username || '파주이웃',
-                         title: p.title,
-                         content: p.content,
-                         location: p.profiles?.location || '파주',
-                         region: p.profiles?.location ? p.profiles.location.split(' ')[0] : '파주', // Approx region
-                         views: p.views || 0,
-                         likes: p.likes_count || 0,
-                         comments: 0, // Comment count need separate query or aggregation
-                         time: new Date(p.created_at).toLocaleDateString(),
-                         image: p.image_urls?.[0] || null
-                    }));
+                    const mappedPosts = data.map(p => {
+                         let badge = '소식';
+                         if (p.type === 'question') badge = '질문';
+                         else if (p.type === 'news') badge = '소식';
+                         else if (p.type === 'town_story') badge = '잡담';
+                         else if (p.type === 'paju_pick') badge = '핫플';
+                         else if (p.type === 'daily_photo') badge = '포토';
+                         else if (p.title.includes('?')) badge = '질문'; // Fallback
+
+                         return {
+                              id: p.id,
+                              type: p.type === 'life' ? 'news' : p.type, // Basic mapping
+                              rawType: p.type,
+                              badge: badge,
+                              author: p.profiles?.username || '파주이웃',
+                              title: p.title,
+                              content: p.content,
+                              location: p.profiles?.location || '파주',
+                              region: p.profiles?.location ? p.profiles.location.split(' ')[0] : '파주', // Approx region
+                              views: p.views || 0,
+                              likes: p.likes_count || 0,
+                              comments: 0,
+                              time: new Date(p.created_at).toLocaleDateString(),
+                              image: p.image_urls?.[0] || null
+                         };
+                    });
                     setPosts(mappedPosts);
                }
                setLoading(false);
@@ -53,13 +64,13 @@ const NeighborhoodLife = ({ filter }) => {
 
      // Filtering Logic
      const filteredPosts = posts.filter(p => {
-          // 1. Tab Filter (QnA / News / All)
-          // Since we might not have exact types in DB yet, loosen this or rely on heuristics above
-          const tabMatch = filter === 'news'
-               ? p.badge === '소식'
-               : filter === 'qna'
-                    ? p.badge === '질문'
-                    : true;
+          // 1. Tab Filter
+          let tabMatch = true;
+          if (filter === 'qna') tabMatch = p.rawType === 'question';
+          else if (filter === 'news') tabMatch = p.rawType === 'news' || p.rawType === 'life';
+          else if (filter === 'town_story') tabMatch = p.rawType === 'town_story';
+          else if (filter === 'paju_pick') tabMatch = p.rawType === 'paju_pick';
+          else if (filter === 'daily_photo') tabMatch = p.rawType === 'daily_photo';
 
           // 2. Region Filter
           // Loose matching for region string

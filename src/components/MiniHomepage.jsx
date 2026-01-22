@@ -19,6 +19,24 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           bio: ''
      });
 
+     // 🛑 Safegauard: If no user is logged in, show login prompt instead of crashing
+     if (!user || !user.id) {
+          return (
+               <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}>
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full mx-4" onClick={e => e.stopPropagation()}>
+                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Sparkles className="w-8 h-8 text-purple-600" />
+                         </div>
+                         <h3 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요해요! 😅</h3>
+                         <p className="text-gray-500 mb-6">나만의 파주 라이프를 기록하려면<br />먼저 로그인해주세요.</p>
+                         <button onClick={onClose} className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors">
+                              확인
+                         </button>
+                    </div>
+               </div>
+          );
+     }
+
      // Fetch Profile Data
      useEffect(() => {
           const fetchProfile = async () => {

@@ -156,7 +156,12 @@ function App() {
                if (gatherings) {
                     setMeetingItems(gatherings.map(g => ({
                          id: g.id,
-                         category: g.type === 'gathering' ? '⚡ 번개' : g.type,
+                         category: g.type === 'gathering' ? '⚡ 번개'
+                              : g.type === 'hiking' ? '⛰️ 등산'
+                                   : g.type === 'sports' ? '⚽ 스포츠'
+                                        : g.type === 'pet' ? '🐶 반려동물'
+                                             : g.type === 'wine' ? '🍷 와인'
+                                                  : g.type,
                          title: g.title,
                          host: g.author?.username || '익명',
                          hostBadge: '파주 이웃',
@@ -503,14 +508,17 @@ function App() {
                                    </>
                               )}
 
-                              {/* 3. LIFE TAB */}
-                              {(['qna', 'news', 'share'].includes(activeTab)) && (
+                              {/* 3. LIFE TAB & COMMUNITY TAB */}
+                              {(['qna', 'news', 'share', 'town_story', 'paju_pick', 'daily_photo'].includes(activeTab)) && (
                                    <>
                                         <div className="flex items-center justify-between mb-2">
                                              <h2 className="text-xl font-bold text-gray-900">
                                                   {activeTab === 'qna' && '🙋‍♀️ 무엇이든 물어보세요'}
                                                   {activeTab === 'news' && '📢 우리 동네 소식통'}
                                                   {activeTab === 'share' && '🎁 당근보다 가까운 나눔'}
+                                                  {activeTab === 'town_story' && '💬 타운 스토리'}
+                                                  {activeTab === 'paju_pick' && '👍 파주 픽'}
+                                                  {activeTab === 'daily_photo' && '📸 데일리 포토'}
                                              </h2>
                                         </div>
                                         {activeTab === 'share' ? (

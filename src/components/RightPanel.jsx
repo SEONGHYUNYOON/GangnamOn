@@ -401,7 +401,10 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                )}
 
                {/* 2. Weather & Traffic Widget */}
-               <div className="bg-gradient-to-br from-sky-50 to-blue-50 rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-blue-100 mb-6 relative overflow-hidden">
+               <div
+                    onClick={() => window.open('https://search.naver.com/search.naver?query=파주+금촌동+날씨', '_blank')}
+                    className="bg-gradient-to-br from-sky-50 to-blue-50 rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-blue-100 mb-6 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group"
+               >
                     {/* Weather Section */}
                     <div className="flex items-center justify-between mb-6 relative z-10 h-12">
                          {weather.loading ? (

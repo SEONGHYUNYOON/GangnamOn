@@ -4,85 +4,89 @@ import { Heart, X, MessageCircle, MapPin, Zap, Star, Lock, Send, Sparkles } from
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
 // --- Sub Component: Individual Card ---
-const SwipeableCard = ({ profile, onAction, dragConstraints = { left: 0, right: 0 } }) => {
-     // Each card gets its OWN independent motion value. 
-     // This solves the bug where resetting 'x' affected the exiting card.
+const SwipeableCard = React.forwardRef(({ profile, onAction, dragConstraints = { left: 0, right: 0 } }, ref) => {
+     // Motion values for drag gestures
      const x = useMotionValue(0);
-     const rotate = useTransform(x, [-200, 200], [-25, 25]);
-     const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0.5, 1, 1, 1, 0.5]);
+     const rotate = useTransform(x, [-200, 200], [-30, 30]); // Rotate while dragging
+     const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]); // Fade out on exit
+
+     // Background color change feedback
+     const bg = useTransform(x, [-150, 0, 150], ["#ef4444", "#ffffff", "#3b82f6"]);
 
      const handleDragEnd = (event, info) => {
-          const threshold = 100;
-          if (info.offset.x > threshold) {
-               onAction('like', 5);
-          } else if (info.offset.x < -threshold) {
-               onAction('pass', 0);
+          if (info.offset.x > 100) {
+               onAction('like');
+          } else if (info.offset.x < -100) {
+               onAction('pass');
           }
      };
 
      return (
           <motion.div
-               style={{ x, rotate, opacity }}
+               ref={ref}
                drag="x"
-               dragConstraints={dragConstraints}
-               dragSnapToOrigin={true}
-               dragElastic={0.7}
+               dragConstraints={dragConstraints} // Limit drag area
+               style={{ x, rotate, opacity }} // Apply dynamic styles
                onDragEnd={handleDragEnd}
-               initial={{ scale: 0.95, opacity: 0, y: 20 }}
+               whileTap={{ cursor: "grabbing" }}
+               className="absolute top-0 w-full h-full cursor-grab active:cursor-grabbing origin-bottom"
+               initial={{ scale: 0.95, opacity: 0, y: 50 }}
                animate={{ scale: 1, opacity: 1, y: 0 }}
-               exit={(custom) => {
-                    // Use 'custom' prop to know direction immediately
-                    const duration = 0.2;
-                    if (custom === 'like' || custom === 'superlike') return { x: 500, rotate: 20, opacity: 0, transition: { duration } };
-                    if (custom === 'pass') return { x: -500, rotate: -20, opacity: 0, transition: { duration } };
-                    // Default fallback if direction is lost (fade out)
-                    return { opacity: 0 };
-               }}
-               transition={{ type: "spring", stiffness: 400, damping: 20 }}
-               className="w-full aspect-[4/5] h-full absolute top-0 rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] group border border-white/10 bg-gray-800 ring-1 ring-white/5 cursor-grab active:cursor-grabbing z-10"
+               exit={{ scale: 0.95, opacity: 0 }}
+               transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
-               <img src={profile.image} alt={profile.name} className="w-full h-full object-cover pointer-events-none" />
-               <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80 pointer-events-none"></div>
-               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+               <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl bg-white select-none">
+                    {/* Image Area */}
+                    <div className="h-[85%] relative">
+                         <img
+                              src={profile.image}
+                              alt={profile.name}
+                              className="w-full h-full object-cover pointer-events-none"
+                         />
+                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-               {/* Top Bar */}
-               <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
-                    <div className="flex gap-1.5"><div className="h-1 w-8 bg-white/50 rounded-full"></div><div className="h-1 w-8 bg-white/20 rounded-full"></div><div className="h-1 w-8 bg-white/20 rounded-full"></div></div>
-                    <button onClick={(e) => { e.stopPropagation(); onAction('unlock', 30); }} className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-white hover:text-black transition-all group/btn pointer-events-auto" onPointerDown={(e) => e.stopPropagation()}>
-                         <Lock className="w-5 h-5 text-white group-hover/btn:text-black" />
-                    </button>
-               </div>
+                         {/* Profile Info Overlay */}
+                         <div className="absolute bottom-0 left-0 w-full p-6 text-white">
+                              <div className="flex items-end gap-2 mb-2">
+                                   <h2 className="text-3xl font-bold">{profile.name}</h2>
+                                   <span className="text-xl opacity-90 mb-1">{profile.age}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm opacity-90 mb-3">
+                                   <MapPin className="w-4 h-4 text-rose-500" />
+                                   <span>{profile.location}</span>
+                                   <span className="mx-1">|</span>
+                                   <span>{profile.job}</span>
+                              </div>
 
-               {/* Profile Info */}
-               <div className="absolute bottom-28 left-0 w-full px-8 pointer-events-none">
-                    <div className="flex items-end gap-3 mb-2">
-                         <h3 className="text-4xl font-black text-white drop-shadow-md">{profile.name}</h3>
-                         <span className="text-2xl text-white/90 font-medium mb-1 drop-shadow-sm">{profile.age}</span>
+                              {/* Tags */}
+                              <div className="flex flex-wrap gap-2">
+                                   {profile.tags.map((tag, i) => (
+                                        <span key={i} className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium"> # {tag} </span>
+                                   ))}
+                              </div>
+                         </div>
                     </div>
-                    <div className="flex items-center gap-2 text-base text-gray-200 mb-4 font-medium drop-shadow-sm">
-                         <MapPin className="w-4 h-4 text-pink-500 fill-pink-500" />
-                         {profile.location} <span className="text-gray-400">|</span> {profile.job}
-                    </div>
-                    <div className="flex flex-wrap gap-2.5">
-                         {profile.tags.map(tag => (
-                              <span key={tag} className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-sm font-bold text-white border border-white/10 shadow-sm">{tag}</span>
-                         ))}
-                    </div>
-               </div>
 
-               {/* Interaction Buttons */}
-               <div className="absolute bottom-0 left-0 w-full h-28 bg-gradient-to-t from-black/90 to-transparent flex items-center justify-center gap-6 pb-4 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()}>
-                    <button onClick={() => onAction('pass', 0)} className="w-14 h-14 rounded-full bg-gray-800/80 backdrop-blur-md border border-gray-600 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white hover:scale-110 hover:border-red-500 transition-all shadow-lg"><X className="w-7 h-7" /></button>
-                    <button onClick={() => onAction('superlike', 20)} className="w-12 h-12 rounded-full bg-blue-500/20 backdrop-blur-md border border-blue-400 flex items-center justify-center text-blue-400 hover:bg-blue-500 hover:text-white hover:scale-110 transition-all shadow-lg mt-4"><Star className="w-6 h-6 fill-current" /></button>
-                    <button onClick={() => onAction('like', 5)} className="w-20 h-20 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:scale-110 transition-all shadow-2xl relative">
-                         <Heart className="w-9 h-9 fill-white" />
-                         <div className="absolute -top-3 bg-white text-pink-600 px-2 py-0.5 rounded-full text-[10px] font-black border border-pink-100 shadow-sm">-5콩</div>
-                    </button>
-                    <button onClick={() => onAction('dm', 50)} className="w-12 h-12 rounded-full bg-purple-500/20 backdrop-blur-md border border-purple-400 flex items-center justify-center text-purple-400 hover:bg-purple-500 hover:text-white hover:scale-110 transition-all shadow-lg mt-4"><Send className="w-5 h-5 ml-0.5" /></button>
+                    {/* Action Buttons Area (Bottom) */}
+                    <div className="h-[15%] bg-slate-900 flex items-center justify-center gap-6">
+                         <button onClick={() => onAction('pass')} className="p-3 rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors">
+                              <X className="w-6 h-6" />
+                         </button>
+                         <button onClick={() => onAction('superlike')} className="p-4 rounded-full bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:scale-110 transition-transform">
+                              <Star className="w-6 h-6 fill-white" />
+                         </button>
+                         <button onClick={() => onAction('like')} className="p-4 rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/30 hover:scale-110 transition-transform relative">
+                              <Heart className="w-7 h-7 fill-white" />
+                              <span className="absolute -top-2 -right-2 bg-white text-rose-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-rose-100 shadow-sm">-5콩</span>
+                         </button>
+                         <button className="p-3 rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors">
+                              <Send className="w-6 h-6" />
+                         </button>
+                    </div>
                </div>
           </motion.div>
      );
-};
+});
 
 
 // --- Main Component ---

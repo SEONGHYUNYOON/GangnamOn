@@ -1,9 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Users, Star, Calendar, ChevronRight, Heart, Share2, Loader2 } from 'lucide-react';
+import { MapPin, Users, Star, Calendar, ChevronRight, Heart, Share2, Loader2, Clock } from 'lucide-react';
 import MeetingDetail from './MeetingDetail';
 import { supabase } from '../lib/supabase';
 
-const MeetingFeed = ({ items: initialItems }) => { // Rename prop to avoid confusion
+const EventTimer = ({ expiresAt }) => {
+     const [timeLeft, setTimeLeft] = useState('');
+     const [isExpired, setIsExpired] = useState(false);
+
+     useEffect(() => {
+          const calculateTimeLeft = () => {
+               const difference = new Date(expiresAt) - new Date();
+
+               if (difference <= 0) {
+                    setIsExpired(true);
+                    setTimeLeft('종료됨');
+                    return;
+               }
+
+               const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+               const minutes = Math.floor((difference / 1000 / 60) % 60);
+               const seconds = Math.floor((difference / 1000) % 60);
+
+               setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+          };
+
+          calculateTimeLeft();
+          const timer = setInterval(calculateTimeLeft, 1000);
+
+          return () => clearInterval(timer);
+     }, [expiresAt]);
+
+     return (
+          <div className={`flex items-center gap-1 text-xs font-bold ${isExpired ? 'text-gray-400' : 'text-red-500 animate-pulse'}`}>
+               <Clock className="w-3.5 h-3.5" />
+               <span>{isExpired ? '이벤트 종료' : `${timeLeft} 남음`}</span>
+          </div>
+     );
+};
+
+const MeetingFeed = ({ items: initialItems }) => {
      const [selectedMeeting, setSelectedMeeting] = useState(null);
      const [likedItems, setLikedItems] = useState(new Set());
      const [animatingHearts, setAnimatingHearts] = useState(new Set());
@@ -16,10 +51,10 @@ const MeetingFeed = ({ items: initialItems }) => { // Rename prop to avoid confu
                const { data, error } = await supabase
                     .from('posts')
                     .select(`
-                         *,
-                         profiles (username, avatar_url)
-                    `)
-                    .in('type', ['gathering', 'club'])
+          *,
+          profiles:author_id (username, avatar_url)
+        `)
+                    .in('type', ['gathering', 'club']) // 'event' removed to fix menu context
                     .order('created_at', { ascending: false });
 
                if (error) {
@@ -27,17 +62,19 @@ const MeetingFeed = ({ items: initialItems }) => { // Rename prop to avoid confu
                } else {
                     const mapped = data.map(p => ({
                          id: p.id,
-                         category: p.type === 'club' ? '🏫 동호회' : '⚡ 번개모임',
+                         // Handle 'event' category
+                         category: p.type === 'club' ? '🏫 동호회' : (p.type === 'event' ? '🎉 이벤트' : '⚡ 번개모임'),
+                         isEvent: p.type === 'event',
+                         expiresAt: p.expires_at,
                          title: p.title,
                          host: p.profiles?.username || '파주주민',
-                         hostBadge: '열정멤버', // Placeholder
-                         // Try to extract date from content or use created_at
+                         hostBadge: '열정멤버',
                          date: new Date(p.created_at).toLocaleDateString(),
-                         location: p.location || '장소 미정',
+                         location: p.location_name || p.location || '장소 미정', // location_name added
                          participants: p.current_participants || 1,
-                         maxParticipants: p.max_participants || 4,
+                         maxParticipants: p.max_participants || 99, // default max for events
                          isHot: (p.likes_count || 0) > 5,
-                         status: (p.current_participants >= p.max_participants) ? 'closed' : 'open',
+                         status: (p.current_participants >= (p.max_participants || 99)) ? 'closed' : 'open',
                          image: p.image_urls?.[0] || 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=800'
                     }));
                     setMeetings(mapped);
@@ -55,7 +92,6 @@ const MeetingFeed = ({ items: initialItems }) => { // Rename prop to avoid confu
                newLiked.delete(id);
           } else {
                newLiked.add(id);
-               // Trigger animation
                const newAnimating = new Set(animatingHearts);
                newAnimating.add(id);
                setAnimatingHearts(newAnimating);
@@ -98,7 +134,7 @@ const MeetingFeed = ({ items: initialItems }) => { // Rename prop to avoid confu
                               <div
                                    key={item.id}
                                    onClick={() => setSelectedMeeting(item)}
-                                   className="bg-white rounded-3xl p-5 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden"
+                                   className={`bg-white rounded-3xl p-5 border shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden ${item.isEvent ? 'border-purple-200 ring-1 ring-purple-100' : 'border-gray-100'}`}
                               >
                                    <div className="flex gap-5">
                                         {/* Left: Thumbnail Image */}
@@ -118,7 +154,12 @@ const MeetingFeed = ({ items: initialItems }) => { // Rename prop to avoid confu
                                                        🔥 HOT
                                                   </div>
                                              )}
-                                             {item.status === 'imminent' && (
+                                             {item.isEvent && (
+                                                  <div className="absolute top-2 left-2 bg-purple-600/90 backdrop-blur-sm text-white border border-purple-500 text-[10px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1 animate-pulse">
+                                                       🎁 EVENT
+                                                  </div>
+                                             )}
+                                             {item.status === 'imminent' && !item.isEvent && (
                                                   <div className="absolute top-2 right-2 bg-red-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md animate-pulse">
                                                        마감임박
                                                   </div>
@@ -147,7 +188,7 @@ const MeetingFeed = ({ items: initialItems }) => { // Rename prop to avoid confu
                                              <div>
                                                   {/* Category Badge */}
                                                   <div className="flex items-center gap-2 mb-2">
-                                                       <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-lg border border-purple-100">
+                                                       <span className={`text-xs font-bold px-2 py-1 rounded-lg border ${item.isEvent ? 'text-white bg-gradient-to-r from-purple-500 to-pink-500 border-transparent' : 'text-purple-600 bg-purple-50 border-purple-100'}`}>
                                                             {item.category}
                                                        </span>
                                                   </div>
@@ -174,10 +215,16 @@ const MeetingFeed = ({ items: initialItems }) => { // Rename prop to avoid confu
                                                             <span className="text-xs font-bold text-gray-700">{item.host}</span>
                                                        </div>
                                                        <div className="h-3 w-[1px] bg-gray-200"></div>
-                                                       <div className="flex items-center gap-1 text-xs text-gray-400">
-                                                            <Calendar className="w-3.5 h-3.5" />
-                                                            <span>{item.date}</span>
-                                                       </div>
+
+                                                       {/* Show Timer for Events, Date for others */}
+                                                       {item.isEvent && item.expiresAt ? (
+                                                            <EventTimer expiresAt={item.expiresAt} />
+                                                       ) : (
+                                                            <div className="flex items-center gap-1 text-xs text-gray-400">
+                                                                 <Calendar className="w-3.5 h-3.5" />
+                                                                 <span>{item.date}</span>
+                                                            </div>
+                                                       )}
                                                   </div>
 
                                                   {/* Participant Status */}
