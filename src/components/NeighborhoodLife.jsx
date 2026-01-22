@@ -151,7 +151,7 @@ const NeighborhoodLife = ({ filter }) => {
                               <div className="flex gap-4">
                                    <div className="flex-1">
                                         <h3 className="text-base font-bold text-gray-900 mb-2 line-clamp-1">{post.title}</h3>
-                                        <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">{post.content}</p>
+                                        <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3 whitespace-pre-wrap">{post.content}</p>
 
                                         <div className="flex items-center text-xs text-gray-400 gap-3">
                                              <div className="flex items-center gap-1">
