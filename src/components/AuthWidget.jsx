@@ -117,7 +117,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                <div className="flex flex-col relative z-10">
                     <div className="text-center mb-6">
                          <h2 className="text-xl font-bold text-gray-900 mb-1">
-                              {isSignUpMode ? '파주On 시작하기' : '파주On 로그인 (v2)'}
+                              {isSignUpMode ? '파주On 시작하기' : '파주On 로그인 (v3)'}
                          </h2>
                          <p className="text-xs text-gray-500">
                               {isSignUpMode ? '이웃과 소통하는 파주 라이프!' : '오늘도 파주에서 즐거운 하루 보내세요!'}
@@ -241,7 +241,9 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    const { error } = await supabase.auth.signInWithOAuth({
                                         provider: 'kakao',
                                         options: {
-                                             scopes: 'profile_nickname profile_image',
+                                             queryParams: {
+                                                  scope: 'profile_nickname profile_image',
+                                             },
                                              redirectTo: window.location.origin,
                                         },
                                    });
