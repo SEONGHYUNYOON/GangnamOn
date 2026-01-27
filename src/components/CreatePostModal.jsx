@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Image as ImageIcon, MapPin, Calendar, Users, DollarSign, Tag, ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const CreatePostModal = ({ onClose, onShare, user }) => {
      const [selectedCategory, setSelectedCategory] = useState('gathering');
-     // Default demo image
-     const [previewImage, setPreviewImage] = useState('https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=800&h=800');
+     // Start with null, show preview when selected
+     const [previewImage, setPreviewImage] = useState(null);
+     const [selectedFile, setSelectedFile] = useState(null);
      const [isSubmitting, setIsSubmitting] = useState(false);
+     const fileInputRef = useRef(null);
 
      const [formData, setFormData] = useState({
           title: '',
@@ -25,6 +27,57 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
           { id: 'life', label: '🏡 동네생활', icon: MapPin },
      ];
 
+     const handleFileSelect = (e) => {
+          const file = e.target.files[0];
+          if (file) {
+               // Basic validation
+               if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    alert("파일 크기는 5MB 이하여야 합니다.");
+                    return;
+               }
+               if (!file.type.startsWith('image/')) {
+                    alert("이미지 파일만 업로드 가능합니다.");
+                    return;
+               }
+
+               setSelectedFile(file);
+               const objectUrl = URL.createObjectURL(file);
+               setPreviewImage(objectUrl);
+
+               // Cleanup memory when component unmounts or image changes
+               return () => URL.revokeObjectURL(objectUrl);
+          }
+     };
+
+     const uploadImage = async (file) => {
+          try {
+               const fileExt = file.name.split('.').pop();
+               const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+               const { data, error } = await supabase.storage
+                    .from('post-images')
+                    .upload(fileName, file, {
+                         cacheControl: '3600',
+                         upsert: false
+                    });
+
+               if (error) throw error;
+
+               const { data: { publicUrl } } = supabase.storage
+                    .from('post-images')
+                    .getPublicUrl(fileName);
+
+               return publicUrl;
+          } catch (error) {
+               console.error("Image upload failed:", error);
+               // Handle missing bucket error specifically if possible, OR just generic
+               if (error.message && error.message.includes('bucket')) {
+                    throw new Error("이미지 저장소(post-images)가 존재하지 않습니다. 관리자에게 문의하세요.");
+               }
+               throw error;
+          }
+     };
+
      const handleSubmit = async () => {
           if (!user) {
                alert("로그인이 필요합니다!");
@@ -38,6 +91,16 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
           setIsSubmitting(true);
 
           try {
+               let finalImageUrl = null;
+
+               // Upload image if selected
+               if (selectedFile) {
+                    finalImageUrl = await uploadImage(selectedFile);
+               } else if (previewImage && previewImage.startsWith('http')) {
+                    // If it was an existing URL (not blob), keep it (logic for edit in future)
+                    finalImageUrl = previewImage;
+               }
+
                const payload = {
                     author_id: user.id,
                     type: selectedCategory,
@@ -51,7 +114,7 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
                          ? `[일시: ${formData.date} ${formData.time}]\n\n${formData.description}`
                          : formData.description,
 
-                    image_urls: previewImage ? [previewImage] : [],
+                    image_urls: finalImageUrl ? [finalImageUrl] : [],
                     likes_count: 0
                };
 
@@ -65,9 +128,9 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
 
                // Success
                if (onShare) {
-                    onShare(selectedCategory, formData, previewImage);
+                    // Pass the final URL to the parent to update UI optimistically or reload
+                    onShare(selectedCategory, formData, finalImageUrl);
                } else {
-                    // Fallback if parent doesn't handle refresh
                     window.location.reload();
                }
                onClose();
@@ -102,36 +165,48 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
                     </button>
 
                     {/* === Left: Image Upload (50%) === */}
-                    <div className="w-full md:w-1/2 bg-gray-50 flex flex-col items-center justify-center relative border-r border-gray-100">
+                    <div className="w-full md:w-1/2 bg-gray-50 flex flex-col items-center justify-center relative border-r border-gray-100 p-6">
+                         <input
+                              type="file"
+                              ref={fileInputRef}
+                              onChange={handleFileSelect}
+                              className="hidden"
+                              accept="image/*"
+                         />
+
                          {previewImage ? (
-                              <div className="w-full h-full relative group">
+                              <div className="w-full h-full relative group rounded-2xl overflow-hidden shadow-sm">
                                    <img src={previewImage} className="w-full h-full object-cover" alt="Preview" />
                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
-                                             onClick={() => setPreviewImage(null)}
-                                             className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-white font-bold hover:bg-white/30 transition-colors"
+                                             onClick={() => fileInputRef.current?.click()}
+                                             className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-full text-white font-bold hover:bg-white/30 transition-colors"
                                         >
                                              사진 변경하기
                                         </button>
                                    </div>
+                                   <button
+                                        onClick={(e) => {
+                                             e.stopPropagation();
+                                             setPreviewImage(null);
+                                             setSelectedFile(null);
+                                        }}
+                                        className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+                                   >
+                                        <X className="w-4 h-4" />
+                                   </button>
                               </div>
                          ) : (
                               <div
-                                   onClick={() => {
-                                        // Mock Image Upload for Prototype
-                                        const mockImages = [
-                                             'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=800',
-                                             'https://images.unsplash.com/photo-1512069772995-ec65ed456d32?auto=format&fit=crop&q=80&w=800',
-                                             'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&q=80&w=800'
-                                        ];
-                                        setPreviewImage(mockImages[Math.floor(Math.random() * mockImages.length)]);
-                                        alert("실제 이미지 업로드는 준비 중입니다. 랜덤 이미지가 적용됩니다!");
-                                   }}
-                                   className="text-center p-10 border-2 border-dashed border-gray-300 rounded-2xl m-10 w-3/4 aspect-square flex flex-col items-center justify-center text-gray-400 hover:border-purple-400 hover:text-purple-500 hover:bg-purple-50 transition-all cursor-pointer"
+                                   onClick={() => fileInputRef.current?.click()}
+                                   className="text-center p-10 border-2 border-dashed border-gray-300 rounded-2xl w-full h-full flex flex-col items-center justify-center text-gray-400 hover:border-purple-400 hover:text-purple-500 hover:bg-purple-50 transition-all cursor-pointer group"
                               >
-                                   <ImageIcon className="w-16 h-16 mb-4" />
-                                   <p className="font-bold text-lg mb-1">사진을 이곳에 끌어다 놓으세요</p>
-                                   <p className="text-sm">클릭하여 파일 선택 (데모)</p>
+                                   <div className="bg-white p-4 rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                                        <ImageIcon className="w-8 h-8 text-purple-400" />
+                                   </div>
+                                   <p className="font-bold text-lg mb-1 text-gray-600 group-hover:text-purple-600">사진 추가하기</p>
+                                   <p className="text-sm text-gray-400">클릭하여 이미지를 업로드하세요</p>
+                                   <p className="text-xs text-gray-300 mt-4">최대 5MB, JPG/PNG</p>
                               </div>
                          )}
                     </div>

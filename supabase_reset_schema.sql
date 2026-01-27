@@ -175,6 +175,22 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
 AFTER
 INSERT ON auth.users FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+-- 3.6 STORAGE SETTINGS (Bucket & Policies)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('post-images', 'post-images', true) ON CONFLICT (id) DO NOTHING;
+-- Clean up potential old policies
+DROP POLICY IF EXISTS "Public View" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated Upload" ON storage.objects;
+DROP POLICY IF EXISTS "Give me access to own folder 1uf17d_0" ON storage.objects;
+DROP POLICY IF EXISTS "Give me access to own folder 1uf17d_1" ON storage.objects;
+-- Create Policies
+CREATE POLICY "Public View" ON storage.objects FOR
+SELECT USING (bucket_id = 'post-images');
+CREATE POLICY "Authenticated Upload" ON storage.objects FOR
+INSERT WITH CHECK (
+          bucket_id = 'post-images'
+          AND auth.role() = 'authenticated'
+     );
 -- ==============================================================================
 -- 4. SEED DATA (Virtual Users & Posts)
 -- ==============================================================================

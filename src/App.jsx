@@ -1,28 +1,31 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { supabase } from './lib/supabase'
 import LeftSidebar from './components/LeftSidebar'
 import RightPanel from './components/RightPanel'
-import ILoveSchool from './components/ILoveSchool'
-import UsedMarket from './components/UsedMarket'
-import MeetingFeed from './components/MeetingFeed'
-import MiniHomepage from './components/MiniHomepage'
 import ChatWidget from './components/ChatWidget'
-import CreatePostModal from './components/CreatePostModal'
-import NeighborhoodLife from './components/NeighborhoodLife'
-import PajuRomance from './components/PajuRomance'
 import Toast from './components/Toast'
-import ActivityRewardCenter from './components/ActivityRewardCenter'
-import AuthWidget from './components/AuthWidget'
-import AvatarCustomizer from './components/AvatarCustomizer'
-import BannerWriteModal from './components/BannerWriteModal'
 import './index.css'
-import { User, LogIn, Menu, X, Megaphone } from 'lucide-react'
-import DiningCompanion from './components/DiningCompanion'
-import CultureClass from './components/CultureClass'
-import AdminDashboard from './components/AdminDashboard'
-import PajuLounge from './components/PajuLounge'
-import OwnersNote from './components/OwnersNote'
-import DbPresentation from './components/DbPresentation'
+import { User, LogIn, Menu, X, Megaphone, Loader2 } from 'lucide-react'
+import ErrorBoundary from './components/ErrorBoundary'
+
+// Lazy Load Heavy Components
+const ILoveSchool = lazy(() => import('./components/ILoveSchool'))
+const UsedMarket = lazy(() => import('./components/UsedMarket'))
+const MeetingFeed = lazy(() => import('./components/MeetingFeed'))
+const MiniHomepage = lazy(() => import('./components/MiniHomepage'))
+const CreatePostModal = lazy(() => import('./components/CreatePostModal'))
+const NeighborhoodLife = lazy(() => import('./components/NeighborhoodLife'))
+const PajuRomance = lazy(() => import('./components/PajuRomance'))
+const ActivityRewardCenter = lazy(() => import('./components/ActivityRewardCenter'))
+const AuthWidget = lazy(() => import('./components/AuthWidget'))
+const AvatarCustomizer = lazy(() => import('./components/AvatarCustomizer'))
+const BannerWriteModal = lazy(() => import('./components/BannerWriteModal'))
+const DiningCompanion = lazy(() => import('./components/DiningCompanion'))
+const CultureClass = lazy(() => import('./components/CultureClass'))
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'))
+const PajuLounge = lazy(() => import('./components/PajuLounge'))
+const OwnersNote = lazy(() => import('./components/OwnersNote'))
+const DbPresentation = lazy(() => import('./components/DbPresentation'))
 
 function App() {
      const [activeTab, setActiveTab] = useState('home');
@@ -451,131 +454,141 @@ function App() {
                               )
                          }
 
+
                          {/* Content Feed */}
-                         <div className="flex flex-col gap-8">
+                         <ErrorBoundary>
+                              <Suspense fallback={
+                                   <div className="flex flex-col items-center justify-center p-20">
+                                        <Loader2 className="w-10 h-10 text-purple-600 animate-spin mb-4" />
+                                        <p className="text-gray-400 font-bold">로딩중입니다...</p>
+                                   </div>
+                              }>
+                                   <div className="flex flex-col gap-8">
 
-                              {/* NEW: PAJU LOUNGE TAB */}
-                              {activeTab === 'paju_lounge' && (
-                                   <PajuLounge onExit={() => handleTabChange('home')} user={user} />
-                              )}
+                                        {/* NEW: PAJU LOUNGE TAB */}
+                                        {activeTab === 'paju_lounge' && (
+                                             <PajuLounge onExit={() => handleTabChange('home')} user={user} />
+                                        )}
 
-                              {/* 1. HOME TAB */}
-                              {activeTab === 'home' && (
-                                   <>
-                                        {/* Host Banner */}
-                                        <div
-                                             onClick={() => setIsCreateModalOpen(true)}
-                                             className="bg-white rounded-3xl p-5 border border-purple-100 shadow-sm flex items-center justify-between hover:border-purple-300 transition-colors cursor-pointer group"
-                                        >
-                                             <div className="flex items-center gap-4">
-                                                  <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">✨</div>
-                                                  <div>
-                                                       <h3 className="font-bold text-gray-900">나만의 소모임 만들기</h3>
-                                                       <p className="text-xs text-gray-500">파주 리더 뱃지를 획득해보세요!</p>
+                                        {/* 1. HOME TAB */}
+                                        {activeTab === 'home' && (
+                                             <>
+                                                  {/* Host Banner */}
+                                                  <div
+                                                       onClick={() => setIsCreateModalOpen(true)}
+                                                       className="bg-white rounded-3xl p-5 border border-purple-100 shadow-sm flex items-center justify-between hover:border-purple-300 transition-colors cursor-pointer group"
+                                                  >
+                                                       <div className="flex items-center gap-4">
+                                                            <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">✨</div>
+                                                            <div>
+                                                                 <h3 className="font-bold text-gray-900">나만의 소모임 만들기</h3>
+                                                                 <p className="text-xs text-gray-500">파주 리더 뱃지를 획득해보세요!</p>
+                                                            </div>
+                                                       </div>
+                                                       <button className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-purple-200 transition-all transform group-hover:translate-x-1">
+                                                            모임 개설하기
+                                                       </button>
+                                                  </div>
+                                                  <ILoveSchool />
+                                                  <DiningCompanion />
+                                                  <MeetingFeed items={meetingItems} />
+                                                  <UsedMarket items={marketItems} />
+                                             </>
+                                        )}
+
+                                        {/* NEW: OWNER'S NOTE TAB (Previously Local Biz) */}
+                                        {activeTab === 'local_biz' && (
+                                             <OwnersNote onOpenMinihome={handleOpenMinihome} />
+                                        )}
+
+                                        {/* 2. GATHERING TAB */}
+                                        {(['hiking', 'sports', 'pet', 'wine'].includes(activeTab)) && (
+                                             <>
+                                                  <div className="flex items-center justify-between mb-2">
+                                                       <h2 className="text-xl font-bold text-gray-900">
+                                                            {activeTab === 'hiking' && '⛰️ 산타는 파주'}
+                                                            {activeTab === 'sports' && '⚽️ FC 파주 & 스포츠'}
+                                                            {activeTab === 'pet' && '🐶 멍냥회관'}
+                                                            {activeTab === 'wine' && '🍷 밤의 미식회'}
+                                                       </h2>
+                                                       <button onClick={() => setIsCreateModalOpen(true)} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
+                                                            + 모임 만들기
+                                                       </button>
+                                                  </div>
+                                                  <MeetingFeed items={meetingItems} />
+                                             </>
+                                        )}
+
+                                        {/* 3. LIFE TAB & COMMUNITY TAB */}
+                                        {(['qna', 'news', 'share', 'town_story', 'paju_pick', 'daily_photo'].includes(activeTab)) && (
+                                             <>
+                                                  <div className="flex items-center justify-between mb-2">
+                                                       <h2 className="text-xl font-bold text-gray-900">
+                                                            {activeTab === 'qna' && '🙋‍♀️ 무엇이든 물어보세요'}
+                                                            {activeTab === 'news' && '📢 우리 동네 소식통'}
+                                                            {activeTab === 'share' && '🎁 당근보다 가까운 나눔'}
+                                                            {activeTab === 'town_story' && '💬 타운 스토리'}
+                                                            {activeTab === 'paju_pick' && '👍 파주 픽'}
+                                                            {activeTab === 'daily_photo' && '📸 데일리 포토'}
+                                                       </h2>
+                                                  </div>
+                                                  {activeTab === 'share' ? (
+                                                       <UsedMarket items={marketItems} />
+                                                  ) : (
+                                                       <NeighborhoodLife filter={activeTab} />
+                                                  )}
+                                             </>
+                                        )}
+
+                                        {/* 4. SCHOOL TAB */}
+                                        {(['school_find', 'friend_find'].includes(activeTab)) && (
+                                             <ILoveSchool />
+                                        )}
+
+                                        {/* 5. CULTURE TAB (NEW) */}
+                                        {activeTab === 'culture_class' && (
+                                             <CultureClass />
+                                        )}
+
+                                        {/* ADMIN TAB */}
+                                        {activeTab === 'admin' && (
+                                             <AdminDashboard onlineUsersCount={onlineUsersCount} />
+                                        )}
+
+                                        {/* 6. PAJU ROMANCE (NEW) */}
+                                        {activeTab === 'romance' && (
+                                             <PajuRomance
+                                                  beanCount={beanCount}
+                                                  onHeartClick={handleHeartClick}
+                                                  onOpenRewardCenter={() => setIsRewardCenterOpen(true)}
+                                                  user={user}
+                                             />
+                                        )}
+
+                                        {/* 8. DB PRESENTATION (NEW) */}
+                                        {activeTab === 'db_presentation' && (
+                                             <DbPresentation />
+                                        )}
+
+                                        {/* 7. MY TAB */}
+                                        {(['badge', 'schedule'].includes(activeTab)) && (
+                                             <div className="flex flex-col items-center justify-center h-[50vh] text-gray-400">
+                                                  <div className="text-center space-y-4">
+                                                       <div className="text-6xl animate-bounce">🏆</div>
+                                                       <h2 className="text-2xl font-bold text-gray-900">나의 파주 활동 Badge</h2>
+                                                       <p className="text-gray-500">
+                                                            현재 <strong>'운정 새싹 🌱'</strong> 등급입니다.<br />
+                                                            활동을 통해 레벨업 해보세요!
+                                                       </p>
+                                                       <button onClick={() => setIsMiniHomeOpen(true)} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                                                            🏠 내 미니홈피 열기
+                                                       </button>
                                                   </div>
                                              </div>
-                                             <button className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-purple-200 transition-all transform group-hover:translate-x-1">
-                                                  모임 개설하기
-                                             </button>
-                                        </div>
-                                        <ILoveSchool />
-                                        <DiningCompanion />
-                                        <MeetingFeed items={meetingItems} />
-                                        <UsedMarket items={marketItems} />
-                                   </>
-                              )}
-
-                              {/* NEW: OWNER'S NOTE TAB (Previously Local Biz) */}
-                              {activeTab === 'local_biz' && (
-                                   <OwnersNote onOpenMinihome={handleOpenMinihome} />
-                              )}
-
-                              {/* 2. GATHERING TAB */}
-                              {(['hiking', 'sports', 'pet', 'wine'].includes(activeTab)) && (
-                                   <>
-                                        <div className="flex items-center justify-between mb-2">
-                                             <h2 className="text-xl font-bold text-gray-900">
-                                                  {activeTab === 'hiking' && '⛰️ 산타는 파주'}
-                                                  {activeTab === 'sports' && '⚽️ FC 파주 & 스포츠'}
-                                                  {activeTab === 'pet' && '🐶 멍냥회관'}
-                                                  {activeTab === 'wine' && '🍷 밤의 미식회'}
-                                             </h2>
-                                             <button onClick={() => setIsCreateModalOpen(true)} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
-                                                  + 모임 만들기
-                                             </button>
-                                        </div>
-                                        <MeetingFeed items={meetingItems} />
-                                   </>
-                              )}
-
-                              {/* 3. LIFE TAB & COMMUNITY TAB */}
-                              {(['qna', 'news', 'share', 'town_story', 'paju_pick', 'daily_photo'].includes(activeTab)) && (
-                                   <>
-                                        <div className="flex items-center justify-between mb-2">
-                                             <h2 className="text-xl font-bold text-gray-900">
-                                                  {activeTab === 'qna' && '🙋‍♀️ 무엇이든 물어보세요'}
-                                                  {activeTab === 'news' && '📢 우리 동네 소식통'}
-                                                  {activeTab === 'share' && '🎁 당근보다 가까운 나눔'}
-                                                  {activeTab === 'town_story' && '💬 타운 스토리'}
-                                                  {activeTab === 'paju_pick' && '👍 파주 픽'}
-                                                  {activeTab === 'daily_photo' && '📸 데일리 포토'}
-                                             </h2>
-                                        </div>
-                                        {activeTab === 'share' ? (
-                                             <UsedMarket items={marketItems} />
-                                        ) : (
-                                             <NeighborhoodLife filter={activeTab} />
                                         )}
-                                   </>
-                              )}
-
-                              {/* 4. SCHOOL TAB */}
-                              {(['school_find', 'friend_find'].includes(activeTab)) && (
-                                   <ILoveSchool />
-                              )}
-
-                              {/* 5. CULTURE TAB (NEW) */}
-                              {activeTab === 'culture_class' && (
-                                   <CultureClass />
-                              )}
-
-                              {/* ADMIN TAB */}
-                              {activeTab === 'admin' && (
-                                   <AdminDashboard onlineUsersCount={onlineUsersCount} />
-                              )}
-
-                              {/* 6. PAJU ROMANCE (NEW) */}
-                              {activeTab === 'romance' && (
-                                   <PajuRomance
-                                        beanCount={beanCount}
-                                        onHeartClick={handleHeartClick}
-                                        onOpenRewardCenter={() => setIsRewardCenterOpen(true)}
-                                        user={user}
-                                   />
-                              )}
-
-                              {/* 8. DB PRESENTATION (NEW) */}
-                              {activeTab === 'db_presentation' && (
-                                   <DbPresentation />
-                              )}
-
-                              {/* 7. MY TAB */}
-                              {(['badge', 'schedule'].includes(activeTab)) && (
-                                   <div className="flex flex-col items-center justify-center h-[50vh] text-gray-400">
-                                        <div className="text-center space-y-4">
-                                             <div className="text-6xl animate-bounce">🏆</div>
-                                             <h2 className="text-2xl font-bold text-gray-900">나의 파주 활동 Badge</h2>
-                                             <p className="text-gray-500">
-                                                  현재 <strong>'운정 새싹 🌱'</strong> 등급입니다.<br />
-                                                  활동을 통해 레벨업 해보세요!
-                                             </p>
-                                             <button onClick={() => setIsMiniHomeOpen(true)} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-                                                  🏠 내 미니홈피 열기
-                                             </button>
-                                        </div>
                                    </div>
-                              )}
-                         </div>
+                              </Suspense>
+                         </ErrorBoundary>
                     </main>
 
                     {/* === Right Column (Fixed Width) === */}
@@ -631,17 +644,19 @@ function App() {
                {/* === Mobile Login Modal === */}
                {
                     isMobileLoginOpen && (
-                         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                              <div className="w-full max-w-sm relative">
-                                   <button
-                                        onClick={() => setIsMobileLoginOpen(false)}
-                                        className="absolute -top-12 right-0 text-white/80 hover:text-white p-2"
-                                   >
-                                        <X className="w-8 h-8" />
-                                   </button>
-                                   <AuthWidget onLoginSuccess={() => setIsMobileLoginOpen(false)} />
+                         <Suspense fallback={null}>
+                              <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                                   <div className="w-full max-w-sm relative">
+                                        <button
+                                             onClick={() => setIsMobileLoginOpen(false)}
+                                             className="absolute -top-12 right-0 text-white/80 hover:text-white p-2"
+                                        >
+                                             <X className="w-8 h-8" />
+                                        </button>
+                                        <AuthWidget onLoginSuccess={() => setIsMobileLoginOpen(false)} />
+                                   </div>
                               </div>
-                         </div>
+                         </Suspense>
                     )
                }
 
@@ -679,57 +694,61 @@ function App() {
                }
 
                {/* Global Components */}
-               {
-                    isMiniHomeOpen && (
-                         <MiniHomepage
-                              user={miniHomeTargetUser || user}
-                              currentUser={user}
-                              onClose={() => setIsMiniHomeOpen(false)}
-                              onOpenAvatarCustomizer={() => {
-                                   setIsMiniHomeOpen(false);
-                                   setIsAvatarModalOpen(true);
-                              }}
-                         />
-                    )
-               } {
-                    isRewardCenterOpen && (
-                         <ActivityRewardCenter
-                              onClose={() => setIsRewardCenterOpen(false)}
-                              onRewardClaim={handleRewardClaim}
-                              onOpenCreatePost={() => setIsCreateModalOpen(true)}
-                              currentBeanCount={beanCount}
-                         />
-                    )
-               }
+               <Suspense fallback={null}>
+                    {
+                         isMiniHomeOpen && (
+                              <MiniHomepage
+                                   user={miniHomeTargetUser || user}
+                                   currentUser={user}
+                                   onClose={() => setIsMiniHomeOpen(false)}
+                                   onOpenAvatarCustomizer={() => {
+                                        setIsMiniHomeOpen(false);
+                                        setIsAvatarModalOpen(true);
+                                   }}
+                              />
+                         )
+                    }
+                    {
+                         isRewardCenterOpen && (
+                              <ActivityRewardCenter
+                                   onClose={() => setIsRewardCenterOpen(false)}
+                                   onRewardClaim={handleRewardClaim}
+                                   onOpenCreatePost={() => setIsCreateModalOpen(true)}
+                                   currentBeanCount={beanCount}
+                              />
+                         )
+                    }
 
-               {
-                    isCreateModalOpen && (
-                         <CreatePostModal
-                              onClose={() => setIsCreateModalOpen(false)}
-                              onShare={handleShare}
-                              user={user}
-                         />
-                    )
-               }
+                    {
+                         isCreateModalOpen && (
+                              <CreatePostModal
+                                   onClose={() => setIsCreateModalOpen(false)}
+                                   onShare={handleShare}
+                                   user={user}
+                              />
+                         )
+                    }
 
-               {/* Avatar Customizer Modal */}
-               {
-                    isAvatarModalOpen && (
-                         <AvatarCustomizer
-                              onClose={() => setIsAvatarModalOpen(false)}
-                              onSave={handleAvatarSave}
-                              currentAvatarUrl={user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
-                              unlockedStyles={unlockedStyles}
-                              userBeanCount={beanCount}
-                              onPurchaseStyle={handlePurchaseStyle}
-                         />
-                    )
-               }
+                    {/* Avatar Customizer Modal */}
+                    {
+                         isAvatarModalOpen && (
+                              <AvatarCustomizer
+                                   onClose={() => setIsAvatarModalOpen(false)}
+                                   onSave={handleAvatarSave}
+                                   currentAvatarUrl={user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
+                                   unlockedStyles={unlockedStyles}
+                                   userBeanCount={beanCount}
+                                   onPurchaseStyle={handlePurchaseStyle}
+                              />
+                         )
+                    }
+               </Suspense>
 
                <ChatWidget />
 
-          </div >
+          </div>
      )
 }
+
 
 export default App
