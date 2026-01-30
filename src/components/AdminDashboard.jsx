@@ -77,7 +77,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                               <Shield className="w-6 h-6 text-purple-600" />
                               관리자 대시보드
                          </h1>
-                         <p className="text-gray-500 text-sm mt-1">PajuOn 서비스 현황을 한눈에 확인하세요.</p>
+                         <p className="text-gray-500 text-sm mt-1">GangnamOn 서비스 현황을 한눈에 확인하세요.</p>
                     </div>
                     <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full font-bold text-sm animate-pulse">
                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -109,7 +109,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                          color="bg-orange-500"
                     />
                     <StatCard
-                         title="유통된 콩(재화)"
+                         title="유통된 온(재화)"
                          value={loading ? "..." : `85.4k`}
                          subtext="경제 생태계 활발"
                          icon={DollarSign}
@@ -222,7 +222,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                                    {/* Stats Row */}
                                    <div className="grid grid-cols-3 gap-4 mb-8">
                                         <div className="bg-gray-50 rounded-2xl p-3 text-center border border-gray-100">
-                                             <div className="text-xs text-gray-400 font-bold mb-1">보유 콩</div>
+                                             <div className="text-xs text-gray-400 font-bold mb-1">보유 온</div>
                                              <div className="text-lg font-black text-gray-900">{selectedUser.beans?.toLocaleString() || 0}</div>
                                         </div>
                                         <div className="bg-gray-50 rounded-2xl p-3 text-center border border-gray-100">

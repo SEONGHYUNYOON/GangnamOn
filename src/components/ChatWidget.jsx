@@ -22,7 +22,7 @@ const ChatWidget = () => {
                                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                               </div>
                               <div>
-                                   <h3 className="font-bold text-gray-900 text-sm">운정댁</h3>
+                                   <h3 className="font-bold text-gray-900 text-sm">역삼댁</h3>
                                    <p className="text-xs text-green-500 font-medium">Online</p>
                               </div>
                          </div>

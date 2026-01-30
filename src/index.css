@@ -23,20 +23,20 @@
 }
 
 .animate-marquee {
-     animation: marquee 20s linear infinite;
+     animation: marquee 40s linear infinite;
 }
 
+/* 한 블록(전체 문장)이 왼쪽 끝을 완전히 지날 때까지 이동 후, 다음 블록이 이어지도록 50%만 이동 */
 @keyframes marquee {
      0% {
-          transform: translateX(100%);
+          transform: translateX(0);
      }
-
      100% {
-          transform: translateX(-100%);
+          transform: translateX(-50%);
      }
 }
 
-/* 콩 떨어지는 효과 */
+/* 온 떨어지는 효과 */
 @keyframes floatUp {
      0% {
           transform: translateY(0);

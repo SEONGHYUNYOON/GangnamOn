@@ -4,7 +4,7 @@
 <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>PajuOn DB Architecture</title>
+     <title>GangnamOn DB Architecture</title>
      <script src="https://cdn.tailwindcss.com"></script>
      <script src="https://unpkg.com/lucide@latest"></script>
      <style>
@@ -41,7 +41,7 @@
                {
                     id: 0,
                     type: 'title',
-                    title: 'PajuOn: 기술 아키텍처 심층 분석',
+                    title: 'GangnamOn: 기술 아키텍처 심층 분석',
                     subtitle: '고도화된 DB 스키마, 구축 로직 및 백엔드 전략',
                     author: '백엔드 리드 엔지니어',
                     icon: 'server'
@@ -121,7 +121,7 @@ CREATE TRIGGER on_auth_user_created
                                    'id (UUID, PK): auth.users의 ID와 1:1 매칭 (FK)',
                                    'username (TEXT, Unique): 멘션(@) 기능을 위한 고유 식별자',
                                    'manner_temp (FLOAT): 매너온도. 기본 36.5도',
-                                   'beans (BIGINT): 화폐(콩). 오버플로우 방지',
+                                   'beans (BIGINT): 화폐(온). 오버플로우 방지',
                                    'unlocked_titles (TEXT[]): 칭호 목록 (배열)'
                               ]
                          }

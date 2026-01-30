@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Sparkles, Heart, DollarSign, Clover, Share2, RefreshCw, Camera, Sun, Moon, Star, CloudRain, Zap, Anchor, Key, Gift, Music, Coffee, Smile, ThumbsUp, Map, Compass, Crown, Shield, Bell, Globe, Scale, Sprout, Droplet, Ghost, Book } from 'lucide-react';
 
-const PajuTarot = ({ onClose, user }) => {
+const GangnamTarot = ({ onClose, user }) => {
      const [step, setStep] = useState('topic'); // topic, shuffle, result
      const [selectedTopic, setSelectedTopic] = useState(null);
      const [isShuffling, setIsShuffling] = useState(false);
@@ -222,7 +222,7 @@ const PajuTarot = ({ onClose, user }) => {
                     </button>
                     <div className="flex flex-col items-center">
                          <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-                              🌙 오늘의 파주 타로
+                              🌙 오늘의 강남 타로
                          </h2>
                     </div>
                     <div className="w-10"></div>
@@ -388,7 +388,7 @@ const PajuTarot = ({ onClose, user }) => {
                                              <selectedCardResult.Icon className={`w-20 h-20 ${selectedCardResult.color}`} strokeWidth={1.5} />
                                         </div>
                                         <div className="absolute bottom-3 left-0 right-0 text-center">
-                                             <span className={`text-xs font-black uppercase tracking-widest opacity-40 ${selectedCardResult.color}`}>Paju Tarot</span>
+                                             <span className={`text-xs font-black uppercase tracking-widest opacity-40 ${selectedCardResult.color}`}>Gangnam Tarot</span>
                                         </div>
                                    </div>
                                    <div className="text-center">
@@ -427,4 +427,4 @@ const PajuTarot = ({ onClose, user }) => {
      );
 };
 
-export default PajuTarot;
+export default GangnamTarot;

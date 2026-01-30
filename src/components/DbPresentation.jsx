@@ -8,7 +8,7 @@ const DbPresentation = () => {
           {
                id: 0,
                type: 'title',
-               title: 'PajuOn: 기술 아키텍처 심층 분석',
+               title: 'GangnamOn: 기술 아키텍처 심층 분석',
                subtitle: '고도화된 DB 스키마, 구축 로직 및 백엔드 전략',
                author: '백엔드 리드 엔지니어',
                icon: <Server className="w-24 h-24 text-indigo-600" />
@@ -100,7 +100,7 @@ CREATE TRIGGER on_auth_user_created
                               'id (UUID, PK): auth.users의 ID와 1:1 매칭 (FK)',
                               'username (TEXT, Unique): 멘션(@) 기능을 위한 고유 식별자',
                               'manner_temp (FLOAT): 매너온도. 기본 36.5도, 평가에 따라 변동',
-                              'beans (BIGINT): 화폐(콩). 오버플로우 방지를 위해 BIGINT 사용',
+                              'beans (BIGINT): 화폐(온). 오버플로우 방지를 위해 BIGINT 사용',
                               'unlocked_titles (TEXT[]): 칭호 목록. 조회 성능을 위해 조인 테이블 대신 배열(Array) 선택'
                          ]
                     }
@@ -264,7 +264,7 @@ USING (
                     '패턴: 복식 부기(Double Entry) 또는 추가 전용 로그(Append-Only Log).',
                     '우리 방식: `point_history` 테이블에 모든 내역(+/-)을 기록.',
                     '현재 잔액 = SUM(amount) WHERE user_id = X.',
-                    '이유: 감사(Audit) 가능성. 사용자가 "내 콩이 왜 없어졌나요?"라고 물으면 정확한 이력을 제시해야 함.',
+                    '이유: 감사(Audit) 가능성. 사용자가 "내 온이 왜 없어졌나요?"라고 물으면 정확한 이력을 제시해야 함.',
                     '최적화: 읽기 속도를 위해 `profiles.beans`에 트리거로 합계를 캐싱.'
                ]
           },

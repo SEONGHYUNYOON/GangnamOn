@@ -6,10 +6,10 @@ const ILoveSchool = () => {
 
      // Mock Data
      const popularCohorts = [
-          { id: 1, school: '문산고', logo: '🏫', round: 25, year: 2008, color: 'bg-blue-50 text-blue-600' },
-          { id: 2, school: '금촌중', logo: '🎒', round: 12, year: 2010, color: 'bg-green-50 text-green-600' },
-          { id: 3, school: '파주여고', logo: '🎀', round: 30, year: 2005, color: 'bg-pink-50 text-pink-600' },
-          { id: 4, school: '교하고', logo: '🌲', round: 8, year: 2015, color: 'bg-indigo-50 text-indigo-600' },
+          { id: 1, school: '단대부고', logo: '🏫', round: 25, year: 2008, color: 'bg-blue-50 text-blue-600' },
+          { id: 2, school: '경기고', logo: '🎒', round: 12, year: 2010, color: 'bg-green-50 text-green-600' },
+          { id: 3, school: '세종고', logo: '🎀', round: 30, year: 2005, color: 'bg-pink-50 text-pink-600' },
+          { id: 4, school: '압구정고', logo: '🌲', round: 8, year: 2015, color: 'bg-indigo-50 text-indigo-600' },
           { id: 5, school: '봉일천고', logo: '🌥️', round: 15, year: 2012, color: 'bg-orange-50 text-orange-600' },
      ];
 

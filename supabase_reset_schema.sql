@@ -42,7 +42,7 @@ CREATE TABLE public.posts (
                'hiking',
                'town_story',
                'news',
-               'paju_pick',
+               'gangnam_pick',
                'daily_photo',
                'sports',
                'pet',
@@ -201,13 +201,13 @@ BEGIN -- 1. 가상 유저 (사장님) 처리
 -- 1-A. auth.users 확인 및 생성
 SELECT id INTO v_owner_id
 FROM auth.users
-WHERE email = 'owner@pajuon.com';
+WHERE email = 'owner@gangnamon.com';
 IF v_owner_id IS NULL THEN
 INSERT INTO auth.users (id, email, raw_user_meta_data)
 VALUES (
           uuid_generate_v4(),
-          'owner@pajuon.com',
-          '{"username": "야당역_이자카야", "full_name": "유쾌한 사장님", "avatar_url": "https://api.dicebear.com/7.x/notionists/svg?seed=owner", "location": "파주 야당동"}'::jsonb
+          'owner@gangnamon.com',
+          '{"username": "강남역_이자카야", "full_name": "유쾌한 사장님", "avatar_url": "https://api.dicebear.com/7.x/notionists/svg?seed=owner", "location": "강남 역삼동"}'::jsonb
      )
 RETURNING id INTO v_owner_id;
 END IF;
@@ -215,22 +215,22 @@ END IF;
 INSERT INTO public.profiles (id, username, full_name, avatar_url, location)
 VALUES (
           v_owner_id,
-          '야당역_이자카야',
+          '강남역_이자카야',
           '유쾌한 사장님',
           'https://api.dicebear.com/7.x/notionists/svg?seed=owner',
-          '파주 야당동'
+          '강남 역삼동'
      ) ON CONFLICT (id) DO NOTHING;
 -- 2. 가상 유저 (동네 주민) 처리
 -- 2-A. auth.users 확인 및 생성
 SELECT id INTO v_resident_id
 FROM auth.users
-WHERE email = 'resident@pajuon.com';
+WHERE email = 'resident@gangnamon.com';
 IF v_resident_id IS NULL THEN
 INSERT INTO auth.users (id, email, raw_user_meta_data)
 VALUES (
           uuid_generate_v4(),
-          'resident@pajuon.com',
-          '{"username": "파주사랑꾼", "full_name": "김파주", "avatar_url": "https://api.dicebear.com/7.x/notionists/svg?seed=resident", "location": "파주 운정"}'::jsonb
+          'resident@gangnamon.com',
+          '{"username": "강남사랑꾼", "full_name": "김강남", "avatar_url": "https://api.dicebear.com/7.x/notionists/svg?seed=resident", "location": "강남 역삼"}'::jsonb
      )
 RETURNING id INTO v_resident_id;
 END IF;
@@ -238,10 +238,10 @@ END IF;
 INSERT INTO public.profiles (id, username, full_name, avatar_url, location)
 VALUES (
           v_resident_id,
-          '파주사랑꾼',
-          '김파주',
+          '강남사랑꾼',
+          '김강남',
           'https://api.dicebear.com/7.x/notionists/svg?seed=resident',
-          '파주 운정'
+          '강남 역삼'
      ) ON CONFLICT (id) DO NOTHING;
 -- 3. [이벤트] 하이볼 1+1 (이미지 교체: 청량한 하이볼)
 INSERT INTO public.posts (
@@ -261,11 +261,11 @@ VALUES (
           'event',
           '🍺 금요일 밤! 산토리 하이볼 무제한 1+1',
           '답답한 한 주, 시원하게 날려버리세요! 🍋
-야당역 3번 출구 앞 이자카야에서 불금을 책임집니다.
+강남역 3번 출구 앞 이자카야에서 불금을 책임집니다.
 
 ✅ 1+1 혜택은 8시부터 10시까지!
 ✅ 선착순 10팀 모듬 꼬치 서비스',
-          '야당역 3번 출구 앞',
+          '강남역 3번 출구 앞',
           0,
           now() + interval '2 hours',
           ARRAY ['https://images.unsplash.com/photo-1556679343-c7306c1976bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'],
@@ -288,11 +288,11 @@ INSERT INTO public.posts (
 VALUES (
           v_resident_id,
           'gathering',
-          '🏃‍♂️ 운정호수공원 모닝 러닝 하실 분!',
+          '🏃‍♂️ 코엑스 잔디광장 모닝 러닝 하실 분!',
           '혼자 뛰니까 자꾸 걷게 되네요.. ㅋㅋ
 이번주 토요일 아침 7시에 같이 가볍게 5km 뛰실 분 구합니다.
 초보 환영합니다! 끝나고 커피 한잔 해요 ☕️',
-          '운정호수공원',
+          '코엑스 잔디광장',
           4,
           2,
           ARRAY ['https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=800'],
@@ -315,7 +315,7 @@ VALUES (
           '세탁소 추천 좀 해주세요! 👔',
           '겨울 패딩 드라이 맡겨야 하는데 꼼꼼하게 잘하는 곳 있을까요?
 혹시 수거 배달 되는 곳이면 더 좋습니다!',
-          '파주 교하',
+          '강남 역삼',
           42,
           3
      );
@@ -337,7 +337,7 @@ VALUES (
           '현관 앞에 얌전히 앉아있는데 어떡하죠..
 일단 츄르 하나 줬는데 안 가네요 ㅋㅋ
 이름을 뭘로 지어줄까요?',
-          '금촌동',
+          '역삼동',
           ARRAY ['https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=800'],
           152,
           300
@@ -359,11 +359,11 @@ VALUES (
           v_resident_id,
           'club',
           -- 멍냥회관은 'club' 타입 사용 (MeetingFeed에서 필터링됨)
-          '🦮 토요일 운정 호수공원 댕댕이 산책 모임',
+          '🦮 토요일 코엑스 잔디광장 댕댕이 산책 모임',
           '겁 많은 강아지 친구들 환영합니다! 
 서로 냄새 맡고 친해질 시간 충분히 가지면서 천천히 걸어요.
 간식도 나눠먹고 견주들끼리 수다도 떨어요!',
-          '운정 호수공원 잔디광장',
+          '코엑스 잔디광장',
           6,
           3,
           ARRAY ['https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800'],
@@ -389,7 +389,7 @@ VALUES (
           '저희 냥이가 뚱냥이가 되어서 더 큰 걸로 바꿨어요.
 스크래쳐 부분은 좀 낡았는데 기둥은 튼튼합니다.
 가져가실 분 채팅 주세요!',
-          '한빛마을 5단지',
+          '역삼 자이 5단지',
           ARRAY ['https://images.unsplash.com/photo-1541781777621-3f130e108f18?auto=format&fit=crop&q=80&w=800'],
           12,
           85
@@ -410,11 +410,11 @@ INSERT INTO public.posts (
 VALUES (
           v_resident_id,
           'hiking',
-          '🏔️ 감악산 출렁다리 주말 산행 (초보 가능)',
-          '날씨가 너무 좋아서 감악산 가려고 합니다.
-출렁다리에서 인생샷 찍고 내려와서 도토리묵에 막걸리 한잔 어때요? 😋
+          '🏔️ 우면산 주말 산행 (초보 가능)',
+          '날씨가 너무 좋아서 우면산 가려고 합니다.
+전망대에서 인생샷 찍고 내려와서 막걸리 한잔 어때요? 😋
 왕복 3시간 코스로 천천히 다녀올 예정입니다.',
-          '감악산 주차장 (적성면)',
+          '우면산 주차장 (서초구)',
           8,
           5,
           ARRAY ['https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=800'],
@@ -437,8 +437,8 @@ VALUES (
           '🌙 야심한 밤.. 야식 메뉴 추천 좀 부탁드려요',
           '오늘따라 잠도 안 오고 배는 고프고..
 다이어트는 내일부터 하기로 했습니다 ^_^
-금촌/운정 배달 맛집 추천 부탁드립니다! 족발 vs 치킨??',
-          '금촌 로타리 부근',
+강남/역삼 배달 맛집 추천 부탁드립니다! 족발 vs 치킨??',
+          '역삼 로타리 부근',
           8,
           45
      );

@@ -18,7 +18,7 @@ const DiningCompanion = () => {
             userImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie',
             gender: 'female',
             mannerTemp: 37.2,
-            location: '운정 카페거리',
+            location: '역삼 카페거리',
             tags: ['#맛집탐방', '#조용한식사'],
             bg: 'bg-orange-50'
         },
@@ -31,7 +31,7 @@ const DiningCompanion = () => {
             userImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Avery',
             gender: 'mixed',
             mannerTemp: 38.5,
-            location: '야당역 근처',
+            location: '강남역 근처',
             tags: ['#카페투어', '#인생샷'],
             bg: 'bg-amber-50'
         },
@@ -44,7 +44,7 @@ const DiningCompanion = () => {
             userImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Max',
             gender: 'male',
             mannerTemp: 36.5,
-            location: '금촌 로타리',
+            location: '역삼 로타리',
             tags: ['#더치페이', '#반주가능'],
             bg: 'bg-red-50'
         },
@@ -57,7 +57,7 @@ const DiningCompanion = () => {
             userImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bella',
             gender: 'female',
             mannerTemp: 40.1,
-            location: '헤이리 마을',
+            location: '청담동',
             tags: ['#디저트', '#수다타임'],
             bg: 'bg-pink-50'
         },
@@ -70,7 +70,7 @@ const DiningCompanion = () => {
             userImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe',
             gender: 'mixed',
             mannerTemp: 36.8,
-            location: '운정 호수공원',
+            location: '코엑스 잔디광장',
             tags: ['#건강식', '#다이어트'],
             bg: 'bg-green-50'
         },
@@ -83,7 +83,7 @@ const DiningCompanion = () => {
             userImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Brian',
             gender: 'male',
             mannerTemp: 37.0,
-            location: '야당역',
+            location: '강남역',
             tags: ['#축구시청', '#치맥'],
             bg: 'bg-blue-50'
         }

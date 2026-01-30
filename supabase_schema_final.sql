@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PajuOn Database Schema (Final Version for Launch)
+-- GangnamOn Database Schema (Final Version for Launch)
 -- ==============================================================================
 -- 1. Enable necessary extensions
 create extension if not exists "uuid-ossp";
@@ -9,10 +9,10 @@ create table public.profiles (
      username text unique not null,
      full_name text,
      avatar_url text,
-     -- PajuOn Specifics
+     -- GangnamOn Specifics
      beans int default 1250,
      -- 'Credit' (Kong)
-     location text default '파주 운정',
+     location text default '강남 역삼',
      bio text,
      -- Social Traits
      gender text check (gender in ('male', 'female', 'other')),

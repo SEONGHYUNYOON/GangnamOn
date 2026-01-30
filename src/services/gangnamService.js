@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 // === USERS ===
 
 /**
- * Get full profile of a user by ID or Username
+ * Get full profile by user ID or username
  */
 export const getUserProfile = async (userId) => {
      const { data, error } = await supabase
@@ -33,7 +33,7 @@ export const updateUserBeans = async (userId, newAmount) => {
 // === POSTS (Market & Community) ===
 
 /**
- * Fetch feed posts with optional filters
+ * Fetch feed posts with optional type filter
  */
 export const getPosts = async (type = null) => {
      let query = supabase
@@ -99,7 +99,6 @@ export const addGuestbookEntry = async (hostId, authorId, content) => {
 // === SCHOOL ===
 
 export const searchSchoolAlumni = async (schoolName, year) => {
-     // Find school ID first
      const { data: schoolData } = await supabase
           .from('schools')
           .select('id')
@@ -108,7 +107,6 @@ export const searchSchoolAlumni = async (schoolName, year) => {
 
      if (!schoolData) return [];
 
-     // Find alumni
      const { data, error } = await supabase
           .from('school_alumni')
           .select(`

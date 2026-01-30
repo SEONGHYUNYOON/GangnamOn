@@ -10,8 +10,8 @@ const MeetingDetail = ({ meeting, onClose }) => {
      // Mock Participants Data
      const participants = [
           { id: 1, name: '산다람쥐', role: 'Host', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', badge: 'crown' },
-          { id: 2, name: '운정댁', role: 'Member', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', badge: 'leaf' },
-          { id: 3, name: '금촌사랑', role: 'Member', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jude', badge: null },
+          { id: 2, name: '역삼댁', role: 'Member', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', badge: 'leaf' },
+          { id: 3, name: '강남사랑', role: 'Member', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jude', badge: null },
      ];
 
      // Mock Comments

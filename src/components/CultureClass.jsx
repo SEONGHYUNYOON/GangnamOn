@@ -10,10 +10,10 @@ const CultureClass = () => {
           {
                id: 1,
                category: '원데이클래스',
-               title: '헤이리 도자기 물레 체험',
+               title: '강남 도자기 물레 체험',
                date: '10.28 (토)',
                time: '14:00',
-               location: '헤이리 예술마을',
+               location: '강남구 청담 예술공간',
                fee: '35,000원',
                image: 'https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?auto=format&fit=crop&q=80&w=800',
                badge: '선착순 마감',
@@ -22,10 +22,10 @@ const CultureClass = () => {
           {
                id: 2,
                category: '인문학 강연',
-               title: '밤에 읽는 파주의 역사',
+               title: '밤에 읽는 강남의 역사',
                date: '10.30 (월)',
                time: '19:00',
-               location: '지혜의 숲',
+               location: '강남구립도서관',
                fee: '무료',
                image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=800',
                badge: '인기',
@@ -34,10 +34,10 @@ const CultureClass = () => {
           {
                id: 3,
                category: '전시/공연',
-               title: '가을 재즈 나잇 in 운정',
+               title: '가을 재즈 나잇 in 강남',
                date: '11.03 (금)',
                time: '20:00',
-               location: '운정 호수공원',
+               location: '코엑스 잔디광장',
                fee: '무료',
                image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&q=80&w=800',
                badge: '야외 공연',
@@ -49,7 +49,7 @@ const CultureClass = () => {
                title: '나만의 시그니처 향수 만들기',
                date: '11.04 (토)',
                time: '11:00',
-               location: '야당역 공방거리',
+               location: '강남역 공방거리',
                fee: '50,000원',
                image: 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&q=80&w=800',
                badge: '소수 정예',
@@ -61,7 +61,7 @@ const CultureClass = () => {
                title: '숲 해설사와 함께하는 자연탐험',
                date: '11.05 (일)',
                time: '10:00',
-               location: '심학산 둘레길',
+               location: '양재천 둘레길',
                fee: '5,000원',
                image: 'https://images.unsplash.com/photo-1444858291040-58f756a3bdd6?auto=format&fit=crop&q=80&w=800',
                badge: '가족 추천',
@@ -73,7 +73,7 @@ const CultureClass = () => {
                title: '비건 베이킹 : 쌀 쿠키 클래스',
                date: '11.07 (화)',
                time: '13:00',
-               location: '문산 쿠킹스튜디오',
+               location: '역삼 쿠킹스튜디오',
                fee: '45,000원',
                image: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&q=80&w=800',
                badge: '재료 포함',
@@ -90,7 +90,7 @@ const CultureClass = () => {
                {/* Header */}
                <div className="mb-8 px-2 pt-4">
                     <h2 className="text-3xl font-black text-gray-900 mb-2 font-sans tracking-tight">
-                         파주 문화 캘린더 <span className="text-purple-500">.</span>
+                         강남 문화 캘린더 <span className="text-purple-500">.</span>
                     </h2>
                     <p className="text-gray-500 font-medium text-sm">
                          예술과 지식으로 채우는 당신의 특별한 하루

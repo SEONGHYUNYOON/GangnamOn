@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Heart, User, MapPin, MoreHorizontal, ChevronDown, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { normalizeForGangnamDisplay } from '../lib/displayGangnam';
 
 const NeighborhoodLife = ({ filter }) => {
-     const [selectedRegion, setSelectedRegion] = useState('파주 전체');
+     const [selectedRegion, setSelectedRegion] = useState('강남 전체');
      const [isDropdownOpen, setIsDropdownOpen] = useState(false);
      const [posts, setPosts] = useState([]);
      const [loading, setLoading] = useState(true);
 
-     const regionList = ['파주 전체', '운정', '교하', '금촌', '문산', '조리/봉일천', '광탄', '탄현', '월롱', '적성/파평'];
+     const regionList = ['강남 전체', '역삼', '삼성', '논현', '신사', '청담', '압구정', '서초', '방배', '사평', '잠원', '개포', '세곡'];
 
      useEffect(() => {
           const fetchPosts = async () => {
@@ -21,7 +22,7 @@ const NeighborhoodLife = ({ filter }) => {
                          *,
                          profiles:author_id (username, location)
                     `)
-                    .in('type', ['life', 'question', 'news', 'town_story', 'paju_pick', 'daily_photo']) // Fetch all life/community types
+                    .in('type', ['life', 'question', 'news', 'town_story', 'gangnam_pick', 'daily_photo']) // Fetch all life/community types
                     .order('created_at', { ascending: false });
 
                if (error) {
@@ -33,20 +34,22 @@ const NeighborhoodLife = ({ filter }) => {
                          if (p.type === 'question') badge = '질문';
                          else if (p.type === 'news') badge = '소식';
                          else if (p.type === 'town_story') badge = '잡담';
-                         else if (p.type === 'paju_pick') badge = '핫플';
+                         else if (p.type === 'gangnam_pick') badge = '핫플';
                          else if (p.type === 'daily_photo') badge = '포토';
                          else if (p.title.includes('?')) badge = '질문'; // Fallback
 
+                         const locationRaw = p.profiles?.location || '강남';
+                         const regionRaw = locationRaw ? locationRaw.split(' ')[0] : '강남';
                          return {
                               id: p.id,
-                              type: p.type === 'life' ? 'news' : p.type, // Basic mapping
+                              type: p.type === 'life' ? 'news' : p.type,
                               rawType: p.type,
                               badge: badge,
-                              author: p.profiles?.username || '파주이웃',
+                              author: normalizeForGangnamDisplay(p.profiles?.username || '강남이웃'),
                               title: p.title,
                               content: p.content,
-                              location: p.profiles?.location || '파주',
-                              region: p.profiles?.location ? p.profiles.location.split(' ')[0] : '파주', // Approx region
+                              location: normalizeForGangnamDisplay(locationRaw),
+                              region: normalizeForGangnamDisplay(regionRaw),
                               views: p.views || 0,
                               likes: p.likes_count || 0,
                               comments: 0,
@@ -69,12 +72,12 @@ const NeighborhoodLife = ({ filter }) => {
           if (filter === 'qna') tabMatch = p.rawType === 'question';
           else if (filter === 'news') tabMatch = p.rawType === 'news' || p.rawType === 'life';
           else if (filter === 'town_story') tabMatch = p.rawType === 'town_story';
-          else if (filter === 'paju_pick') tabMatch = p.rawType === 'paju_pick';
+          else if (filter === 'gangnam_pick') tabMatch = p.rawType === 'gangnam_pick';
           else if (filter === 'daily_photo') tabMatch = p.rawType === 'daily_photo';
 
           // 2. Region Filter
           // Loose matching for region string
-          const regionMatch = selectedRegion === '파주 전체'
+          const regionMatch = selectedRegion === '강남 전체'
                ? true
                : p.location.includes(selectedRegion);
 

@@ -46,7 +46,7 @@ const BannerWriteModal = ({ onClose, onSubmit, userBeanCount, cost = 500 }) => {
                          <textarea
                               value={message}
                               onChange={(e) => setMessage(e.target.value)}
-                              placeholder="예) 강아지를 찾습니다! 운정역 근처에서 보신 분 연락주세요 ㅠㅠ"
+                              placeholder="예) 강아지를 찾습니다! 강남역 근처에서 보신 분 연락주세요 ㅠㅠ"
                               className="w-full h-32 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-purple-300 focus:bg-white focus:outline-none p-4 text-sm font-bold resize-none transition-all placeholder-gray-400"
                               maxLength={50}
                          />
@@ -64,7 +64,7 @@ const BannerWriteModal = ({ onClose, onSubmit, userBeanCount, cost = 500 }) => {
                                    : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg hover:shadow-purple-200 hover:scale-[1.02] active:scale-[0.98]'
                               }`}
                     >
-                         {userBeanCount < cost ? '콩이 부족해요 😭' : '등록하기'}
+                         {userBeanCount < cost ? '온이 부족해요 😭' : '등록하기'}
                     </button>
                </div>
           </div>

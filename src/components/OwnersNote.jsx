@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Download, Chevron
 import KakaoMap from './KakaoMap';
 import { supabase } from '../lib/supabase';
 import EventTimer from './EventTimer';
+import { normalizeForGangnamDisplay } from '../lib/displayGangnam';
 
 const NoteCard = ({ note, onOpenMinihome }) => {
      const [isLiked, setIsLiked] = useState(false);
@@ -246,16 +247,16 @@ const OwnersNote = ({ onOpenMinihome }) => {
                } else {
                     const mappedNotes = data.map(post => ({
                          id: post.id,
-                         storeName: post.profiles?.username || '파주 사장님',
-                         ownerAvatar: post.profiles?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Paju',
-                         time: '방금 전', // Handled by getTimeAgo in NoteCard
+                         storeName: normalizeForGangnamDisplay(post.profiles?.username || '강남 사장님'),
+                         ownerAvatar: post.profiles?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gangnam',
+                         time: '방금 전',
                          createdAt: post.created_at,
                          image: post.image_urls?.[0] || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=600',
                          eventLabel: post.title,
                          note: post.content,
-                         hasCoupon: true, // Assuming all events have benefits
+                         hasCoupon: true,
                          expiresAt: post.expires_at,
-                         location: post.location_name || post.profiles?.location || '파주',
+                         location: normalizeForGangnamDisplay(post.location_name || post.profiles?.location || '강남'),
                          likes: post.likes_count
                     }));
                     setNotes(mappedNotes);

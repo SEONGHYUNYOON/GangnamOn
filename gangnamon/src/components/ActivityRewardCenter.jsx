@@ -10,9 +10,9 @@ const ActivityRewardCenter = ({ onClose, onRewardClaim, onOpenCreatePost, curren
 
      // Calculate level based on score
      useEffect(() => {
-          if (charmScore >= 80) setUserLevel('파주 인싸 😎');
+          if (charmScore >= 80) setUserLevel('강남 인싸 😎');
           else if (charmScore >= 50) setUserLevel('동네 이웃 🏠');
-          else setUserLevel('운정 새싹 🌱');
+          else setUserLevel('강남 새싹 🌱');
      }, [charmScore]);
 
      const handlePhotoUpload = (e) => {
@@ -43,7 +43,7 @@ const ActivityRewardCenter = ({ onClose, onRewardClaim, onOpenCreatePost, curren
                     <div className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
                          <div className="text-6xl animate-bounce mb-4">🫘</div>
                          <h2 className="text-4xl font-black text-yellow-400 drop-shadow-lg animate-in zoom-in spin-in duration-500">
-                              +{rewardAmount} 콩 획득!
+                              +{rewardAmount} 온 획득!
                          </h2>
                          <p className="text-white mt-2 font-bold text-lg drop-shadow-md">매력도가 상승했습니다! 🚀</p>
                          {/* Simple CSS Confetti (simulated by multiple elements) */}
@@ -73,7 +73,7 @@ const ActivityRewardCenter = ({ onClose, onRewardClaim, onOpenCreatePost, curren
                                    {userLevel}
                               </span>
                               <h2 className="text-2xl font-black mb-1">매력적인 이웃이 되어보세요! 😎</h2>
-                              <p className="text-purple-200 text-sm mb-6">활동하면 콩이 쏟아집니다 🫘</p>
+                              <p className="text-purple-200 text-sm mb-6">활동하면 온이 쏟아집니다 ⚡</p>
 
                               {/* Progress Bar */}
                               <div className="relative pt-2">
@@ -128,11 +128,11 @@ const ActivityRewardCenter = ({ onClose, onRewardClaim, onOpenCreatePost, curren
                                              {!uploadedImage ? (
                                                   <label className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer hover:shadow-lg hover:scale-105 transition-all">
                                                        <Camera className="w-3 h-3" />
-                                                       사진 올리고 +20콩
+                                                       사진 올리고 +20온
                                                        <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
                                                   </label>
                                              ) : (
-                                                  <span className="text-xs font-bold text-green-600">보상 지급 완료! (+20콩)</span>
+                                                  <span className="text-xs font-bold text-green-600">보상 지급 완료! (+20온)</span>
                                              )}
                                         </div>
                                    </div>
@@ -152,8 +152,8 @@ const ActivityRewardCenter = ({ onClose, onRewardClaim, onOpenCreatePost, curren
                                         </div>
                                         <div className="flex-1">
                                              <div className="flex justify-between items-start">
-                                                  <h4 className="font-bold text-gray-900">오늘 파주 이야기 쓰기</h4>
-                                                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+5콩</span>
+                                                  <h4 className="font-bold text-gray-900">오늘 강남 이야기 쓰기</h4>
+                                                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+5온</span>
                                              </div>
                                              <p className="text-xs text-gray-500 mt-1">
                                                   이웃들에게 재미있는 소식을 전해주세요.
@@ -171,7 +171,7 @@ const ActivityRewardCenter = ({ onClose, onRewardClaim, onOpenCreatePost, curren
                                         <div className="flex-1">
                                              <div className="flex justify-between items-start">
                                                   <h4 className="font-bold text-gray-900">따뜻한 댓글 남기기</h4>
-                                                  <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">+2콩</span>
+                                                  <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">+2온</span>
                                              </div>
                                              <p className="text-xs text-gray-500 mt-1">
                                                   이웃의 글에 공감과 댓글을 남겨보세요.

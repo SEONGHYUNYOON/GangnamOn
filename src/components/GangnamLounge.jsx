@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Send, Gamepad2, ArrowLeft } from 'lucide-react';
-import PajuBlockGame from './PajuBlockGame';
-import PajuTarot from './PajuTarot';
+import GangnamBlockGame from './GangnamBlockGame';
+import GangnamTarot from './GangnamTarot';
 
 
-const PajuLounge = ({ onExit, user }) => {
+const LOUNGE_ENTRY_COST = 1; // 콘텐츠 이용 시 소모되는 온
+
+const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
      const [activeFeature, setActiveFeature] = useState(null); // 'balance', 'mbti', 'chat', 'bingo', 'block'
 
      // Handle Browser Back Button
@@ -24,11 +26,23 @@ const PajuLounge = ({ onExit, user }) => {
      }, []);
 
      const handleOpenFeature = (feature) => {
-          // Push state so back button works.
-          // We use standard 'tab' key so App.jsx's popstate handler can recognize it if needed.
-          // But predominantly, this component's own popstate listener will catch it first if mounted.
-          window.history.pushState({ tab: 'paju_lounge', feature }, '', '');
+          window.history.pushState({ tab: 'gangnam_lounge', feature }, '', '');
           setActiveFeature(feature);
+     };
+
+     // 유료 콘텐츠(블록 게임, 밸런스, MBTI, 타로): 1온 소모 + 확인 후 진입
+     const paidFeatures = ['block', 'balance', 'mbti', 'tarot'];
+     const handleLoungeEntry = (feature) => {
+          if (paidFeatures.includes(feature)) {
+               if (beanCount < LOUNGE_ENTRY_COST) {
+                    alert(`온이 부족해요! 열심히 활동해서 모아보세요 ⚡\n(필요: ${LOUNGE_ENTRY_COST} 온)`);
+                    return;
+               }
+               const ok = window.confirm(`이 콘텐츠 이용 시 ${LOUNGE_ENTRY_COST} 온이 소모됩니다.\n진행하시겠습니까?`);
+               if (!ok) return;
+               if (typeof updateBeanCount === 'function') updateBeanCount(-LOUNGE_ENTRY_COST);
+          }
+          handleOpenFeature(feature);
      };
 
      const handleCloseFeature = () => {
@@ -116,9 +130,9 @@ const PajuLounge = ({ onExit, user }) => {
 
      // === CHAT STATE ===
      const [messages, setMessages] = useState([
-          { id: 1, text: "안녕하세요 파주 날씨 어떤가요?", type: "recv", time: "10:00" },
-          { id: 2, text: "지금 운정엔 비 와요 ㅠㅠ", type: "recv", time: "10:01" },
-          { id: 3, text: "금촌은 흐리기만 하네요", type: "recv", time: "10:02" },
+          { id: 1, text: "안녕하세요 강남 날씨 어떤가요?", type: "recv", time: "10:00" },
+          { id: 2, text: "지금 역삼엔 비 와요 ㅠㅠ", type: "recv", time: "10:01" },
+          { id: 3, text: "역삼은 흐리기만 하네요", type: "recv", time: "10:02" },
      ]);
      const [chatInput, setChatInput] = useState("");
 
@@ -132,11 +146,11 @@ const PajuLounge = ({ onExit, user }) => {
      // === RENDER ===
      const renderContent = () => {
           if (activeFeature === 'block') {
-               return <PajuBlockGame onClose={handleCloseFeature} user={user} />;
+               return <GangnamBlockGame onClose={handleCloseFeature} user={user} />;
           }
 
           if (activeFeature === 'tarot') {
-               return <PajuTarot onClose={handleCloseFeature} user={user} />;
+               return <GangnamTarot onClose={handleCloseFeature} user={user} />;
           }
 
           if (activeFeature === 'balance') {
@@ -231,19 +245,19 @@ const PajuLounge = ({ onExit, user }) => {
                if (mbtiStep >= totalSteps) {
                     const result = getFinalMBTI();
                     const characterMap = {
-                         'ESTJ': { animal: '🦁', title: '파주 보안관', desc: '지킬 건 지키는 원칙주의자! 파주의 평화는 내가 지킨다.' },
-                         'ESTP': { animal: '🦅', title: '자유로의 독수리', desc: '스릴과 모험을 즐기는 당신! 오늘도 파주 곳곳을 누비네요.' },
-                         'ESFJ': { animal: '🕊️', title: '파주 마당발', desc: '이웃집 숟가락 개수까지 아는 당신, 친화력 최고!' },
-                         'ESFP': { animal: '🎉', title: '헤이리 인싸', desc: '어딜 가나 분위기 메이커! 당신 주변엔 늘 웃음이 끊이지 않아요.' },
-                         'ENTJ': { animal: '👑', title: '운정 신도시주', desc: '큰 그림을 그리는 리더! 파주의 미래를 이끌어갈 야망가.' },
-                         'ENTP': { animal: '💡', title: '출판단지 아이디어뱅크', desc: '기상천외한 아이디어로 모두를 놀라게 하는 창의력 대장!' },
-                         'ENFJ': { animal: '☀️', title: '임진각 평화지킴이', desc: '따뜻한 마음으로 모두를 포용하는 당신은 파주의 힐러.' },
+                         'ESTJ': { animal: '🦁', title: '강남 보안관', desc: '지킬 건 지키는 원칙주의자! 강남의 평화는 내가 지킨다.' },
+                         'ESTP': { animal: '🦅', title: '테헤란로 독수리', desc: '스릴과 모험을 즐기는 당신! 오늘도 강남 곳곳을 누비네요.' },
+                         'ESFJ': { animal: '🕊️', title: '강남 마당발', desc: '이웃집 숟가락 개수까지 아는 당신, 친화력 최고!' },
+                         'ESFP': { animal: '🎉', title: '강남 인싸', desc: '어딜 가나 분위기 메이커! 당신 주변엔 늘 웃음이 끊이지 않아요.' },
+                         'ENTJ': { animal: '👑', title: '강남 CEO', desc: '큰 그림을 그리는 리더! 강남의 미래를 이끌어갈 야망가.' },
+                         'ENTP': { animal: '💡', title: '테헤란로 아이디어뱅크', desc: '기상천외한 아이디어로 모두를 놀라게 하는 창의력 대장!' },
+                         'ENFJ': { animal: '☀️', title: '강남 힐러', desc: '따뜻한 마음으로 모두를 포용하는 당신은 강남의 힐러.' },
                          'ENFP': { animal: '🌈', title: '프로방스 몽상가', desc: '톡톡 튀는 매력의 소유자! 당신의 상상력엔 한계가 없어요.' },
                          'ISTJ': { animal: '🐢', title: '율곡 이이의 후예', desc: '신중하고 꼼꼼한 당신, 한 번 시작한 일은 끝을 보네요.' },
                          'ISTP': { animal: '🛠️', title: '공릉천 맥가이버', desc: '말보단 행동! 문제가 생기면 뚝딱 해결해내는 해결사.' },
                          'ISFJ': { animal: '🦌', title: '심학산 꽃사슴', desc: '조용하지만 세심한 배려심의 소유자. 진국이라는 소리 많이 듣죠?' },
-                         'ISFP': { animal: '🎨', title: '헤이리 예술가', desc: '나만의 감성이 확실한 당신. 자유로운 영혼의 예술가 타입!' },
-                         'INTJ': { animal: '🦉', title: '지혜의 숲 현자', desc: '남다른 통찰력으로 본질을 꿰뚫는 당신은 파주의 브레인.' },
+                         'ISFP': { animal: '🎨', title: '강남 예술가', desc: '나만의 감성이 확실한 당신. 자유로운 영혼의 예술가 타입!' },
+                         'INTJ': { animal: '🦉', title: '강남 브레인', desc: '남다른 통찰력으로 본질을 꿰뚫는 당신은 강남의 브레인.' },
                          'INTP': { animal: '🧪', title: '방구석 연구원', desc: '호기심 천국! 관심 있는 분야는 끝까지 파고드는 덕후 기질.' },
                          'INFJ': { animal: '🌌', title: 'DMZ 수호자', desc: '겉은 조용하지만 속은 단단한 당신. 신념이 확고하시군요.' },
                          'INFP': { animal: '☁️', title: '감성 시인', desc: '노을 지는 자유로를 보며 눈물 흘리는 풍부한 감수성의 소유자.' },
@@ -263,7 +277,7 @@ const PajuLounge = ({ onExit, user }) => {
                                    <div className="w-24 h-24 bg-gradient-to-tr from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mb-6 shadow-lg mx-auto text-5xl">
                                         {char.animal}
                                    </div>
-                                   <h2 className="text-xl font-bold text-gray-400 mb-2">나의 파주 캐릭터는?</h2>
+                                   <h2 className="text-xl font-bold text-gray-400 mb-2">나의 강남 캐릭터는?</h2>
                                    <div className="text-2xl font-black text-purple-600 mb-2 tracking-widest">{result}</div>
                                    <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 mb-6">{char.title}</h1>
                                    <div className="bg-orange-50 rounded-xl p-6 mb-8">
@@ -346,7 +360,7 @@ const PajuLounge = ({ onExit, user }) => {
                     <div className="flex flex-col h-full max-h-[600px]">
                          <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                               <div>
-                                   <h2 className="font-bold text-lg flex items-center gap-2">🔥 실시간 파주 톡 <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">42명 접속중</span></h2>
+                                   <h2 className="font-bold text-lg flex items-center gap-2">🔥 실시간 강남 톡 <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">42명 접속중</span></h2>
                               </div>
                               <button onClick={handleCloseFeature} className="text-gray-400 hover:text-gray-600">
                                    나가기
@@ -388,10 +402,10 @@ const PajuLounge = ({ onExit, user }) => {
                               <ArrowLeft className="w-6 h-6" />
                          </button>
                          <h1 className="text-4xl font-black text-gray-900 mb-2 flex items-center justify-center gap-3">
-                              Paju Lounge <span className="text-4xl text-purple-600 animate-pulse">⚡️</span>
+                              Gangnam Lounge <span className="text-4xl text-purple-600 animate-pulse">⚡️</span>
                          </h1>
                          <p className="text-gray-500 font-medium">
-                              심심할 땐 여기로 모여라! 파주 사람들의 인터랙티브 놀이터
+                              심심할 땐 여기로 모여라! 강남 사람들의 인터랙티브 놀이터
                          </p>
                     </div>
 
@@ -399,9 +413,9 @@ const PajuLounge = ({ onExit, user }) => {
 
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
-                         {/* 0. NEW: Paju Block Game */}
+                         {/* 0. Gangnam Block Game */}
                          <div
-                              onClick={() => handleOpenFeature('block')}
+                              onClick={() => handleLoungeEntry('block')}
                               className="col-span-1 md:col-span-2 bg-gray-900 rounded-[2rem] p-8 shadow-2xl shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden text-white border border-gray-800"
                          >
                               {/* Decorative Background */}
@@ -412,9 +426,9 @@ const PajuLounge = ({ onExit, user }) => {
                                    <div className="flex text-center md:text-left flex-col items-center md:items-start">
                                         <div className="bg-yellow-400 text-black text-xs font-black px-3 py-1 rounded-full inline-block mb-3 animate-bounce">NEW GAME!</div>
                                         <h3 className="text-3xl font-black mb-2 flex items-center justify-center md:justify-start gap-3">
-                                             PAJU BLOCK <Gamepad2 className="w-8 h-8 text-purple-400" />
+                                             GANGNAM BLOCK <Gamepad2 className="w-8 h-8 text-purple-400" />
                                         </h3>
-                                        <p className="text-gray-400 mb-6">90년대 오락실 감성 그대로!<br />실시간 랭킹에 도전하고 파주 짱이 되어보세요.</p>
+                                        <p className="text-gray-400 mb-6">90년대 오락실 감성 그대로!<br />실시간 랭킹에 도전하고 강남 짱이 되어보세요.</p>
                                         <button className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-purple-900/50 transition-all transform group-hover:scale-105">
                                              게임 시작하기 🕹️
                                         </button>
@@ -424,9 +438,9 @@ const PajuLounge = ({ onExit, user }) => {
                                    <div className="bg-black/50 p-4 rounded-xl border border-white/10 w-full md:w-64 backdrop-blur-sm">
                                         <div className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Daily Rank Top 3</div>
                                         <div className="space-y-2">
-                                             <div className="flex justify-between text-sm"><span className="text-yellow-400 font-bold">1. 파주불주먹</span> <span className="text-gray-400">12,500</span></div>
-                                             <div className="flex justify-between text-sm"><span className="text-gray-300">2. 운정테트신</span> <span className="text-gray-500">10,200</span></div>
-                                             <div className="flex justify-between text-sm"><span className="text-gray-300">3. 금촌고양이</span> <span className="text-gray-500">8,800</span></div>
+                                             <div className="flex justify-between text-sm"><span className="text-yellow-400 font-bold">1. 강남불주먹</span> <span className="text-gray-400">12,500</span></div>
+                                             <div className="flex justify-between text-sm"><span className="text-gray-300">2. 역삼테트신</span> <span className="text-gray-500">10,200</span></div>
+                                             <div className="flex justify-between text-sm"><span className="text-gray-300">3. 강남고양이</span> <span className="text-gray-500">8,800</span></div>
                                         </div>
                                    </div>
                               </div>
@@ -434,7 +448,7 @@ const PajuLounge = ({ onExit, user }) => {
 
                          {/* 1. Balance Game */}
                          <div
-                              onClick={() => handleOpenFeature('balance')}
+                              onClick={() => handleLoungeEntry('balance')}
                               className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden relative"
                          >
                               <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-100 rounded-full blur-3xl opacity-50 -mr-10 -mt-10 pointer-events-none" />
@@ -453,7 +467,7 @@ const PajuLounge = ({ onExit, user }) => {
 
                          {/* 2. MBTI */}
                          <div
-                              onClick={() => handleOpenFeature('mbti')}
+                              onClick={() => handleLoungeEntry('mbti')}
                               className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-[2rem] p-8 shadow-lg shadow-purple-200 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
                          >
                               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
@@ -462,7 +476,7 @@ const PajuLounge = ({ onExit, user }) => {
                                         <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl group-hover:rotate-12 transition-transform">🧠</div>
                                    </div>
                                    <h3 className="text-2xl font-bold mb-2">나의 MBTI 테스트</h3>
-                                   <p className="text-purple-100 text-sm mb-4">내 안에 숨겨진 파주 캐릭터 찾기!<br />총 28문항 (약 3분 소요)</p>
+                                   <p className="text-purple-100 text-sm mb-4">내 안에 숨겨진 강남 캐릭터 찾기!<br />총 28문항 (약 3분 소요)</p>
                                    <div className="inline-flex items-center text-white font-bold text-sm bg-white/20 px-4 py-2 rounded-full backdrop-blur-md group-hover:bg-white/30 transition-colors">
                                         테스트 시작
                                    </div>
@@ -471,7 +485,7 @@ const PajuLounge = ({ onExit, user }) => {
 
                          {/* 3. NEW: Tarot Card */}
                          <div
-                              onClick={() => handleOpenFeature('tarot')}
+                              onClick={() => handleLoungeEntry('tarot')}
                               className="col-span-1 md:col-span-2 bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 rounded-[2rem] p-8 shadow-xl shadow-indigo-200 hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
                          >
                               {/* Stars Background */}
@@ -484,7 +498,7 @@ const PajuLounge = ({ onExit, user }) => {
                                    </div>
                                    <div className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest mb-2 backdrop-blur-sm">NEW ARRIVAL</div>
                                    <h3 className="text-2xl font-black mb-2 flex items-center gap-2">
-                                        오늘의 파주 타로 <span className="text-yellow-300">☪</span>
+                                        오늘의 강남 타로 <span className="text-yellow-300">☪</span>
                                    </h3>
                                    <p className="text-purple-200 text-sm mb-6 max-w-sm">
                                         "연애, 금전, 오늘의 운세..."<br />
@@ -545,4 +559,4 @@ const PajuLounge = ({ onExit, user }) => {
      );
 };
 
-export default PajuLounge;
+export default GangnamLounge;

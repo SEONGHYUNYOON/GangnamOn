@@ -73,57 +73,58 @@ const SelectionOverlay = ({ title, items, current, onSelect, onClose, icon: Icon
      );
 };
 
-const PajuTraffic = () => {
+const GangnamTraffic = () => {
      // State for Selections
-     const [selectedGtx, setSelectedGtx] = useState('운정중앙');
-     const [selectedTteok, setSelectedTteok] = useState('운정1/2지구');
+     const [selectedSubway, setSelectedSubway] = useState('강남');
+     const [selectedBus, setSelectedBus] = useState('강남·역삼');
 
      // State for UI Toggles
-     const [isSelectingGtx, setIsSelectingGtx] = useState(false);
-     const [isSelectingTteok, setIsSelectingTteok] = useState(false);
+     const [isSelectingSubway, setIsSelectingSubway] = useState(false);
+     const [isSelectingBus, setIsSelectingBus] = useState(false);
 
-     // Mock Data with DETAILED Route Info
-     const gtxStations = [
-          { name: '운정중앙', time: '12분', next: '28분', details: ['킨텍스', '대곡', '창릉', '연신내', '서울역'] },
-          { name: '킨텍스', time: '8분', next: '18분', details: ['대곡', '창릉', '연신내', '서울역'] },
-          { name: '대곡', time: '5분', next: '15분', details: ['창릉', '연신내', '서울역'] },
-          { name: '연신내', time: '10분', next: '22분', details: ['서울역'] },
-          { name: '서울역', time: '3분', next: '13분', details: ['수서', '성남', '동탄'] } // Mock extension
+     // Mock Data: 2호선 강남권
+     const subwayStations = [
+          { name: '강남', time: '2분', next: '5분', details: ['역삼', '선릉', '삼성', '종합운동장', '잠실'] },
+          { name: '역삼', time: '3분', next: '6분', details: ['선릉', '삼성', '종합운동장', '잠실'] },
+          { name: '선릉', time: '2분', next: '5분', details: ['삼성', '종합운동장', '잠실'] },
+          { name: '삼성', time: '4분', next: '8분', details: ['종합운동장', '잠실', '신천'] },
+          { name: '신논현', time: '3분', next: '7분', details: ['강남', '역삼', '선릉'] },
+          { name: '논현', time: '5분', next: '10분', details: ['신논현', '강남', '역삼'] }
      ];
 
-     const tteokBusRoutes = [
-          { name: '운정1/2지구', wait: '10분', status: '원활', stops: '이마트 · 홈플러스 · 산내마을 · 가람마을' },
-          { name: '운정3지구', wait: '15분', status: '보통', stops: '초롱꽃마을 · 물향기공원 · GTX운정역' },
-          { name: '교하/초롱꽃', wait: '8분', status: '원활', stops: '교하도서관 · 롯데프리미엄아울렛 · 심학산' },
-          { name: '금촌/조리', wait: '25분', status: '지연', stops: '금촌역 · 파주시청 · 조리읍행정복지센터' },
-          { name: '탄현/광탄', wait: '18분', status: '보통', stops: '탄현면행정복지센터 · 헤이리 · 프로방스' }
+     const busRoutes = [
+          { name: '강남·역삼', wait: '8분', status: '원활', stops: '강남역 · 역삼역 · 테헤란로 · 뱅뱅사거리' },
+          { name: '삼성·코엑스', wait: '12분', status: '보통', stops: '삼성역 · 코엑스 · 봉은사 · 종합운동장' },
+          { name: '논현·신사', wait: '6분', status: '원활', stops: '논현역 · 신사동 · 압구정로데오' },
+          { name: '청담·압구정', wait: '15분', status: '보통', stops: '청담역 · 압구정 · 한남대교' },
+          { name: '서초·방배', wait: '18분', status: '지연', stops: '서초역 · 방배역 · 사평대교' }
      ];
 
-     const currentGtxData = gtxStations.find(s => s.name === selectedGtx) || gtxStations[0];
-     const currentTteokData = tteokBusRoutes.find(r => r.name === selectedTteok) || tteokBusRoutes[0];
+     const currentSubwayData = subwayStations.find(s => s.name === selectedSubway) || subwayStations[0];
+     const currentBusData = busRoutes.find(r => r.name === selectedBus) || busRoutes[0];
 
      return (
           <div className="w-full bg-white rounded-3xl p-5 border border-indigo-50 shadow-sm relative overflow-visible transition-all duration-300">
                {/* Selection Overlays */}
 
-               {isSelectingGtx && (
+               {isSelectingSubway && (
                     <SelectionOverlay
-                         title="GTX 역 선택"
-                         items={gtxStations}
-                         current={selectedGtx}
-                         onSelect={setSelectedGtx}
-                         onClose={() => setIsSelectingGtx(false)}
+                         title="2호선 역 선택"
+                         items={subwayStations}
+                         current={selectedSubway}
+                         onSelect={setSelectedSubway}
+                         onClose={() => setIsSelectingSubway(false)}
                          icon={Train}
                          color="text-green-600"
                     />
                )}
-               {isSelectingTteok && (
+               {isSelectingBus && (
                     <SelectionOverlay
-                         title="똑버스 호출 지역"
-                         items={tteokBusRoutes}
-                         current={selectedTteok}
-                         onSelect={setSelectedTteok}
-                         onClose={() => setIsSelectingTteok(false)}
+                         title="강남권 버스 노선"
+                         items={busRoutes}
+                         current={selectedBus}
+                         onSelect={setSelectedBus}
+                         onClose={() => setIsSelectingBus(false)}
                          icon={Zap}
                          color="text-purple-600"
                     />
@@ -142,10 +143,10 @@ const PajuTraffic = () => {
                </div>
 
                <div className="space-y-3">
-                    {/* 1. GTX-A Row */}
+                    {/* 1. 2호선 Row */}
                     <div className="bg-gray-50 rounded-2xl border border-gray-100 p-3 overflow-hidden">
                          <div
-                              onClick={() => setIsSelectingGtx(true)}
+                              onClick={() => setIsSelectingSubway(true)}
                               className="flex items-center justify-between cursor-pointer group mb-3"
                          >
                               <div className="flex items-center gap-3">
@@ -154,34 +155,34 @@ const PajuTraffic = () => {
                                    </div>
                                    <div>
                                         <div className="flex items-center gap-1">
-                                             <span className="text-xs font-bold text-gray-900">GTX-A</span>
+                                             <span className="text-xs font-bold text-gray-900">2호선</span>
                                              <span className="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded text-nowrap flex items-center gap-0.5 group-hover:bg-green-100 transition-colors">
-                                                  {selectedGtx} <ChevronDown className="w-3 h-3" />
+                                                  {selectedSubway} <ChevronDown className="w-3 h-3" />
                                              </span>
                                         </div>
-                                        <div className="text-[10px] text-gray-500 mt-0.5">상행(서울방향)</div>
+                                        <div className="text-[10px] text-gray-500 mt-0.5">강남권</div>
                                    </div>
                               </div>
                               <div className="text-right">
                                    <div className="flex items-center justify-end gap-1">
-                                        <span className="text-sm font-black text-gray-900">{currentGtxData.time}</span>
-                                        <span className="text-[10px] text-green-500 font-medium">({currentGtxData.next})</span>
+                                        <span className="text-sm font-black text-gray-900">{currentSubwayData.time}</span>
+                                        <span className="text-[10px] text-green-500 font-medium">({currentSubwayData.next})</span>
                                    </div>
                               </div>
                          </div>
-                         {/* GTX Route Graphic */}
+                         {/* Route Graphic */}
                          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pt-1 pb-1">
                               <div className="flex items-center text-[10px] font-bold text-gray-800 shrink-0">
                                    <span className="w-2 h-2 rounded-full bg-green-500 ring-2 ring-green-100 mr-1" />
-                                   {selectedGtx}
+                                   {selectedSubway}
                               </div>
                               <ArrowRight className="w-3 h-3 text-gray-300 shrink-0" />
-                              {currentGtxData.details.map((stop, idx) => (
+                              {currentSubwayData.details.map((stop, idx) => (
                                    <React.Fragment key={stop}>
                                         <span className={`text-[10px] shrink-0 ${idx === 0 ? 'text-gray-600 font-bold' : 'text-gray-400'}`}>
                                              {stop}
                                         </span>
-                                        {idx < currentGtxData.details.length - 1 && <ArrowRight className="w-3 h-3 text-gray-200 shrink-0" />}
+                                        {idx < currentSubwayData.details.length - 1 && <ArrowRight className="w-3 h-3 text-gray-200 shrink-0" />}
                                    </React.Fragment>
                               ))}
                          </div>
@@ -195,8 +196,8 @@ const PajuTraffic = () => {
                               </div>
                               <div className="flex-1 min-w-0">
                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-xs font-bold text-gray-900">자유로</span>
-                                        <span className="text-[10px] text-green-600 font-bold">원활 (80km/h)</span>
+                                        <span className="text-xs font-bold text-gray-900">테헤란로</span>
+                                        <span className="text-[10px] text-green-600 font-bold">원활 (60km/h)</span>
                                    </div>
                                    <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                                         <div className="h-full bg-blue-500 w-[80%] rounded-full" />
@@ -211,21 +212,21 @@ const PajuTraffic = () => {
                          <div className="p-2.5 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center justify-center gap-1 text-center">
                               <div className="flex items-center gap-1.5 mb-1">
                                    <Bus className="w-3.5 h-3.5 text-gray-400" />
-                                   <span className="text-xs font-bold text-gray-900">M7111</span>
+                                   <span className="text-xs font-bold text-gray-900">146</span>
                               </div>
                               <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">잔여 5석</span>
-                              <span className="text-[9px] text-gray-400 mt-0.5">광화문/서울역</span>
+                              <span className="text-[9px] text-gray-400 mt-0.5">강남역/역삼</span>
                          </div>
 
-                         {/* Tteok Bus (DRT) - Interactive */}
+                         {/* Gangnam Bus - Interactive */}
                          <div
-                              onClick={() => setIsSelectingTteok(true)}
+                              onClick={() => setIsSelectingBus(true)}
                               className="col-span-1 p-2.5 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-100 flex flex-col gap-1 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden"
                          >
                               <div className="flex items-center justify-between">
                                    <div className="flex items-center gap-1">
                                         <Zap className="w-3.5 h-3.5 text-purple-600" />
-                                        <span className="text-xs font-bold text-purple-900">똑버스</span>
+                                        <span className="text-xs font-bold text-purple-900">강남권</span>
                                    </div>
                                    <ChevronDown className="w-3 h-3 text-purple-400" />
                               </div>
@@ -233,16 +234,16 @@ const PajuTraffic = () => {
                               <div className="mt-1">
                                    <div className="flex items-center gap-1 mb-0.5">
                                         <MapPin className="w-3 h-3 text-purple-400" />
-                                        <span className="text-[10px] font-bold text-gray-700 truncate" title={selectedTteok}>{selectedTteok}</span>
+                                        <span className="text-[10px] font-bold text-gray-700 truncate" title={selectedBus}>{selectedBus}</span>
                                    </div>
                                    <p className="text-[9px] text-gray-500 line-clamp-1 leading-tight h-3">
-                                        {currentTteokData.stops}
+                                        {currentBusData.stops}
                                    </p>
                               </div>
 
                               <div className="mt-1.5 flex justify-end">
-                                   <span className={`text-[10px] font-black px-1.5 py-0.5 rounded bg-white/60 ${currentTteokData.status === '지연' ? 'text-red-500' : 'text-purple-600'}`}>
-                                        대기 {currentTteokData.wait}
+                                   <span className={`text-[10px] font-black px-1.5 py-0.5 rounded bg-white/60 ${currentBusData.status === '지연' ? 'text-red-500' : 'text-purple-600'}`}>
+                                        대기 {currentBusData.wait}
                                    </span>
                               </div>
                          </div>
@@ -252,4 +253,4 @@ const PajuTraffic = () => {
      );
 };
 
-export default PajuTraffic;
+export default GangnamTraffic;

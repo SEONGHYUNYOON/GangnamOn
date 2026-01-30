@@ -28,7 +28,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                               <Sparkles className="w-8 h-8 text-purple-600" />
                          </div>
                          <h3 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요해요! 😅</h3>
-                         <p className="text-gray-500 mb-6">나만의 파주 라이프를 기록하려면<br />먼저 로그인해주세요.</p>
+                         <p className="text-gray-500 mb-6">나만의 강남 라이프를 기록하려면<br />먼저 로그인해주세요.</p>
                          <button onClick={onClose} className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors">
                               확인
                          </button>
@@ -249,7 +249,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                    <div className="mt-8">
                                         <div className="flex items-center justify-between mb-2">
                                              <h2 className="text-3xl font-black flex items-center gap-2">
-                                                  {profileData?.full_name || profileData?.username || '나의 파주 라이프 🏡'}
+                                                  {profileData?.full_name || profileData?.username || '나의 강남 라이프 🏡'}
                                              </h2>
 
                                              {/* Edit Button (Only for Owner) */}
@@ -273,7 +273,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                                             value={editForm.location}
                                                             onChange={e => setEditForm(prev => ({ ...prev, location: e.target.value }))}
                                                             className="bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400"
-                                                            placeholder="지역 (예: 파주 운정)"
+                                                            placeholder="지역 (예: 강남 역삼)"
                                                        />
                                                        <input
                                                             value={editForm.mbti}
@@ -299,7 +299,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                              <>
                                                   <div className="flex items-center gap-1 text-sm text-gray-300 mb-4">
                                                        <MapPin className="w-3.5 h-3.5" />
-                                                       {profileData?.location || '파주 미설정'}
+                                                       {profileData?.location || '강남 미설정'}
                                                        <span className="mx-1">·</span>
                                                        {profileData?.mbti || 'MBTI 미설정'}
                                                        <span className="mx-1">·</span>
@@ -315,7 +315,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                         <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 flex items-center justify-between">
                                              <div>
                                                   <div className="text-xs text-yellow-300 font-bold mb-0.5">✨ 전체공개 챌린지</div>
-                                                  <div className="text-[10px] text-gray-300">1개월 유지 시 <span className="text-white font-bold">+1,000콩</span> 지급!</div>
+                                                  <div className="text-[10px] text-gray-300">1개월 유지 시 <span className="text-white font-bold">+1,000온</span> 지급!</div>
                                              </div>
                                              <button
                                                   onClick={() => setIsPublic(!isPublic)}

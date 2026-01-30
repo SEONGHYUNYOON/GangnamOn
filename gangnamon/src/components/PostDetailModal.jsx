@@ -85,8 +85,8 @@ const PostDetailModal = ({ item, onClose }) => {
                                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
                                    </div>
                                    <div>
-                                        <h3 className="text-sm font-bold text-gray-900">금촌사랑꾼</h3>
-                                        <p className="text-xs text-gray-500">파주 금촌동 • 매너온도 36.5℃</p>
+                                        <h3 className="text-sm font-bold text-gray-900">강남사랑꾼</h3>
+                                        <p className="text-xs text-gray-500">강남 역삼동 • 매너온도 36.5℃</p>
                                    </div>
                               </div>
                               <MoreHorizontal className="w-5 h-5 text-gray-400 cursor-pointer" />
@@ -99,7 +99,7 @@ const PostDetailModal = ({ item, onClose }) => {
                                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{item.title}</h2>
                                    <p className="text-lg font-bold text-purple-600 mb-4">{item.price}원</p>
                                    <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
-                                        {`감성 캠핑 시작하려고 샀는데, 바빠서 한 번도 못 나갔네요. 😭\n박스만 뜯은 새 상품입니다!\n\n쿨거래 하시면 네고 조금 해드릴게요.\n금촌역 직거래 선호합니다.`}
+                                        {`감성 캠핑 시작하려고 샀는데, 바빠서 한 번도 못 나갔네요. 😭\n박스만 뜯은 새 상품입니다!\n\n쿨거래 하시면 네고 조금 해드릴게요.\n강남역 직거래 선호합니다.`}
                                    </p>
                                    <div className="flex gap-2 mt-4">
                                         <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">#캠핑용품</span>
@@ -108,7 +108,7 @@ const PostDetailModal = ({ item, onClose }) => {
                                    </div>
                                    <div className="flex items-center gap-1 text-xs text-gray-400 mt-4">
                                         <MapPin className="w-3 h-3" />
-                                        <span>금촌동 중앙도서관 근처</span>
+                                        <span>역삼동 중앙도서관 근처</span>
                                    </div>
                               </div>
 
@@ -136,7 +136,7 @@ const PostDetailModal = ({ item, onClose }) => {
                                              </div>
                                              <div>
                                                   <div className="flex items-center gap-2">
-                                                       <span className="text-sm font-bold text-gray-800">금촌사랑꾼</span>
+                                                       <span className="text-sm font-bold text-gray-800">강남사랑꾼</span>
                                                        <span className="text-[10px] text-purple-600 font-bold bg-purple-50 px-1 rounded">작성자</span>
                                                        <span className="text-xs text-gray-400">50분 전</span>
                                                   </div>

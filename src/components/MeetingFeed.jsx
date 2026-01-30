@@ -67,7 +67,7 @@ const MeetingFeed = ({ items: initialItems }) => {
                          isEvent: p.type === 'event',
                          expiresAt: p.expires_at,
                          title: p.title,
-                         host: p.profiles?.username || '파주주민',
+                         host: p.profiles?.username || '강남주민',
                          hostBadge: '열정멤버',
                          date: new Date(p.created_at).toLocaleDateString(),
                          location: p.location_name || p.location || '장소 미정', // location_name added
@@ -123,7 +123,7 @@ const MeetingFeed = ({ items: initialItems }) => {
           <>
                <div className="space-y-6">
                     <div className="flex justify-between items-end px-2">
-                         <h2 className="text-xl font-bold text-gray-900">🔥 지금 핫한 파주 모임</h2>
+                         <h2 className="text-xl font-bold text-gray-900">🔥 지금 핫한 강남 모임</h2>
                          <button className="text-sm text-purple-600 font-bold hover:underline underline-offset-4 flex items-center">
                               전체 모임 일정 보기 <ChevronRight className="w-4 h-4 ml-1" />
                          </button>

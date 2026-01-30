@@ -6,28 +6,29 @@ const AuthWidget = ({ onLoginSuccess }) => {
      const [email, setEmail] = useState('');
      const [password, setPassword] = useState('');
      const [username, setUsername] = useState('');
-     const [region, setRegion] = useState('운정1동');
+     const [region, setRegion] = useState('역삼1동');
      const [gender, setGender] = useState('female'); // 'male' or 'female'
 
      const [isSignUpMode, setIsSignUpMode] = useState(false);
      const [authLoading, setAuthLoading] = useState(false);
      const [authError, setAuthError] = useState(null);
 
-     // Paju Administrative Divisions (Simplified)
-     const pajuRegions = [
-          '운정 (1~6동)',
-          '금촌 (1~3동)',
-          '교하동',
-          '문산읍',
-          '조리읍',
-          '법원읍',
-          '파주읍',
-          '광탄면',
-          '탄현면',
-          '월롱면',
-          '적성면',
-          '파평면',
-          '장단면'
+     // 강남권 동 단위 (지역 선택)
+     const gangnamRegions = [
+          '역삼1동',
+          '역삼2동',
+          '삼성동',
+          '논현1동',
+          '논현2동',
+          '신사동',
+          '청담동',
+          '압구정동',
+          '서초동',
+          '방배동',
+          '사평동',
+          '잠원동',
+          '개포동',
+          '세곡동'
      ];
 
      const handleLogin = async (e) => {
@@ -109,7 +110,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
           <div className="bg-white rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-gray-100 mb-6 group relative overflow-hidden w-full max-w-sm mx-auto">
                <div className="flex justify-between items-center mb-6 relative z-10">
                     <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider">
-                         {isSignUpMode ? 'Join PajuOn' : 'Welcome Back'}
+                         {isSignUpMode ? 'Join Gangnam On' : 'Welcome Back'}
                     </h3>
                     <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
                </div>
@@ -117,10 +118,10 @@ const AuthWidget = ({ onLoginSuccess }) => {
                <div className="flex flex-col relative z-10">
                     <div className="text-center mb-6">
                          <h2 className="text-xl font-bold text-gray-900 mb-1">
-                              {isSignUpMode ? '파주On 시작하기' : '파주On 로그인 (Final)'}
+                              {isSignUpMode ? '강남온 시작하기' : '강남온 로그인'}
                          </h2>
                          <p className="text-xs text-gray-500">
-                              {isSignUpMode ? '이웃과 소통하는 파주 라이프!' : '오늘도 파주에서 즐거운 하루 보내세요!'}
+                              {isSignUpMode ? '이웃과 소통하는 강남 라이프!' : '오늘도 강남에서 즐거운 하루 보내세요!'}
                          </p>
                     </div>
 
@@ -176,7 +177,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                              onChange={(e) => setRegion(e.target.value)}
                                              className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all appearance-none cursor-pointer text-gray-700 font-medium"
                                         >
-                                             {pajuRegions.map((r) => (
+                                             {gangnamRegions.map((r) => (
                                                   <option key={r} value={r}>{r}</option>
                                              ))}
                                         </select>

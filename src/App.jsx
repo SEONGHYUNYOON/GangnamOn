@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { supabase } from './lib/supabase'
+import { normalizeForGangnamDisplay } from './lib/displayGangnam'
 import LeftSidebar from './components/LeftSidebar'
 import RightPanel from './components/RightPanel'
 import ChatWidget from './components/ChatWidget'
@@ -15,7 +16,7 @@ const MeetingFeed = lazy(() => import('./components/MeetingFeed'))
 const MiniHomepage = lazy(() => import('./components/MiniHomepage'))
 const CreatePostModal = lazy(() => import('./components/CreatePostModal'))
 const NeighborhoodLife = lazy(() => import('./components/NeighborhoodLife'))
-const PajuRomance = lazy(() => import('./components/PajuRomance'))
+const GangnamRomance = lazy(() => import('./components/GangnamRomance'))
 const ActivityRewardCenter = lazy(() => import('./components/ActivityRewardCenter'))
 const AuthWidget = lazy(() => import('./components/AuthWidget'))
 const AvatarCustomizer = lazy(() => import('./components/AvatarCustomizer'))
@@ -23,7 +24,7 @@ const BannerWriteModal = lazy(() => import('./components/BannerWriteModal'))
 const DiningCompanion = lazy(() => import('./components/DiningCompanion'))
 const CultureClass = lazy(() => import('./components/CultureClass'))
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'))
-const PajuLounge = lazy(() => import('./components/PajuLounge'))
+const GangnamLounge = lazy(() => import('./components/GangnamLounge'))
 const OwnersNote = lazy(() => import('./components/OwnersNote'))
 const DbPresentation = lazy(() => import('./components/DbPresentation'))
 
@@ -45,10 +46,10 @@ function App() {
 
      // Banner Messages State
      const [bannerMessages, setBannerMessages] = useState([
-          "🎉 파주on 공식 오픈! 우리 동네 숨겨진 핫플레이스를 공유하고 적립금을 받아보세요! 🎉",
-          "🐕 강아지를 찾습니다. 흰색 말티즈 운정에서 도망감 ㅠㅠ 뽀야 돌아와~~",
-          "🌸 오늘 날씨 완전 봄이네용! 금촌 스벅에서 같이 카공하실 분? 제가 커피 쏨 >_<",
-          "🐷 다이어트 한다고 저녁 굶었는데... 야당역 앞 붕어빵 냄새 유혹 미쳤음 3마리 순삭 ㅠㅠ",
+          "🎉 강남온 공식 오픈! 우리 동네 숨겨진 핫플레이스를 공유하고 적립금을 받아보세요! 🎉",
+          "🐕 강아지를 찾습니다. 흰색 말티즈 역삼에서 도망감 ㅠㅠ 뽀야 돌아와~~",
+          "🌸 오늘 날씨 완전 봄이네용! 강남역 스벅에서 같이 카공하실 분? 제가 커피 쏨 >_<",
+          "🐷 다이어트 한다고 저녁 굶었는데... 강남역 앞 붕어빵 냄새 유혹 미쳤음 3마리 순삭 ㅠㅠ",
           "🥕 저희 집 고양이가 츄르를 다 먹어서요..😭 남는 츄르 당근하실 분 계신가여?",
      ]);
 
@@ -116,7 +117,7 @@ function App() {
                                    username: user.user_metadata?.username || user.email?.split('@')[0],
                                    full_name: user.user_metadata?.full_name || '',
                                    avatar_url: user.user_metadata?.avatar_url || '',
-                                   location: user.user_metadata?.region || '파주',
+                                   location: user.user_metadata?.region || '강남',
                                    beans: 1250,
                                    unlocked_styles: ['lorelei', 'avataaars']
                               });
@@ -142,10 +143,10 @@ function App() {
                          id: m.id,
                          title: m.title,
                          price: m.price?.toLocaleString() || '0',
-                         location: m.location || '파주',
+                         location: normalizeForGangnamDisplay(m.location || '강남'),
                          likes: m.likes_count || 0,
                          image: m.image_urls?.[0] || 'https://via.placeholder.com/500',
-                         seller: m.author?.username
+                         seller: normalizeForGangnamDisplay(m.author?.username) || m.author?.username
                     })));
                }
 
@@ -166,11 +167,10 @@ function App() {
                                              : g.type === 'wine' ? '🍷 와인'
                                                   : g.type,
                          title: g.title,
-                         host: g.author?.username || '익명',
-                         hostBadge: '파주 이웃',
-                         // Parse content for date/time if stored there, or use specific columns if added
+                         host: normalizeForGangnamDisplay(g.author?.username) || g.author?.username || '익명',
+                         hostBadge: '강남 이웃',
                          date: new Date(g.created_at).toLocaleDateString(),
-                         location: g.location || '장소미정',
+                         location: normalizeForGangnamDisplay(g.location || '장소미정'),
                          participants: g.current_participants || 1,
                          maxParticipants: g.max_participants || 4,
                          isHot: (g.current_participants / g.max_participants) > 0.8,
@@ -252,7 +252,7 @@ function App() {
                title: data.title,
                content: data.description || '',
                price: priceInt,
-               location: data.location || '파주',
+               location: data.location || '강남',
                max_participants: data.maxMembers ? parseInt(data.maxMembers) : null,
                image_urls: image ? [image] : [],
                likes_count: 0
@@ -282,14 +282,14 @@ function App() {
                     seller: savedPost.author?.username
                };
                setMarketItems(prev => [newItem, ...prev]);
-               setToastMessage("중고 물품 등록! +10 콩 획득! 🫘");
+               setToastMessage("중고 물품 등록! +10 온 획득! ⚡");
           } else {
                const newItem = {
                     id: savedPost.id,
                     category: '⚡ 번개',
                     title: savedPost.title,
                     host: savedPost.author?.username,
-                    hostBadge: '파주 이웃',
+                    hostBadge: '강남 이웃',
                     date: new Date().toLocaleDateString(),
                     location: savedPost.location,
                     participants: 1,
@@ -298,7 +298,7 @@ function App() {
                     image: savedPost.image_urls?.[0]
                };
                setMeetingItems(prev => [newItem, ...prev]);
-               setToastMessage("모임 개설! +10 콩 획득! 🎉");
+               setToastMessage("모임 개설! +10 온 획득! 🎉");
           }
 
           setIsCreateModalOpen(false);
@@ -344,7 +344,7 @@ function App() {
           }
 
           if (beanCount < price) {
-               setToastMessage("콩이 부족해요! 열심히 활동해서 모아보세요 🫘");
+               setToastMessage("온이 부족해요! 열심히 활동해서 모아보세요 ⚡");
                return false;
           }
 
@@ -378,7 +378,7 @@ function App() {
 
           updateBeanCount(-cost);
           setBannerMessages(prev => [message, ...prev]);
-          setToastMessage(`배너 등록 완료! -${cost} 콩 💸`);
+          setToastMessage(`배너 등록 완료! -${cost} 온 💸`);
      };
 
      const handleOpenMinihome = (targetProfile) => {
@@ -388,7 +388,7 @@ function App() {
                     user_metadata: {
                          username: targetProfile.name,
                          avatar_url: targetProfile.avatar,
-                         location: targetProfile.location || '파주'
+                         location: targetProfile.location || '강남'
                     }
                });
                setIsMiniHomeOpen(true);
@@ -425,9 +425,10 @@ function App() {
                                    className={`rounded-xl overflow-hidden py-3 mb-6 transition-colors duration-500 backdrop-blur-md cursor-pointer ${activeTab === 'romance' ? 'bg-purple-900/60 border border-purple-500/30' : 'bg-gray-900/80 text-white'
                                         }`}
                               >
-                                   <div className="animate-marquee whitespace-nowrap text-md font-bold tracking-wide text-white flex items-center gap-8" style={{ textShadow: "0 0 10px rgba(255,255,255,0.5)" }}>
-                                        {bannerMessages.map((msg, i) => (
-                                             <span key={i} className="inline-block">
+                                   <div className="animate-marquee whitespace-nowrap text-md font-bold tracking-wide text-white inline-flex items-center gap-8 shrink-0" style={{ textShadow: "0 0 10px rgba(255,255,255,0.5)", width: "max-content" }}>
+                                        {/* 한 번에 한 블록만 이동하므로 마지막 문장이 왼쪽 끝을 지날 때까지 잘리지 않음 */}
+                                        {[...bannerMessages, ...bannerMessages].map((msg, i) => (
+                                             <span key={i} className="inline-block shrink-0">
                                                   {msg}
                                              </span>
                                         ))}
@@ -438,7 +439,7 @@ function App() {
                               <button
                                    onClick={() => setIsBannerModalOpen(true)}
                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white text-purple-600 p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-95 z-10"
-                                   title="배너 등록하기 (500콩)"
+                                   title="배너 등록하기 (500온)"
                               >
                                    <Megaphone className="w-4 h-4" />
                               </button>
@@ -465,9 +466,14 @@ function App() {
                               }>
                                    <div className="flex flex-col gap-8">
 
-                                        {/* NEW: PAJU LOUNGE TAB */}
-                                        {activeTab === 'paju_lounge' && (
-                                             <PajuLounge onExit={() => handleTabChange('home')} user={user} />
+                                        {/* NEW: GANGNAM LOUNGE TAB */}
+                                        {activeTab === 'gangnam_lounge' && (
+                                             <GangnamLounge
+                                                  onExit={() => handleTabChange('home')}
+                                                  user={user}
+                                                  beanCount={beanCount}
+                                                  updateBeanCount={updateBeanCount}
+                                             />
                                         )}
 
                                         {/* 1. HOME TAB */}
@@ -482,7 +488,7 @@ function App() {
                                                             <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">✨</div>
                                                             <div>
                                                                  <h3 className="font-bold text-gray-900">나만의 소모임 만들기</h3>
-                                                                 <p className="text-xs text-gray-500">파주 리더 뱃지를 획득해보세요!</p>
+                                                                 <p className="text-xs text-gray-500">강남 리더 뱃지를 획득해보세요!</p>
                                                             </div>
                                                        </div>
                                                        <button className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-purple-200 transition-all transform group-hover:translate-x-1">
@@ -506,8 +512,8 @@ function App() {
                                              <>
                                                   <div className="flex items-center justify-between mb-2">
                                                        <h2 className="text-xl font-bold text-gray-900">
-                                                            {activeTab === 'hiking' && '⛰️ 산타는 파주'}
-                                                            {activeTab === 'sports' && '⚽️ FC 파주 & 스포츠'}
+                                                            {activeTab === 'hiking' && '⛰️ 산타는 강남'}
+                                                            {activeTab === 'sports' && '⚽️ FC 강남 & 스포츠'}
                                                             {activeTab === 'pet' && '🐶 멍냥회관'}
                                                             {activeTab === 'wine' && '🍷 밤의 미식회'}
                                                        </h2>
@@ -520,7 +526,7 @@ function App() {
                                         )}
 
                                         {/* 3. LIFE TAB & COMMUNITY TAB */}
-                                        {(['qna', 'news', 'share', 'town_story', 'paju_pick', 'daily_photo'].includes(activeTab)) && (
+                                        {(['qna', 'news', 'share', 'town_story', 'gangnam_pick', 'daily_photo'].includes(activeTab)) && (
                                              <>
                                                   <div className="flex items-center justify-between mb-2">
                                                        <h2 className="text-xl font-bold text-gray-900">
@@ -528,7 +534,7 @@ function App() {
                                                             {activeTab === 'news' && '📢 우리 동네 소식통'}
                                                             {activeTab === 'share' && '🎁 당근보다 가까운 나눔'}
                                                             {activeTab === 'town_story' && '💬 타운 스토리'}
-                                                            {activeTab === 'paju_pick' && '👍 파주 픽'}
+                                                            {activeTab === 'gangnam_pick' && '👍 강남 픽'}
                                                             {activeTab === 'daily_photo' && '📸 데일리 포토'}
                                                        </h2>
                                                   </div>
@@ -555,9 +561,9 @@ function App() {
                                              <AdminDashboard onlineUsersCount={onlineUsersCount} />
                                         )}
 
-                                        {/* 6. PAJU ROMANCE (NEW) */}
+                                        {/* 6. GANGNAM ROMANCE (NEW) */}
                                         {activeTab === 'romance' && (
-                                             <PajuRomance
+                                             <GangnamRomance
                                                   beanCount={beanCount}
                                                   onHeartClick={handleHeartClick}
                                                   onOpenRewardCenter={() => setIsRewardCenterOpen(true)}
@@ -575,9 +581,9 @@ function App() {
                                              <div className="flex flex-col items-center justify-center h-[50vh] text-gray-400">
                                                   <div className="text-center space-y-4">
                                                        <div className="text-6xl animate-bounce">🏆</div>
-                                                       <h2 className="text-2xl font-bold text-gray-900">나의 파주 활동 Badge</h2>
+                                                       <h2 className="text-2xl font-bold text-gray-900">나의 강남 활동 Badge</h2>
                                                        <p className="text-gray-500">
-                                                            현재 <strong>'운정 새싹 🌱'</strong> 등급입니다.<br />
+                                                            현재 <strong>'강남 새싹 🌱'</strong> 등급입니다.<br />
                                                             활동을 통해 레벨업 해보세요!
                                                        </p>
                                                        <button onClick={() => setIsMiniHomeOpen(true)} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
@@ -612,8 +618,8 @@ function App() {
                               <Menu className="w-6 h-6" />
                          </button>
                          <div className="flex items-center gap-1" onClick={() => handleTabChange('home')}>
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs">P</div>
-                              <span className="font-bold text-gray-900 text-lg">PajuOn</span>
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs">G</div>
+                              <span className="font-bold text-gray-900 text-lg">Gangnam On</span>
                          </div>
                     </div>
 

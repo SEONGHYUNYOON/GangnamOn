@@ -36,7 +36,7 @@
      }
 }
 
-/* 콩 떨어지는 효과 */
+/* 온 떨어지는 효과 */
 @keyframes floatUp {
      0% {
           transform: translateY(0);

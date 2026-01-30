@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sun, Zap, MapPin, Star, Heart, Cloud, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AuthWidget from './AuthWidget';
-import PajuTraffic from './PajuTraffic';
+import GangnamTraffic from './GangnamTraffic';
 
 const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, updateBeanCount }) => {
      const [onlineCount, setOnlineCount] = useState(1204);
@@ -30,17 +30,17 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
      // Mock Data: Real-time Users
      const onlineUsers = [
-          { id: 1, name: '금촌사랑꾼', status: 'online' },
-          { id: 2, name: '운정댁', status: 'online' },
-          { id: 3, name: '파주지킴이', status: 'away' },
-          { id: 4, name: '문산토박이', status: 'online' },
+          { id: 1, name: '강남사랑꾼', status: 'online' },
+          { id: 2, name: '역삼댁', status: 'online' },
+          { id: 3, name: '강남지킴이', status: 'away' },
+          { id: 4, name: '강남토박이', status: 'online' },
      ];
 
      // Romance Rank Mock
      const rankedUsers = [
-          { id: 1, name: '운정불주먹', hearts: 120, rank: 1, change: 'up' },
-          { id: 2, name: '금촌사랑꾼', hearts: 98, rank: 2, change: 'same' },
-          { id: 3, name: '야당역여신', hearts: 85, rank: 3, change: 'down' },
+          { id: 1, name: '역삼불주먹', hearts: 120, rank: 1, change: 'up' },
+          { id: 2, name: '강남사랑꾼', hearts: 98, rank: 2, change: 'same' },
+          { id: 3, name: '강남역여신', hearts: 85, rank: 3, change: 'down' },
      ];
 
      useEffect(() => {
@@ -54,12 +54,12 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                setUser(session?.user ?? null);
           });
 
-          // Fetch Weather Data (Paju Geumchon-dong Coordinates)
+          // Fetch Weather Data (강남 역삼동)
           const fetchWeather = async () => {
                try {
                     const [weatherRes, airRes] = await Promise.all([
-                         fetch('https://api.open-meteo.com/v1/forecast?latitude=37.7594&longitude=126.7746&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FSeoul'),
-                         fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=37.7594&longitude=126.7746&current=pm10')
+                         fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5012&longitude=127.0396&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FSeoul'),
+                         fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=37.5012&longitude=127.0396&current=pm10')
                     ]).catch(e => {
                          console.warn("API fetch failed, skipping weather:", e);
                          return [null, null];
@@ -155,11 +155,11 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           // Cost Logic
           const CHANGE_COST = 1000;
           if (beanCount < CHANGE_COST) {
-               alert(`닉네임 변경에는 ${CHANGE_COST}콩이 필요합니다! \n현재 보유: ${beanCount}콩`);
+               alert(`닉네임 변경에는 ${CHANGE_COST}온이 필요합니다! \n현재 보유: ${beanCount}온`);
                return;
           }
 
-          const confirmed = window.confirm(`닉네임을 '${editName}'(으)로 변경하시겠습니까?\n비용: ${CHANGE_COST}콩이 차감됩니다.`);
+          const confirmed = window.confirm(`닉네임을 '${editName}'(으)로 변경하시겠습니까?\n비용: ${CHANGE_COST}온이 차감됩니다.`);
           if (!confirmed) return;
 
           const { data, error } = await supabase.auth.updateUser({
@@ -179,7 +179,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                updateBeanCount(-CHANGE_COST);
                setUser(data.user);
                setIsEditingName(false);
-               alert(`닉네임 변경 완료! -${CHANGE_COST}콩`);
+               alert(`닉네임 변경 완료! -${CHANGE_COST}온`);
           }
      };
 
@@ -236,7 +236,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                // Modified: Removed sticky top-0, h-full, hidden lg:block
                <div className="w-full p-8 transition-colors duration-500">
 
-                    {/* 1. Bean Wallet (Capsule Widget) */}
+                    {/* 1. 온 지갑 (Capsule Widget) */}
                     <div className="flex justify-end mb-6">
                          <div
                               onClick={onOpenRewardCenter}
@@ -244,7 +244,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                          >
                               <div className="flex items-center gap-2">
                                    <Zap className="w-4 h-4 text-yellow-400 fill-yellow-400 animate-pulse" />
-                                   <span className="text-sm font-black text-white">{beanCount.toLocaleString()} 콩</span>
+                                   <span className="text-sm font-black text-white">{beanCount.toLocaleString()} 온</span>
                               </div>
                               <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-full shadow-lg hover:scale-105 transition-transform">
                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
@@ -285,7 +285,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                     <div className="bg-gradient-to-br from-green-800 to-emerald-900 rounded-3xl p-6 border border-green-700/50 relative overflow-hidden group cursor-pointer">
                          <div className="relative z-10">
                               <h3 className="text-green-300 font-bold text-lg mb-1">스타벅스 교환 ☕</h3>
-                              <p className="text-green-100/70 text-xs">열심히 모은 콩으로<br />커피 한 잔 어때요?</p>
+                              <p className="text-green-100/70 text-xs">열심히 모은 온으로<br />커피 한 잔 어때요?</p>
                          </div>
                          <Star className="absolute right-4 bottom-4 w-12 h-12 text-green-500/30 group-hover:scale-110 transition-transform" />
                     </div>
@@ -372,7 +372,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    </div>
                               )}
 
-                              {/* Bean Count */}
+                              {/* 온 잔액 */}
                               <div
                                    onClick={(e) => {
                                         e.stopPropagation();
@@ -381,7 +381,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    className="flex items-center gap-1.5 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200 mt-2 mb-4 cursor-pointer hover:bg-yellow-100 transition-colors hover:scale-110 transform"
                               >
                                    <span className="text-sm">🫘</span>
-                                   <span className="text-xs font-black text-yellow-600">{beanCount.toLocaleString()} 콩</span>
+                                   <span className="text-xs font-black text-yellow-600">{beanCount.toLocaleString()} 온</span>
                               </div>
 
                               <div className="flex gap-8 w-full justify-center border-t border-gray-50 pt-4">
@@ -402,7 +402,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
                {/* 2. Weather & Traffic Widget */}
                <div
-                    onClick={() => window.open('https://search.naver.com/search.naver?query=파주+금촌동+날씨', '_blank')}
+                    onClick={() => window.open('https://search.naver.com/search.naver?query=강남+역삼동+날씨', '_blank')}
                     className="bg-gradient-to-br from-sky-50 to-blue-50 rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-blue-100 mb-6 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group"
                >
                     {/* Weather Section */}
@@ -419,7 +419,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                              {weatherInfo.icon}
                                              <span className="text-3xl font-bold text-gray-800">{weather.temp !== null ? weather.temp : '-'}°</span>
                                         </div>
-                                        <span className="text-xs font-bold text-gray-500 ml-1">파주 금촌동 · {weatherInfo.text}</span>
+                                        <span className="text-xs font-bold text-gray-500 ml-1">강남 역삼동 · {weatherInfo.text}</span>
                                    </div>
                                    <div className="text-right">
                                         <div className={`flex items-center justify-end gap-1 text-xs font-bold px-2 py-1 rounded-lg mb-1 ${dustInfo.color} ${dustInfo.bg}`}>
@@ -440,7 +440,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                </div>
 
                {/* 2.5 New Traffic Widget */}
-               <PajuTraffic />
+               <GangnamTraffic />
 
                {/* 3. Real-time Users Widget */}
                <div className="bg-white rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-gray-100">
@@ -486,7 +486,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                     <div className="mt-6 pt-4 border-t border-gray-50 text-center">
                          <p className="text-xs text-gray-400 leading-relaxed">
                               외 <span className="font-bold text-gray-800">{(onlineCount - onlineUsers.length).toLocaleString()}명</span>이<br />
-                              지금 <span className="text-purple-600 font-bold">파주on</span>을 여행 중입니다. 🚀
+                              지금 <span className="text-purple-600 font-bold">강남온</span>을 여행 중입니다. 🚀
                          </p>
                     </div>
                </div>

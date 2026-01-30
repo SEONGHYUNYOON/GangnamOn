@@ -26,10 +26,10 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           // 'lounge' group removed as it is now a special button
           {
                id: 'gathering',
-               title: '[동네 모임] 취미로 하나 되는 파주',
+               title: '[동네 모임] 취미로 하나 되는 강남',
                items: [
-                    { id: 'hiking', label: '산타는 파주', icon: MapPin, subtext: '등산/트레킹' },
-                    { id: 'sports', label: 'FC 파주', icon: Star, subtext: '스포츠/운동' },
+                    { id: 'hiking', label: '산타는 강남', icon: MapPin, subtext: '등산/트레킹' },
+                    { id: 'sports', label: 'FC 강남', icon: Star, subtext: '스포츠/운동' },
                     { id: 'pet', label: '멍냥회관', icon: Heart, subtext: '반려동물' },
                     { id: 'wine', label: '밤의 미식회', icon: Coffee, subtext: '와인/맛집/커피' },
                ]
@@ -46,13 +46,13 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                title: '[소통 공간] 우리끼리 속닥속닥',
                items: [
                     { id: 'town_story', label: '타운 스토리', icon: MessageCircle, subtext: '일상/잡담' },
-                    { id: 'paju_pick', label: '파주 픽', icon: ThumbsUp, subtext: '맛집/핫플' },
+                    { id: 'gangnam_pick', label: '강남 픽', icon: ThumbsUp, subtext: '맛집/핫플' },
                     { id: 'daily_photo', label: '데일리 포토', icon: Camera, subtext: '사진 갤러리' },
                ]
           },
           {
                id: 'culture',
-               title: '[문화 생활] 감성 충전 파주',
+               title: '[문화 생활] 감성 충전 강남',
                items: [
                     { id: 'culture_class', label: '문화 강연 & 클래스', icon: Palette, subtext: '원데이/인문학' }
                ]
@@ -76,9 +76,9 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           },
           {
                id: 'my',
-               title: '[마이 파주]',
+               title: '[마이 강남]',
                items: [
-                    { id: 'badge', label: '나의 활동 뱃지', icon: Star, subtext: '파주토박이' },
+                    { id: 'badge', label: '나의 활동 뱃지', icon: Star, subtext: '강남토박이' },
                     { id: 'schedule', label: '나의 모임 일정', icon: Calendar, subtext: '일정관리' },
                ]
           },
@@ -103,11 +103,11 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                {/* Logo */}
                <div className="mb-8 px-2 flex items-center justify-center">
                     <h1 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-[Pretendard] cursor-pointer" onClick={() => setActiveTab('home')}>
-                         Paju On
+                         Gangnam On
                     </h1>
                </div>
 
-               {/* Special: Paju Romance */}
+               {/* Special: Gangnam Romance */}
                <div className="mb-2 px-0">
                     <button
                          onClick={() => setActiveTab('romance')}
@@ -124,7 +124,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                               <div className="text-left">
                                    <div className={`text-sm font-black ${activeTab === 'romance' ? 'text-white' : 'text-pink-600'
                                         }`}>
-                                        파주 썸&쌈
+                                        강남 썸&쌈
                                    </div>
                                    <div className={`text-[10px] font-medium ${activeTab === 'romance' ? 'text-pink-100' : 'text-gray-400'
                                         }`}>
@@ -135,26 +135,26 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                     </button>
                </div>
 
-               {/* Special: Paju Lounge */}
+               {/* Special: Gangnam Lounge */}
                <div className="mb-6 px-0">
                     <button
-                         onClick={() => setActiveTab('paju_lounge')}
-                         className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group shadow-md ${activeTab === 'paju_lounge'
+                         onClick={() => setActiveTab('gangnam_lounge')}
+                         className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group shadow-md ${activeTab === 'gangnam_lounge'
                               ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-indigo-200 scale-[1.02]'
                               : 'bg-white border border-indigo-100 text-gray-800 hover:border-indigo-300 hover:shadow-lg'
                               }`}
                     >
                          <div className="flex items-center gap-3">
-                              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === 'paju_lounge' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-500'
+                              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === 'gangnam_lounge' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-500'
                                    }`}>
                                    <Zap className="w-5 h-5 fill-current" />
                               </div>
                               <div className="text-left">
-                                   <div className={`text-sm font-black ${activeTab === 'paju_lounge' ? 'text-white' : 'text-indigo-600'
+                                   <div className={`text-sm font-black ${activeTab === 'gangnam_lounge' ? 'text-white' : 'text-indigo-600'
                                         }`}>
-                                        파주 라운지
+                                        강남 라운지
                                    </div>
-                                   <div className={`text-[10px] font-medium ${activeTab === 'paju_lounge' ? 'text-indigo-100' : 'text-gray-400'
+                                   <div className={`text-[10px] font-medium ${activeTab === 'gangnam_lounge' ? 'text-indigo-100' : 'text-gray-400'
                                         }`}>
                                         게임/MBTI/수다
                                    </div>

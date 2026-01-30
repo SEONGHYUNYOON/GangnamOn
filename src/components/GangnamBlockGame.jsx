@@ -24,15 +24,31 @@ const RANDOM_TETROMINO = () => {
      return { ...TETROMINOS[randKey], type: randKey };
 };
 
-const PajuBlockGame = ({ onClose, user }) => {
+const GangnamBlockGame = ({ onClose, user }) => {
      const [grid, setGrid] = useState(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
      const [activePiece, setActivePiece] = useState(null);
-     const [nextPiece, setNextPiece] = useState(null); // Next Block State
+     const [nextPiece, setNextPiece] = useState(null);
      const [score, setScore] = useState(0);
      const [gameOver, setGameOver] = useState(false);
      const [isPaused, setIsPaused] = useState(false);
      const [dropTime, setDropTime] = useState(800);
+     const [gameStarted, setGameStarted] = useState(false);
      const gameLoopRef = useRef();
+
+     // 한 번에 그리드·스코어·피스 초기화 (시작하기 / 다시 하기 공용)
+     const startGame = useCallback(() => {
+          setGrid(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
+          setScore(0);
+          setGameOver(false);
+          setIsPaused(false);
+          setDropTime(800);
+          const first = RANDOM_TETROMINO();
+          const next = RANDOM_TETROMINO();
+          setNextPiece(next);
+          const startPos = { x: Math.floor(COLS / 2) - Math.floor(first.shape[0].length / 2), y: 0 };
+          setActivePiece({ ...first, pos: startPos });
+          setGameStarted(true);
+     }, []);
 
      // Helper: Check Collision
      const checkCollision = (shape, pos, currentGrid) => {
@@ -166,20 +182,7 @@ const PajuBlockGame = ({ onClose, user }) => {
           placePiece(droppedPiece);
      };
 
-     // Init Game
-     useEffect(() => {
-          setGrid(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
-          setScore(0);
-          setGameOver(false);
-          // Initial Init
-          const first = RANDOM_TETROMINO();
-          const next = RANDOM_TETROMINO();
-          setNextPiece(next); // Set next immediately
-
-          const startPos = { x: Math.floor(COLS / 2) - Math.floor(first.shape[0].length / 2), y: 0 };
-          setActivePiece({ ...first, pos: startPos });
-
-     }, []);
+     // 마운트 시 그리드만 비움. 실제 게임 시작은 "시작하기" 버튼으로 함
 
      // Game Loop
      useEffect(() => {
@@ -276,9 +279,9 @@ const PajuBlockGame = ({ onClose, user }) => {
                               </div>
                               <div className="space-y-2">
                                    {[
-                                        { rank: 1, name: '파주불주먹', score: 12500 },
-                                        { rank: 2, name: '운정테트신', score: 8900 },
-                                        { rank: 3, name: '교하짱', score: 5400 },
+                                        { rank: 1, name: '강남불주먹', score: 12500 },
+                                        { rank: 2, name: '역삼테트신', score: 8900 },
+                                        { rank: 3, name: '강남짱', score: 5400 },
                                    ].map((user) => (
                                         <div key={user.rank} className="flex justify-between items-center text-sm">
                                              <div className="flex items-center gap-2">
@@ -333,12 +336,24 @@ const PajuBlockGame = ({ onClose, user }) => {
                               )))}
                          </div>
 
+                         {/* 시작하기 오버레이 (게임 시작 전) */}
+                         {!gameStarted && (
+                              <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in">
+                                   <div className="text-2xl font-black text-white mb-1 tracking-wider">GANGNAM BLOCK</div>
+                                   <div className="text-gray-400 text-sm mb-6">90년대 오락실 감성 테트리스</div>
+                                   <button onClick={startGame}
+                                        className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
+                                        <Play className="w-5 h-5" /> 시작하기
+                                   </button>
+                              </div>
+                         )}
+
                          {/* Game Over Overlay */}
-                         {gameOver && (
+                         {gameStarted && gameOver && (
                               <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in">
                                    <div className="text-5xl font-black text-white mb-2 drop-shadow-lg">GAME OVER</div>
                                    <div className="text-xl text-yellow-400 font-bold mb-6">Score: {score}</div>
-                                   <button onClick={() => { setGrid(Array.from({ length: ROWS }, () => Array(COLS).fill(0))); setScore(0); setGameOver(false); setIsPaused(false); setActivePiece(RANDOM_TETROMINO()); }}
+                                   <button onClick={startGame}
                                         className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
                                         <RotateCw className="w-5 h-5" /> 다시 하기
                                    </button>
@@ -378,4 +393,4 @@ const PajuBlockGame = ({ onClose, user }) => {
      );
 };
 
-export default PajuBlockGame;
+export default GangnamBlockGame;

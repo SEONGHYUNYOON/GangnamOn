@@ -75,7 +75,7 @@ const CreatePostModal = ({ onClose, onShare }) => {
                               <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
                               </div>
-                              <span className="font-bold text-gray-900">금촌사랑꾼</span>
+                              <span className="font-bold text-gray-900">강남사랑꾼</span>
                          </div>
 
                          {/* 2. Scrollable Form Area */}

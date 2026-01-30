@@ -27,8 +27,8 @@ const LocalBiz = () => {
                     'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=800',
                     'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=800'
                ],
-               hashtags: ['#운정카페', '#디저트맛집', '#감성카페'],
-               location: '파주시 목동동 943-1',
+               hashtags: ['#역삼카페', '#디저트맛집', '#감성카페'],
+               location: '서울 강남구 역삼동 943-1',
                time: '10:00 - 22:00 (매주 월 휴무)',
                parking: '가게 앞 3대 가능',
                likes: 128,
@@ -44,8 +44,8 @@ const LocalBiz = () => {
                     'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=800',
                     'https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?auto=format&fit=crop&q=80&w=800'
                ],
-               hashtags: ['#금촌네일', '#이달의아트', '#유지력갑'],
-               location: '파주시 금촌동 로타리 부근',
+               hashtags: ['#강남네일', '#이달의아트', '#유지력갑'],
+               location: '서울 강남구 삼성동 로타리 부근',
                time: '11:00 - 20:00 (예약제)',
                parking: '공영주차장 이용',
                likes: 85,
@@ -61,8 +61,8 @@ const LocalBiz = () => {
                     'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=800',
                     'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=800'
                ],
-               hashtags: ['#애견미용', '#운정애견', '#스파전문'],
-               location: '파주시 야당동 1024',
+               hashtags: ['#애견미용', '#강남애견', '#스파전문'],
+               location: '서울 강남구 논현동 1024',
                time: '10:00 - 19:00',
                parking: '건물 지하주차장',
                likes: 210,
@@ -70,16 +70,16 @@ const LocalBiz = () => {
           },
           {
                id: 4,
-               name: '파주옥',
+               name: '강남옥',
                category: '🍝맛집·무드',
-               owner: '파주쉐프',
+               owner: '강남쉐프',
                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chef',
                images: [
                     'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=800',
                     'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=800'
                ],
                hashtags: ['#파스타', '#데이트코스', '#분위기깡패'],
-               location: '파주시 탄현면 헤이리',
+               location: '서울 강남구 청담동',
                time: '11:30 - 21:00 (브레이크타임 有)',
                parking: '전용 주차장 완비',
                likes: 342,
@@ -96,7 +96,7 @@ const LocalBiz = () => {
                     'https://images.unsplash.com/photo-1456086272160-b28b3a0b949d?auto=format&fit=crop&q=80&w=800'
                ],
                hashtags: ['#도자기공방', '#원데이클래스', '#이색데이트'],
-               location: '파주시 출판단지',
+               location: '서울 강남구 신사동',
                time: '13:00 - 18:00',
                parking: '갓길 주차 가능',
                likes: 56,

@@ -6,10 +6,10 @@ const MiniHomepage = ({ onClose }) => {
 
      // Mock Data
      const guestbookEntries = [
-          { id: 1, author: '금촌사랑꾼', content: '오늘 파주 날씨 너무 좋다! 산책 가자~ 🌸', date: '2023.10.25', color: 'bg-yellow-100' },
-          { id: 2, author: '운정댁', content: '주말에 뭐해? 같이 커피 한 잔? ☕', date: '2023.10.24', color: 'bg-pink-100' },
-          { id: 3, author: '파주지킴이', content: '1촌 신청 받아줘! ㅎㅎ', date: '2023.10.23', color: 'bg-blue-100' },
-          { id: 4, author: '문산토박이', content: '프로필 사진 바꿨네? 잘 나왔다!', date: '2023.10.22', color: 'bg-green-100' },
+          { id: 1, author: '강남사랑꾼', content: '오늘 강남 날씨 너무 좋다! 산책 가자~ 🌸', date: '2023.10.25', color: 'bg-yellow-100' },
+          { id: 2, author: '역삼댁', content: '주말에 뭐해? 같이 커피 한 잔? ☕', date: '2023.10.24', color: 'bg-pink-100' },
+          { id: 3, author: '강남지킴이', content: '1촌 신청 받아줘! ㅎㅎ', date: '2023.10.23', color: 'bg-blue-100' },
+          { id: 4, author: '강남토박이', content: '프로필 사진 바꿨네? 잘 나왔다!', date: '2023.10.22', color: 'bg-green-100' },
      ];
 
      return (
@@ -64,8 +64,8 @@ const MiniHomepage = ({ onClose }) => {
 
                     {/* === Bio & Status === */}
                     <div className="mt-12 px-6 text-center">
-                         <h2 className="text-2xl font-bold text-gray-900 mb-1">나의 파주 라이프 🏡</h2>
-                         <p className="text-sm text-gray-500 mb-4">"오늘도 평화로운 파주의 하루! 🌈"</p>
+                         <h2 className="text-2xl font-bold text-gray-900 mb-1">나의 강남 라이프 🏡</h2>
+                         <p className="text-sm text-gray-500 mb-4">"오늘도 평화로운 강남의 하루! 🌈"</p>
 
                          {/* Today's Mood */}
                          <div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">

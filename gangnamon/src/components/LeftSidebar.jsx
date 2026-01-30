@@ -64,7 +64,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                     </h1>
                </div>
 
-               {/* Special: Paju Romance */}
+               {/* Special: Gangnam Romance */}
                <div className="mb-6 px-0">
                     <button
                          onClick={() => setActiveTab('romance')}

@@ -97,7 +97,7 @@ function App() {
                     id: Date.now(),
                     title: data.title,
                     price: '35,000',
-                    location: '금촌동',
+                    location: '역삼동',
                     likes: 0,
                     image: image || 'https://via.placeholder.com/500'
                };
@@ -108,7 +108,7 @@ function App() {
                     id: Date.now(),
                     category: '⚡ 번개모임',
                     title: data.title,
-                    host: '금촌사랑꾼',
+                    host: '강남사랑꾼',
                     hostBadge: '신규',
                     date: `${data.date || '날짜미정'} ${data.time || ''}`,
                     location: `#${data.location || '장소미정'}`,
@@ -118,7 +118,7 @@ function App() {
                     image: image || 'https://via.placeholder.com/600'
                };
                setMeetingItems([newItem, ...meetingItems]);
-               setToastMessage("모임 개설! +10 콩 획득! 🎉");
+               setToastMessage("모임 개설! +10 온 획득! 🎉");
           } else {
                setToastMessage("작성 완료! +10 스타 획득! ⭐");
           }

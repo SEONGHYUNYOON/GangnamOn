@@ -91,7 +91,7 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
                                    <div className="bg-purple-100 p-2 rounded-full">
                                         <Sparkles className="w-5 h-5 text-purple-600" />
                                    </div>
-                                   파주 뷰티샵
+                                   강남 뷰티샵
                               </h2>
 
                               <div className="flex items-center gap-3">
@@ -269,7 +269,7 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
                                    </p>
 
                                    <div className="bg-yellow-50 p-4 rounded-xl mb-6 flex justify-between items-center">
-                                        <span className="text-sm text-gray-500">내 보유 콩</span>
+                                        <span className="text-sm text-gray-500">내 보유 온</span>
                                         <span className="font-bold text-gray-900">{userBeanCount.toLocaleString()} ➔ {(userBeanCount - purchaseModalOpen.price).toLocaleString()}</span>
                                    </div>
 
@@ -284,7 +284,7 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
                                              onClick={executePurchase}
                                              className="flex-1 py-3 font-bold text-white bg-purple-600 rounded-xl hover:bg-purple-700 shadow-lg shadow-purple-200"
                                         >
-                                             {purchaseModalOpen.price} 콩 결제
+                                             {purchaseModalOpen.price} 온 결제
                                         </button>
                                    </div>
                               </div>
