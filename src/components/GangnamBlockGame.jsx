@@ -5,7 +5,7 @@ import { getRankTop10, addScore } from '../lib/gameRank';
 // === TETRIS CONSTANTS ===
 const ROWS = 20;
 const COLS = 10;
-const BLOCK_SIZE = 30; // Base size (widened)
+const BLOCK_SIZE = 36; // Base size (widened for larger play area)
 const SPEEDS = { 1: 800, 2: 700, 3: 600, 4: 500, 5: 400, 6: 300, 7: 200, 8: 100 };
 
 // Neon Colors with styled shadows for 3D/Bevel effect
@@ -242,7 +242,7 @@ const GangnamBlockGame = ({ onClose, user }) => {
      return (
           <div className="fixed inset-0 z-[70] bg-black/95 flex items-center justify-center p-4">
                {/* Container */}
-               <div className="relative bg-gray-900 rounded-3xl p-6 border-4 border-purple-500/30 shadow-[0_0_50px_rgba(168,85,247,0.4)] max-w-4xl w-full flex flex-col md:flex-row gap-8 items-start animate-in zoom-in-95 duration-300">
+               <div className="relative bg-gray-900 rounded-3xl p-6 border-4 border-purple-500/30 shadow-[0_0_50px_rgba(168,85,247,0.4)] max-w-6xl w-full flex flex-col md:flex-row gap-8 items-start animate-in zoom-in-95 duration-300">
 
                     {/* Header / Info */}
                     <div className="flex-1 w-full md:w-auto flex flex-col gap-6">
@@ -339,9 +339,18 @@ const GangnamBlockGame = ({ onClose, user }) => {
 
                          {/* 시작하기 오버레이 (게임 시작 전) */}
                          {!gameStarted && (
-                              <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in">
-                                   <div className="text-2xl font-black text-white mb-1 tracking-wider">테트리스</div>
-                                   <div className="text-gray-400 text-sm mb-6">90년대 오락실 감성 테트리스</div>
+                              <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in p-4">
+                                   <div className="text-2xl font-black text-white mb-3 tracking-wider">테트리스</div>
+                                   <div className="bg-gray-800/80 rounded-xl p-4 mb-5 text-left max-w-xs">
+                                        <div className="text-xs font-bold text-purple-300 mb-2">🎯 게임 방법</div>
+                                        <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+                                             <li>← → : 좌우 이동</li>
+                                             <li>↑ : 블록 회전</li>
+                                             <li>↓ : 빠르게 내리기</li>
+                                             <li>Space : 한방에 떨어뜨리기</li>
+                                             <li>한 줄을 채우면 사라지고 점수 획득!</li>
+                                        </ul>
+                                   </div>
                                    <button onClick={startGame}
                                         className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2">
                                         <Play className="w-5 h-5" /> 시작하기

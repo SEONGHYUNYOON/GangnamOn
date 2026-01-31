@@ -6,7 +6,7 @@ import GangnamWhackAMole from './GangnamWhackAMole';
 import GangnamBrickBreaker from './GangnamBrickBreaker';
 import GangnamReactionTest from './GangnamReactionTest';
 import GangnamTypingGame from './GangnamTypingGame';
-import CardBattle from './CardBattle';
+import TowerDefense from './TowerDefense';
 import GangnamTarot from './GangnamTarot';
 import { getRankTop10 } from '../lib/gameRank';
 
@@ -14,7 +14,7 @@ import { getRankTop10 } from '../lib/gameRank';
 const LOUNGE_ENTRY_COST = 1; // 콘텐츠 이용 시 소모되는 온
 
 const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
-     const [activeFeature, setActiveFeature] = useState(null); // 'balance', 'mbti', 'chat', 'bingo', 'block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'cardbattle'
+     const [activeFeature, setActiveFeature] = useState(null); // 'balance', 'mbti', 'chat', 'bingo', 'block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'towerdefense'
 
      // Handle Browser Back Button
      useEffect(() => {
@@ -38,7 +38,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
      };
 
      // 유료 콘텐츠(블록 게임, 밸런스, MBTI, 타로): 1온 소모 + 확인 후 진입
-     const paidFeatures = ['block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'cardbattle', 'balance', 'mbti', 'tarot'];
+     const paidFeatures = ['block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'towerdefense', 'balance', 'mbti', 'tarot'];
      const handleLoungeEntry = (feature) => {
           if (paidFeatures.includes(feature)) {
                if (beanCount < LOUNGE_ENTRY_COST) {
@@ -176,8 +176,8 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                return <GangnamTypingGame onClose={handleCloseFeature} user={user} />;
           }
 
-          if (activeFeature === 'cardbattle') {
-               return <CardBattle onClose={handleCloseFeature} user={user} />;
+          if (activeFeature === 'towerdefense') {
+               return <TowerDefense onClose={handleCloseFeature} user={user} />;
           }
 
           if (activeFeature === 'tarot') {
@@ -424,7 +424,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
 
           // DEFAULT DASHBOARD
           return (
-               <div className="max-w-4xl mx-auto">
+               <div className="max-w-6xl mx-auto">
                     <div className="mb-10 text-center relative">
                          <button
                               onClick={onExit}
@@ -566,19 +566,19 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                               </div>
                          </div>
 
-                         {/* 카드 배틀 */}
+                         {/* 타워 디펜스 */}
                          <div
-                              onClick={() => handleLoungeEntry('cardbattle')}
+                              onClick={() => handleLoungeEntry('towerdefense')}
                               className="col-span-1 md:col-span-2 bg-gradient-to-br from-violet-900 via-purple-900 to-slate-900 rounded-[2rem] p-8 shadow-xl border border-violet-700/50 hover:shadow-violet-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
                          >
                               <div className="absolute top-0 right-0 w-48 h-48 bg-violet-600 rounded-full blur-[100px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
                               <div className="relative z-10 flex flex-col md:flex-row items-center md:items-center justify-between gap-6">
                                    <div className="flex text-center md:text-left flex-col items-center md:items-start">
-                                        <div className="bg-violet-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW · 카드 배틀</div>
+                                        <div className="bg-violet-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW · 타워 디펜스</div>
                                         <h3 className="text-2xl md:text-3xl font-black mb-2 flex items-center gap-3">
-                                             카드 배틀 🃏
+                                             타워 디펜스 🏰
                                         </h3>
-                                        <p className="text-violet-200/80 text-sm mb-4">덱을 짜고 카드를 내서 적을 쓰러뜨리세요.<br />층을 올릴수록 점수가 올라가요. TOP 10 랭킹!</p>
+                                        <p className="text-violet-200/80 text-sm mb-4">타워를 세워 적을 막아내세요!<br />웨이브를 넘길수록 점수가 올라갑니다. TOP 10 랭킹!</p>
                                         <button className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all transform group-hover:scale-105">
                                              게임 시작하기 🕹️
                                         </button>
@@ -586,7 +586,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                    <div className="bg-black/30 p-4 rounded-xl border border-white/10 w-full md:w-56 backdrop-blur-sm">
                                         <div className="text-xs font-bold text-violet-300 mb-2 uppercase tracking-wider">TOP 10</div>
                                         <div className="space-y-1.5 max-h-24 overflow-y-auto">
-                                             {(getRankTop10('cardbattle', true)).slice(0, 5).map((e, i) => (
+                                             {(getRankTop10('towerdefense', true)).slice(0, 5).map((e, i) => (
                                                   <div key={i} className="flex justify-between text-sm">
                                                        <span className="text-violet-200 truncate max-w-[70px]">{e.rank}. {e.name}</span>
                                                        <span className="text-violet-400 font-mono text-xs">{e.score}</span>

@@ -84,7 +84,7 @@ const GangnamTypingGame = ({ onClose, user }) => {
      }, [gameOver, gameStarted, score, user]);
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-indigo-950/50 to-black text-white max-w-4xl mx-auto">
+          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-indigo-950/50 to-black text-white max-w-6xl mx-auto">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
                     <h2 className="text-xl font-black tracking-wider">격파</h2>
@@ -102,9 +102,17 @@ const GangnamTypingGame = ({ onClose, user }) => {
                               ))}
 
                               {!gameStarted && (
-                                   <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center">
-                                        <div className="text-2xl font-black mb-2">격파</div>
-                                        <div className="text-gray-400 text-sm mb-6">떨어지는 단어를 입력해서 격파하세요!</div>
+                                   <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
+                                        <div className="text-2xl font-black mb-3">격파</div>
+                                        <div className="bg-indigo-900/80 rounded-xl p-4 mb-5 text-left max-w-xs">
+                                             <div className="text-xs font-bold text-indigo-300 mb-2">🎯 게임 방법</div>
+                                             <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+                                                  <li>위에서 단어가 떨어집니다</li>
+                                                  <li>하단 입력창에 단어를 정확히 입력!</li>
+                                                  <li>맞추면 점수 획득, 글자수 × 10점</li>
+                                                  <li>5개 놓치면 게임 오버</li>
+                                             </ul>
+                                        </div>
                                         <button onClick={startGame} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-10 rounded-full flex items-center gap-2"><Play className="w-5 h-5" /> 시작하기</button>
                                    </div>
                               )}

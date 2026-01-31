@@ -2,15 +2,15 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, RotateCw, Play, ArrowUp, ArrowDown, ArrowLeft as ArrowLeftIcon, ArrowRight, Trophy } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
 
-const COLS = 22;
-const ROWS = 16;
-const CELL_SIZE = 28;
+const COLS = 24;
+const ROWS = 18;
+const CELL_SIZE = 34;
 const INITIAL_SPEED = 180;
 
 const FOOD_EMOJI = ['🥐', '☕', '🍩', '🥖', '🧋']; // 강남 카페/빵
 
 const GangnamSnake = ({ onClose, user }) => {
-     const [snake, setSnake] = useState([{ x: 8, y: 8 }, { x: 7, y: 8 }, { x: 6, y: 8 }]);
+     const [snake, setSnake] = useState([{ x: 10, y: 9 }, { x: 9, y: 9 }, { x: 8, y: 9 }]);
      const [direction, setDirection] = useState({ dx: 1, dy: 0 });
      const [food, setFood] = useState({ x: 12, y: 10 });
      const [foodEmoji, setFoodEmoji] = useState(FOOD_EMOJI[0]);
@@ -32,7 +32,7 @@ const GangnamSnake = ({ onClose, user }) => {
      }, [snake]);
 
      const startGame = useCallback(() => {
-          const start = [{ x: 8, y: 8 }, { x: 7, y: 8 }, { x: 6, y: 8 }];
+          const start = [{ x: 10, y: 9 }, { x: 9, y: 9 }, { x: 8, y: 9 }];
           const used = new Set(start.map(s => `${s.x},${s.y}`));
           let fx, fy;
           do {
@@ -111,7 +111,7 @@ const GangnamSnake = ({ onClose, user }) => {
      };
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-4xl mx-auto w-full">
+          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto w-full">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                          <ArrowLeft className="w-6 h-6 text-gray-300" />
@@ -155,9 +155,17 @@ const GangnamSnake = ({ onClose, user }) => {
                     </div>
 
                     {!gameStarted && (
-                         <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center">
-                              <div className="text-2xl font-black text-white mb-1">스네이크</div>
-                              <div className="text-gray-400 text-sm mb-6">붕어빵·커피 먹고 길러보세요!</div>
+                         <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+                              <div className="text-2xl font-black text-white mb-3">스네이크</div>
+                              <div className="bg-gray-800/80 rounded-xl p-4 mb-5 text-left max-w-xs">
+                                   <div className="text-xs font-bold text-green-300 mb-2">🎯 게임 방법</div>
+                                   <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+                                        <li>방향키 또는 화면 버튼으로 이동</li>
+                                        <li>🥐☕🍩 먹이를 먹으면 점수 +10, 몸이 길어짐</li>
+                                        <li>자기 몸에 부딪히면 게임 오버!</li>
+                                        <li>벽은 반대편으로 이어짐 (안 죽음)</li>
+                                   </ul>
+                              </div>
                               <button onClick={startGame} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center gap-2">
                                    <Play className="w-5 h-5" /> 시작하기
                               </button>

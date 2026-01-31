@@ -76,7 +76,7 @@ const GangnamWhackAMole = ({ onClose, user }) => {
      }, []);
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-amber-950/30 to-gray-900 text-white max-w-4xl mx-auto w-full">
+          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-amber-950/30 to-gray-900 text-white max-w-6xl mx-auto w-full">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                          <ArrowLeft className="w-6 h-6 text-gray-300" />
@@ -95,7 +95,7 @@ const GangnamWhackAMole = ({ onClose, user }) => {
                                    key={idx}
                                    onClick={() => whack(idx)}
                                    disabled={!gameStarted || gameOver}
-                                   className="relative w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-amber-900/60 border-2 border-amber-700/50 overflow-hidden hover:border-amber-500 transition-colors disabled:pointer-events-none"
+                                   className="relative w-36 h-36 md:w-40 md:h-40 rounded-2xl bg-amber-900/60 border-2 border-amber-700/50 overflow-hidden hover:border-amber-500 transition-colors disabled:pointer-events-none"
                               >
                                    <div className="absolute inset-0 flex items-center justify-center text-5xl md:text-6xl">
                                         {activeHole === idx ? (
@@ -127,8 +127,15 @@ const GangnamWhackAMole = ({ onClose, user }) => {
 
                {!gameStarted && (
                     <div className="flex flex-col items-center justify-center py-8">
-                         <div className="text-2xl font-black text-white mb-1">두더지</div>
-                         <div className="text-gray-400 text-sm mb-6">30초 동안 두더지를 잡아보세요!</div>
+                         <div className="text-2xl font-black text-white mb-3">두더지</div>
+                         <div className="bg-amber-900/60 rounded-xl p-4 mb-5 text-left max-w-xs">
+                              <div className="text-xs font-bold text-amber-300 mb-2">🎯 게임 방법</div>
+                              <ul className="text-amber-100 text-xs space-y-1 list-disc list-inside">
+                                   <li>구멍에서 두더지(🐹)가 튀어나오면 클릭!</li>
+                                   <li>잡을 때마다 점수 +10</li>
+                                   <li>30초 동안 최대한 많이 잡으세요</li>
+                              </ul>
+                         </div>
                          <button onClick={startGame} className="bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center gap-2">
                               <Play className="w-5 h-5" /> 시작하기
                          </button>

@@ -123,7 +123,7 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
      }, [gameStarted, gameOver]);
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-slate-900 to-black text-white max-w-4xl mx-auto">
+          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-slate-900 to-black text-white max-w-6xl mx-auto">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
                     <h2 className="text-xl font-black tracking-wider">벽돌깨기</h2>
@@ -146,9 +146,17 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
                          </div>
 
                          {!gameStarted && (
-                              <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center">
-                                   <div className="text-2xl font-black mb-1">벽돌깨기</div>
-                                   <div className="text-gray-400 text-sm mb-6">패들로 공을 튕겨 벽돌을 깨세요!</div>
+                              <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
+                                   <div className="text-2xl font-black mb-3">벽돌깨기</div>
+                                   <div className="bg-slate-700/80 rounded-xl p-4 mb-5 text-left max-w-xs">
+                                        <div className="text-xs font-bold text-blue-300 mb-2">🎯 게임 방법</div>
+                                        <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+                                             <li>마우스(터치)를 움직여 패들 조작</li>
+                                             <li>공을 튕겨서 위쪽 벽돌을 깨세요</li>
+                                             <li>벽돌 1개당 10점</li>
+                                             <li>공을 놓치면 생명 -1 (총 3개)</li>
+                                        </ul>
+                                   </div>
                                    <button onClick={startGame} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center gap-2"><Play className="w-5 h-5" /> 시작하기</button>
                               </div>
                          )}

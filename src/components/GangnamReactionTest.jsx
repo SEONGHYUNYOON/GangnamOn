@@ -37,7 +37,7 @@ const GangnamReactionTest = ({ onClose, user }) => {
      }, [phase, user]);
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-4xl mx-auto">
+          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
                     <h2 className="text-xl font-black tracking-wider">반응속도 대결</h2>
@@ -55,8 +55,16 @@ const GangnamReactionTest = ({ onClose, user }) => {
                     >
                          {phase === 'idle' && (
                               <>
-                                   <div className="text-2xl font-black mb-2">반응속도 대결</div>
-                                   <div className="text-gray-400 text-sm mb-6">초록색이 되면 최대한 빨리 클릭하세요!</div>
+                                   <div className="text-2xl font-black mb-3">반응속도 대결</div>
+                                   <div className="bg-gray-700/80 rounded-xl p-4 mb-5 text-left max-w-xs">
+                                        <div className="text-xs font-bold text-emerald-300 mb-2">🎯 게임 방법</div>
+                                        <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
+                                             <li>화면이 <b className="text-amber-400">노란색</b>일 땐 기다리세요</li>
+                                             <li><b className="text-green-400">초록색</b>으로 바뀌면 즉시 클릭!</li>
+                                             <li>반응 시간(ms)이 낮을수록 좋아요</li>
+                                             <li>노란색일 때 클릭하면 실패!</li>
+                                        </ul>
+                                   </div>
                                    <button onClick={(e) => { e.stopPropagation(); startGame(); }} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-10 rounded-full flex items-center gap-2"><Play className="w-5 h-5" /> 시작하기</button>
                               </>
                          )}
