@@ -21,10 +21,12 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
      });
 
      const categories = [
-          { id: 'market', label: '🥕 중고거래', icon: DollarSign },
+          { id: 'startup_freelance', label: '⚡ 스타트업/프리랜서', icon: Users }, // Zap changed to Users for better generic fit or import Zap if needed (it is imported)
+          { id: 'lunch_networking', label: '☕ 점심 네트워킹', icon: Calendar }, // Coffee changed to Calendar or keep Coffee if imported
+          { id: 'recruit_proposal', label: '👥 구인/협업', icon: Tag },
+          { id: 'office_rent', label: '🏢 사무실/임대', icon: MapPin }, // Store changed to MapPin
           { id: 'gathering', label: '⚡ 동호회/모임', icon: Users },
-          { id: 'school', label: '🏫 아이러브스쿨', icon: Tag },
-          { id: 'life', label: '🏡 동네생활', icon: MapPin },
+          { id: 'market', label: '🥕 중고거래', icon: DollarSign },
      ];
 
      const handleFileSelect = (e) => {
@@ -288,19 +290,44 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
                                                   />
                                              </div>
                                         </div>
+                                   </div>
+                              )}
+
+                              {/* Case: Office Rent (Deposit / Monthly Rent) */}
+                              {selectedCategory === 'office_rent' && (
+                                   <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                                         <div>
-                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">상품 상태</label>
+                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">보증금 / 월세</label>
                                              <div className="flex gap-2">
-                                                  <button className="flex-1 py-2 rounded-lg border border-purple-500 text-purple-600 bg-purple-50 font-bold text-sm">S급 (새상품)</button>
-                                                  <button className="flex-1 py-2 rounded-lg border border-gray-200 text-gray-400 hover:border-gray-400 text-sm">A급 (사용감 적음)</button>
-                                                  <button className="flex-1 py-2 rounded-lg border border-gray-200 text-gray-400 hover:border-gray-400 text-sm">B급 (사용감 있음)</button>
+                                                  <input
+                                                       type="text"
+                                                       placeholder="보증금 (예: 1000)"
+                                                       className="flex-1 py-3 px-4 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:border-purple-200 font-bold text-sm"
+                                                       onChange={(e) => setFormData({ ...formData, description: `[보증금: ${e.target.value}만원] ` + formData.description })}
+                                                  />
+                                                  <input
+                                                       type="text"
+                                                       placeholder="월세 (예: 80)"
+                                                       className="flex-1 py-3 px-4 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:border-purple-200 font-bold text-sm"
+                                                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                                  />
                                              </div>
+                                        </div>
+                                        <div>
+                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">위치</label>
+                                             <input
+                                                  type="text"
+                                                  value={formData.location}
+                                                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                  placeholder="상세 위치 입력"
+                                                  className="w-full py-3 px-4 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:border-purple-200 font-bold text-sm"
+                                             />
                                         </div>
                                    </div>
                               )}
 
-                              {/* Case B: Gathering (Date/Time/Location) */}
-                              {selectedCategory === 'gathering' && (
+                              {/* Case B: Gathering / Lunch / Meeting (Date/Time/Location) */}
+                              {['gathering', 'lunch_networking', 'startup_freelance', 'recruit_proposal'].includes(selectedCategory) && (
                                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                                         <div className="grid grid-cols-2 gap-4">
                                              <div>

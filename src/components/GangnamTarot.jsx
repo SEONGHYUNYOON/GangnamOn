@@ -222,7 +222,7 @@ const GangnamTarot = ({ onClose, user }) => {
                     </button>
                     <div className="flex flex-col items-center">
                          <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-                              🌙 오늘의 강남 타로
+                              🌙 오늘의 타로
                          </h2>
                     </div>
                     <div className="w-10"></div>

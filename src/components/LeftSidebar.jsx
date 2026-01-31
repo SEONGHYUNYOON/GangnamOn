@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Database } from 'lucide-react';
+import logo from '../assets/gangnam_on_logo.png';
 
 const LeftSidebar = ({ activeTab, setActiveTab }) => {
      // State to manage expanded sections
@@ -36,9 +37,13 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           },
           {
                id: 'biz',
-               title: '[우리동네 가게] 사장님 화이팅!',
+               title: '[비즈니스 네트워크]',
                items: [
-                    { id: 'local_biz', label: "Owner's Note", icon: Store, subtext: '오늘의 혜택 & 소식' }
+                    { id: 'startup_freelance', label: '스타트업/프리랜서', icon: Zap, subtext: '업무 협업/네트워킹' },
+                    { id: 'lunch_networking', label: '점심 네트워킹', icon: Coffee, subtext: '식사하며 미팅' },
+                    { id: 'recruit_proposal', label: '구인/협업 제안', icon: Users, subtext: '팀원 찾기' },
+                    { id: 'office_rent', label: '사무실/임대 정보', icon: Store, subtext: '공유오피스/양도' },
+                    { id: 'local_biz', label: "Owner's Note", icon: Shield, subtext: '소상공인 혜택' } // Moved here as part of business
                ]
           },
           {
@@ -102,9 +107,12 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           <div className="flex flex-col w-full h-full p-6 border-r border-gray-100 bg-white sticky top-0 overflow-y-auto scrollbar-hide">
                {/* Logo */}
                <div className="mb-8 px-2 flex items-center justify-center">
-                    <h1 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-[Pretendard] cursor-pointer" onClick={() => setActiveTab('home')}>
-                         Gangnam On
-                    </h1>
+                    <img
+                         src={logo}
+                         alt="Gangnam On"
+                         className="h-14 w-auto cursor-pointer object-contain hover:scale-105 transition-transform duration-200"
+                         onClick={() => setActiveTab('home')}
+                    />
                </div>
 
                {/* Special: Gangnam Romance */}
@@ -166,37 +174,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                {/* Main Navigation */}
                <nav className="space-y-6">
                     {navGroups.map((group) => {
-                         // Special handling for 'biz' group (Owner's Note) to render as a standalone box
-                         if (group.id === 'biz') {
-                              return (
-                                   <div key={group.id} className="py-2">
-                                        <button
-                                             onClick={() => setActiveTab('local_biz')}
-                                             className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group shadow-sm ring-1 ${activeTab === 'local_biz'
-                                                  ? 'bg-slate-700 text-white ring-slate-700 shadow-slate-300 scale-[1.02]'
-                                                  : 'bg-slate-50 ring-slate-200 text-slate-700 hover:ring-slate-300 hover:shadow-md'
-                                                  }`}
-                                        >
-                                             <div className="flex items-center gap-3">
-                                                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === 'local_biz' ? 'bg-white/20 text-white' : 'bg-white text-slate-500 shadow-sm'
-                                                       }`}>
-                                                       <Store className="w-4 h-4" />
-                                                  </div>
-                                                  <div className="text-left">
-                                                       <div className={`text-sm font-bold ${activeTab === 'local_biz' ? 'text-white' : 'text-slate-800'
-                                                            }`}>
-                                                            Owner's Note
-                                                       </div>
-                                                       <div className={`text-[10px] font-medium ${activeTab === 'local_biz' ? 'text-slate-300' : 'text-gray-400'
-                                                            }`}>
-                                                            오늘의 혜택 & 소식
-                                                       </div>
-                                                  </div>
-                                             </div>
-                                        </button>
-                                   </div>
-                              );
-                         }
+
 
                          // Standard Accordion Group Rendering
                          return (
@@ -244,7 +222,11 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                     })}
                </nav>
 
-               <div className="h-10"></div>
+
+               <div className="mt-auto pt-4 border-t border-gray-50 text-center">
+                    <span className="text-[10px] text-gray-300 font-mono">v1.2.5 (Game Update)</span>
+               </div>
+               <div className="h-4"></div>
           </div>
      );
 };

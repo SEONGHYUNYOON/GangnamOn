@@ -10,7 +10,7 @@ const KakaoMap = ({ latitude, longitude, level = 3, style = { width: "100%", hei
                // IMPORTANT: Replace 'YOUR_APP_KEY' with process.env.VITE_KAKAO_MAP_API_KEY later, or instructions
                // For now, we assume user inserts their key or sets environment variable.
                // We will try to read from env if possible, else rely on manual insertion instructions.
-               const apiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY;
+               const apiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY || '18491109e5325b0265d25f02409539ee';
 
                script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
                script.async = true;
@@ -45,7 +45,8 @@ const KakaoMap = ({ latitude, longitude, level = 3, style = { width: "100%", hei
           }
      }, [latitude, longitude]);
 
-     if (!import.meta.env.VITE_KAKAO_MAP_API_KEY || import.meta.env.VITE_KAKAO_MAP_API_KEY === 'YOUR_KAKAO_JAVASCRIPT_KEY_HERE') {
+     const hasKey = import.meta.env.VITE_KAKAO_MAP_API_KEY || '18491109e5325b0265d25f02409539ee';
+     if (!hasKey || hasKey === 'YOUR_KAKAO_JAVASCRIPT_KEY_HERE') {
           return (
                <div style={{ ...style, backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: '0.875rem', flexDirection: 'column', gap: '8px', padding: '16px', textAlign: 'center' }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>

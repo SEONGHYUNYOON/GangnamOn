@@ -28,6 +28,38 @@ const GangnamLounge = lazy(() => import('./components/GangnamLounge'))
 const OwnersNote = lazy(() => import('./components/OwnersNote'))
 const DbPresentation = lazy(() => import('./components/DbPresentation'))
 
+// 가상 모임 게시물 (홈 + 비즈니스 네트워크 탭에 노출)
+const VIRTUAL_MEETING_ITEMS = [
+     // 홈 피드용 (독서, 영어, 강아지 봉사)
+     { id: 'virtual-reading', category: '📚 독서', originalType: 'pet', isEvent: false, expiresAt: null, title: '강남역 근처 독서 모임 — 이번 주 주제: 「작은 것들의 신」', host: '강남 북클럽', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '강남역 스타벅스 2층', participants: 4, maxParticipants: 8, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=400&fit=crop' },
+     { id: 'virtual-english', category: '🗣️ 영어', originalType: 'pet', isEvent: false, expiresAt: null, title: '매주 토요일 영어 스터디 — 프리토킹 + 단어 퀴즈', host: '강남 잉글리시', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '역삼동 카페 「커피나무」', participants: 6, maxParticipants: 10, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600&h=400&fit=crop' },
+     { id: 'virtual-pet-volunteer', category: '🐶 강아지 봉사', originalType: 'pet', isEvent: false, expiresAt: null, title: '유기견 산책 봉사 — 강남 보호센터와 함께하는 주말 봉사', host: '멍냥회관', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '강남구 유기동물 보호센터', participants: 3, maxParticipants: 6, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&h=400&fit=crop' },
+     // 스타트업/프리랜서 (3개)
+     { id: 'virtual-sf-1', category: '⚡ 스타트업', originalType: 'startup_freelance', isEvent: false, expiresAt: null, title: '강남 스타트업 팀 빌딩 밋업 — 아이디어만 있어도 OK, 같이 구체화해요', host: '강남 스타트업랩', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '역삼 WeWork 3층', participants: 7, maxParticipants: 15, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=400&fit=crop' },
+     { id: 'virtual-sf-2', category: '⚡ 스타트업', originalType: 'startup_freelance', isEvent: false, expiresAt: null, title: '웹/앱 개발 프리랜서 협업 구합니다 — 강남 오피스 주 2회', host: '테크스타트업A', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '테헤란로 팀랩', participants: 2, maxParticipants: 3, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=400&fit=crop' },
+     { id: 'virtual-sf-3', category: '⚡ 스타트업', originalType: 'startup_freelance', isEvent: false, expiresAt: null, title: '테크 창업가 네트워킹 — 1월 정기 오프라인 모임 (피칭 + 피드백)', host: '강남 창업모임', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '강남역 스타트업 캠퍼스', participants: 12, maxParticipants: 20, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop' },
+     // 점심 네트워킹 (3개)
+     { id: 'virtual-ln-1', category: '☕ 런치미팅', originalType: 'lunch_networking', isEvent: false, expiresAt: null, title: '역삼 점심 같이 드실 분 — 마케팅/광고 업계 정보 교환', host: '강남 런치클럽', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '역삼동 맛집 「청담골」', participants: 4, maxParticipants: 6, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop' },
+     { id: 'virtual-ln-2', category: '☕ 런치미팅', originalType: 'lunch_networking', isEvent: false, expiresAt: null, title: 'VC/엔젤 투자자와 점심 미팅 — 선착순 5명, 사업 아이디어 피드백', host: '강남 액셀', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '삼성동 라운지 레스토랑', participants: 3, maxParticipants: 5, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&h=400&fit=crop' },
+     { id: 'virtual-ln-3', category: '☕ 런치미팅', originalType: 'lunch_networking', isEvent: false, expiresAt: null, title: '강남 점심 네트워킹 — 금요일 정기 모임, 비즈니스 캐주얼', host: '점심네트워킹', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '강남역 인근 (매주 장소 공지)', participants: 8, maxParticipants: 12, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop' },
+     // 구인/협업 제안 (3개)
+     { id: 'virtual-rp-1', category: '👥 구인/협업', originalType: 'recruit_proposal', isEvent: false, expiresAt: null, title: '헬스케어 스타트업 공동 창업자 구합니다 — 의료/바이오 경험자 우대', host: '헬스업팀', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '온·오프라인 협의', participants: 1, maxParticipants: 2, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&h=400&fit=crop' },
+     { id: 'virtual-rp-2', category: '👥 구인/협업', originalType: 'recruit_proposal', isEvent: false, expiresAt: null, title: '사이드 프로젝트 UI/UX 디자이너 1명 구해요 — 강남에서 오프라인 미팅 가능', host: '사이드팀', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '강남역 근처 카페', participants: 2, maxParticipants: 3, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&h=400&fit=crop' },
+     { id: 'virtual-rp-3', category: '👥 구인/협업', originalType: 'recruit_proposal', isEvent: false, expiresAt: null, title: 'B2B 세일즈 경험 있으신 분 협업 제안 — SaaS 스타트업 팀 합류', host: '세일즈파트너', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '테헤란로 본사', participants: 4, maxParticipants: 5, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&h=400&fit=crop' },
+     // 사무실/임대 정보 (3개)
+     { id: 'virtual-or-1', category: '🏢 사무실', originalType: 'office_rent', isEvent: false, expiresAt: null, title: '강남역 5분 프라이빗 오피스 1인실 입주 모집 — 월 50만원대', host: '강남오피스', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '강남역 인근 공유오피스', participants: 0, maxParticipants: 1, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop' },
+     { id: 'virtual-or-2', category: '🏢 사무실', originalType: 'office_rent', isEvent: false, expiresAt: null, title: '역삼동 20평 오피스 3월부터 양도 — 인테리어 완비, 즉시 입주 가능', host: '역삼부동산', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '역삼동 봉은사로', participants: 0, maxParticipants: 1, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&h=400&fit=crop' },
+     { id: 'virtual-or-3', category: '🏢 사무실', originalType: 'office_rent', isEvent: false, expiresAt: null, title: '테헤란로 공유 오피스 데스크 2석 남음 — 당일 입주 가능', host: '테헤란오피스', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '테헤란로 위워크', participants: 0, maxParticipants: 2, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&h=400&fit=crop' },
+     // 산타는 강남 — 등산/트레킹 (3개)
+     { id: 'virtual-hiking-1', category: '⛰️ 등산', originalType: 'hiking', isEvent: false, expiresAt: null, title: '우리동네 북한산 등산 — 초보 환영, 일요일 아침 8시 출발', host: '산타는강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '북한산 우이동 입구', participants: 5, maxParticipants: 10, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&h=400&fit=crop' },
+     { id: 'virtual-hiking-2', category: '⛰️ 등산', originalType: 'hiking', isEvent: false, expiresAt: null, title: '강남역→관악산 트레킹 — 저녁 해돋이 보고 내려와요', host: '등산모임', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '관악산 연대 입구', participants: 3, maxParticipants: 8, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=400&fit=crop' },
+     { id: 'virtual-hiking-3', category: '⛰️ 등산', originalType: 'hiking', isEvent: false, expiresAt: null, title: '수도권 100대 명산 도전 — 이번 주 코스: 도봉산', host: '산타는강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '도봉산 도봉역 1번 출구', participants: 7, maxParticipants: 12, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&h=400&fit=crop' },
+     // FC 강남 — 스포츠/운동 (3개)
+     { id: 'virtual-sports-1', category: '⚽ 스포츠', originalType: 'sports', isEvent: false, expiresAt: null, title: 'FC 강남 정기 축구 — 토요일 오전 7인제, 실력 무관', host: 'FC강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '강남구민축구장 (선릉역)', participants: 9, maxParticipants: 14, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop' },
+     { id: 'virtual-sports-2', category: '⚽ 스포츠', originalType: 'sports', isEvent: false, expiresAt: null, title: '강남 러닝 모임 — 매주 일요일 10km, 페이스 자유', host: '강남러너스', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '잠실 한강공원 집합', participants: 6, maxParticipants: 15, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=600&h=400&fit=crop' },
+     { id: 'virtual-sports-3', category: '⚽ 스포츠', originalType: 'sports', isEvent: false, expiresAt: null, title: '배드민턴 셔틀 — 역삼 실내체육관, 초급/중급 팀 나눠서', host: 'FC강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '역삼동 강남문화체육관', participants: 4, maxParticipants: 8, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&h=400&fit=crop' },
+];
+
 function App() {
      const [activeTab, setActiveTab] = useState('home');
      const [isMiniHomeOpen, setIsMiniHomeOpen] = useState(false);
@@ -154,29 +186,36 @@ function App() {
                const { data: gatherings } = await supabase
                     .from('posts')
                     .select('*, author:profiles(username, avatar_url)')
-                    .in('type', ['gathering', 'hiking', 'sports', 'pet', 'wine']) // Fetch all gathering sub-types
+                    .in('type', ['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'office_rent']) // Fetch all types including business
                     .order('created_at', { ascending: false });
 
-               if (gatherings) {
-                    setMeetingItems(gatherings.map(g => ({
-                         id: g.id,
-                         category: g.type === 'gathering' ? '⚡ 번개'
-                              : g.type === 'hiking' ? '⛰️ 등산'
-                                   : g.type === 'sports' ? '⚽ 스포츠'
-                                        : g.type === 'pet' ? '🐶 반려동물'
-                                             : g.type === 'wine' ? '🍷 와인'
-                                                  : g.type,
-                         title: g.title,
-                         host: normalizeForGangnamDisplay(g.author?.username) || g.author?.username || '익명',
-                         hostBadge: '강남 이웃',
-                         date: new Date(g.created_at).toLocaleDateString(),
-                         location: normalizeForGangnamDisplay(g.location || '장소미정'),
-                         participants: g.current_participants || 1,
-                         maxParticipants: g.max_participants || 4,
-                         isHot: (g.current_participants / g.max_participants) > 0.8,
-                         image: g.image_urls?.[0] || 'https://via.placeholder.com/600'
-                    })));
-               }
+               const mappedGatherings = (gatherings || []).map(g => ({
+                    id: g.id,
+                    category: g.type === 'gathering' ? '⚡ 번개'
+                         : g.type === 'hiking' ? '⛰️ 등산'
+                              : g.type === 'sports' ? '⚽ 스포츠'
+                                   : g.type === 'pet' ? '🐶 반려동물'
+                                        : g.type === 'wine' ? '🍷 와인'
+                                             : g.type === 'startup_freelance' ? '⚡ 스타트업'
+                                                  : g.type === 'lunch_networking' ? '☕ 런치미팅'
+                                                       : g.type === 'recruit_proposal' ? '👥 구인/협업'
+                                                            : g.type === 'office_rent' ? '🏢 사무실'
+                                                                 : g.type,
+                    originalType: g.type,
+                    isEvent: g.type === 'event',
+                    expiresAt: g.expires_at,
+                    title: g.title,
+                    host: normalizeForGangnamDisplay(g.author?.username) || g.author?.username || '익명',
+                    hostBadge: '강남 이웃',
+                    date: new Date(g.created_at).toLocaleDateString(),
+                    location: normalizeForGangnamDisplay(g.location || '장소미정'),
+                    participants: g.current_participants || 1,
+                    maxParticipants: g.max_participants || 99,
+                    isHot: (g.likes_count || 0) > 5,
+                    status: (g.current_participants >= (g.max_participants || 99)) ? 'closed' : 'open',
+                    image: g.image_urls?.[0] || 'https://via.placeholder.com/600'
+               }));
+               setMeetingItems([...VIRTUAL_MEETING_ITEMS, ...mappedGatherings]);
           };
           fetchFeeds();
 
@@ -507,6 +546,24 @@ function App() {
                                              <OwnersNote onOpenMinihome={handleOpenMinihome} />
                                         )}
 
+                                        {/* NEW: BUSINESS NETWORK TAB */}
+                                        {['startup_freelance', 'lunch_networking', 'recruit_proposal', 'office_rent'].includes(activeTab) && (
+                                             <>
+                                                  <div className="flex items-center justify-between mb-2">
+                                                       <h2 className="text-xl font-bold text-gray-900">
+                                                            {activeTab === 'startup_freelance' && '⚡ 스타트업/프리랜서'}
+                                                            {activeTab === 'lunch_networking' && '☕ 점심 네트워킹'}
+                                                            {activeTab === 'recruit_proposal' && '👥 구인/협업 제안'}
+                                                            {activeTab === 'office_rent' && '🏢 사무실/임대 정보'}
+                                                       </h2>
+                                                       <button onClick={() => setIsCreateModalOpen(true)} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
+                                                            + 글쓰기
+                                                       </button>
+                                                  </div>
+                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} />
+                                             </>
+                                        )}
+
                                         {/* 2. GATHERING TAB */}
                                         {(['hiking', 'sports', 'pet', 'wine'].includes(activeTab)) && (
                                              <>
@@ -521,7 +578,7 @@ function App() {
                                                             + 모임 만들기
                                                        </button>
                                                   </div>
-                                                  <MeetingFeed items={meetingItems} />
+                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} />
                                              </>
                                         )}
 

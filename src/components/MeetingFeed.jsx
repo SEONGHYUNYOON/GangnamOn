@@ -38,52 +38,13 @@ const EventTimer = ({ expiresAt }) => {
      );
 };
 
-const MeetingFeed = ({ items: initialItems }) => {
+const MeetingFeed = ({ items }) => {
      const [selectedMeeting, setSelectedMeeting] = useState(null);
      const [likedItems, setLikedItems] = useState(new Set());
      const [animatingHearts, setAnimatingHearts] = useState(new Set());
-     const [meetings, setMeetings] = useState([]);
-     const [loading, setLoading] = useState(true);
 
-     useEffect(() => {
-          const fetchMeetings = async () => {
-               setLoading(true);
-               const { data, error } = await supabase
-                    .from('posts')
-                    .select(`
-          *,
-          profiles:author_id (username, avatar_url)
-        `)
-                    .in('type', ['gathering', 'club']) // 'event' removed to fix menu context
-                    .order('created_at', { ascending: false });
-
-               if (error) {
-                    console.error("Error fetching meetings:", error);
-               } else {
-                    const mapped = data.map(p => ({
-                         id: p.id,
-                         // Handle 'event' category
-                         category: p.type === 'club' ? '🏫 동호회' : (p.type === 'event' ? '🎉 이벤트' : '⚡ 번개모임'),
-                         isEvent: p.type === 'event',
-                         expiresAt: p.expires_at,
-                         title: p.title,
-                         host: p.profiles?.username || '강남주민',
-                         hostBadge: '열정멤버',
-                         date: new Date(p.created_at).toLocaleDateString(),
-                         location: p.location_name || p.location || '장소 미정', // location_name added
-                         participants: p.current_participants || 1,
-                         maxParticipants: p.max_participants || 99, // default max for events
-                         isHot: (p.likes_count || 0) > 5,
-                         status: (p.current_participants >= (p.max_participants || 99)) ? 'closed' : 'open',
-                         image: p.image_urls?.[0] || 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=800'
-                    }));
-                    setMeetings(mapped);
-               }
-               setLoading(false);
-          };
-
-          fetchMeetings();
-     }, []);
+     // Remove internal fetching - use "items" prop passed from App.jsx
+     // items are already mapped in App.jsx
 
      const toggleLike = (e, id) => {
           e.stopPropagation();
@@ -111,7 +72,7 @@ const MeetingFeed = ({ items: initialItems }) => {
           alert(`${title} 링크가 복사되었습니다! (시뮬레이션)`);
      };
 
-     if (loading) {
+     if (!items) {
           return (
                <div className="flex justify-center py-20">
                     <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
@@ -130,7 +91,7 @@ const MeetingFeed = ({ items: initialItems }) => {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6">
-                         {meetings.length > 0 ? meetings.map((item) => (
+                         {items.length > 0 ? items.map((item) => (
                               <div
                                    key={item.id}
                                    onClick={() => setSelectedMeeting(item)}

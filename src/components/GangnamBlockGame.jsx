@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, Trophy, RotateCw, ArrowDown, ArrowRight, ArrowUp, Play, Pause, X, Zap } from 'lucide-react';
+import { getRankTop10, addScore } from '../lib/gameRank';
 
 // === TETRIS CONSTANTS ===
 const ROWS = 20;
 const COLS = 10;
-const BLOCK_SIZE = 25; // Base size
+const BLOCK_SIZE = 30; // Base size (widened)
 const SPEEDS = { 1: 800, 2: 700, 3: 600, 4: 500, 5: 400, 6: 300, 7: 200, 8: 100 };
 
 // Neon Colors with styled shadows for 3D/Bevel effect
@@ -33,7 +34,16 @@ const GangnamBlockGame = ({ onClose, user }) => {
      const [isPaused, setIsPaused] = useState(false);
      const [dropTime, setDropTime] = useState(800);
      const [gameStarted, setGameStarted] = useState(false);
+     const [rankList, setRankList] = useState(() => getRankTop10('block', true));
      const gameLoopRef = useRef();
+
+     useEffect(() => {
+          if (gameStarted && gameOver && score > 0) {
+               const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
+               addScore('block', name, score, true);
+               setRankList(getRankTop10('block', true));
+          }
+     }, [gameStarted, gameOver, score, user]);
 
      // 한 번에 그리드·스코어·피스 초기화 (시작하기 / 다시 하기 공용)
      const startGame = useCallback(() => {
@@ -271,35 +281,26 @@ const GangnamBlockGame = ({ onClose, user }) => {
                               <div className="flex justify-between"><span>한방에 내리기</span> <span className="text-yellow-400 font-bold">Space</span></div>
                          </div>
 
-                         {/* Mock Leaderboard */}
-                         <div className="bg-gray-800/50 rounded-xl p-4 border border-white/5 w-full">
+                         {/* TOP 10 Leaderboard */}
+                         <div className="bg-gray-800/50 rounded-xl p-4 border border-white/5 w-full max-h-80 overflow-y-auto">
                               <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
                                    <Trophy className="w-4 h-4 text-yellow-400" />
-                                   <span className="text-xs font-bold text-gray-400 tracking-wider">HALL OF FAME</span>
+                                   <span className="text-xs font-bold text-gray-400 tracking-wider">TOP 10</span>
                               </div>
-                              <div className="space-y-2">
-                                   {[
-                                        { rank: 1, name: '강남불주먹', score: 12500 },
-                                        { rank: 2, name: '역삼테트신', score: 8900 },
-                                        { rank: 3, name: '강남짱', score: 5400 },
-                                   ].map((user) => (
-                                        <div key={user.rank} className="flex justify-between items-center text-sm">
+                              <div className="space-y-1.5">
+                                   {rankList.map((e, i) => (
+                                        <div key={i} className="flex justify-between items-center text-sm">
                                              <div className="flex items-center gap-2">
-                                                  <span className={`w-5 h-5 flex items-center justify-center rounded-full text-xs font-bold ${user.rank === 1 ? 'bg-yellow-500 text-black' :
-                                                       user.rank === 2 ? 'bg-gray-400 text-black' :
-                                                            'bg-orange-700 text-white'
-                                                       }`}>{user.rank}</span>
-                                                  <span className="text-gray-300 font-medium">{user.name}</span>
+                                                  <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${e.rank === 1 ? 'bg-yellow-500 text-black' : e.rank === 2 ? 'bg-gray-400 text-black' : e.rank === 3 ? 'bg-orange-600 text-white' : 'bg-gray-600 text-gray-300'}`}>{e.rank}</span>
+                                                  <span className="text-gray-300 truncate max-w-[90px]">{e.name}</span>
                                              </div>
-                                             <span className="text-gray-500 font-mono text-xs">{user.score.toLocaleString()}</span>
+                                             <span className="text-gray-500 font-mono text-xs">{e.score.toLocaleString()}</span>
                                         </div>
                                    ))}
+                                   {rankList.length === 0 && <p className="text-gray-500 text-xs">아직 기록이 없어요.</p>}
                                    <div className="border-t border-white/5 pt-2 mt-2">
-                                        <div className="flex justify-between items-center text-sm opacity-50">
-                                             <div className="flex items-center gap-2">
-                                                  <span className="w-5 text-center text-xs text-gray-500">-</span>
-                                                  <span className="text-gray-400">나</span>
-                                             </div>
+                                        <div className="flex justify-between items-center text-sm opacity-70">
+                                             <span className="text-gray-400">나</span>
                                              <span className="font-mono text-xs">{score > 0 ? score.toLocaleString() : '-'}</span>
                                         </div>
                                    </div>
@@ -309,37 +310,37 @@ const GangnamBlockGame = ({ onClose, user }) => {
 
                     {/* Game Grid */}
                     <div className="relative mx-auto bg-gray-950 border-4 border-gray-800 rounded-lg shadow-2xl overflow-hidden"
-                         style={{ width: COLS * 25 + 8, height: ROWS * 25 + 8 }}>
+                         style={{ width: COLS * BLOCK_SIZE + 8, height: ROWS * BLOCK_SIZE + 8 }}>
                          {/* Grid Background Pattern */}
                          <div className="absolute inset-0 opacity-20"
-                              style={{ backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)', backgroundSize: '25px 25px' }}>
+                              style={{ backgroundImage: `linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)`, backgroundSize: `${BLOCK_SIZE}px ${BLOCK_SIZE}px` }}>
                          </div>
 
                          {/* Active Piece Layer */}
                          <div className="absolute top-1 left-1">
                               {/* Ghost Piece */}
                               {activePiece && !gameOver && activePiece.shape.map((row, y) => row.map((cell, x) => (
-                                   cell ? <div key={`g-${y}-${x}`} className="absolute w-[25px] h-[25px] border-2 border-white/20 bg-white/5 rounded-sm"
-                                        style={{ left: (activePiece.pos.x + x) * 25, top: (ghostY + y) * 25 }} /> : null
+                                   cell ? <div key={`g-${y}-${x}`} className="absolute border-2 border-white/20 bg-white/5 rounded-sm"
+                                        style={{ width: BLOCK_SIZE, height: BLOCK_SIZE, left: (activePiece.pos.x + x) * BLOCK_SIZE, top: (ghostY + y) * BLOCK_SIZE }} /> : null
                               )))}
 
                               {/* Static Grid */}
                               {grid.map((row, y) => row.map((cell, x) => (
-                                   cell ? <div key={`s-${y}-${x}`} className={`absolute w-[25px] h-[25px] ${cell} rounded-sm border border-black/10`}
-                                        style={{ left: x * 25, top: y * 25 }} /> : null
+                                   cell ? <div key={`s-${y}-${x}`} className={`absolute ${cell} rounded-sm border border-black/10`}
+                                        style={{ width: BLOCK_SIZE, height: BLOCK_SIZE, left: x * BLOCK_SIZE, top: y * BLOCK_SIZE }} /> : null
                               )))}
 
                               {/* Active Piece */}
                               {activePiece && !gameOver && activePiece.shape.map((row, y) => row.map((cell, x) => (
-                                   cell ? <div key={`a-${y}-${x}`} className={`absolute w-[25px] h-[25px] ${activePiece.color} rounded-sm border border-black/10`}
-                                        style={{ left: (activePiece.pos.x + x) * 25, top: (activePiece.pos.y + y) * 25 }} /> : null
+                                   cell ? <div key={`a-${y}-${x}`} className={`absolute ${activePiece.color} rounded-sm border border-black/10`}
+                                        style={{ width: BLOCK_SIZE, height: BLOCK_SIZE, left: (activePiece.pos.x + x) * BLOCK_SIZE, top: (activePiece.pos.y + y) * BLOCK_SIZE }} /> : null
                               )))}
                          </div>
 
                          {/* 시작하기 오버레이 (게임 시작 전) */}
                          {!gameStarted && (
                               <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in">
-                                   <div className="text-2xl font-black text-white mb-1 tracking-wider">GANGNAM BLOCK</div>
+                                   <div className="text-2xl font-black text-white mb-1 tracking-wider">테트리스</div>
                                    <div className="text-gray-400 text-sm mb-6">90년대 오락실 감성 테트리스</div>
                                    <button onClick={startGame}
                                         className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2">

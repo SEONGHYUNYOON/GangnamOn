@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Send, Gamepad2, ArrowLeft } from 'lucide-react';
 import GangnamBlockGame from './GangnamBlockGame';
+import GangnamSnake from './GangnamSnake';
+import GangnamWhackAMole from './GangnamWhackAMole';
+import GangnamBrickBreaker from './GangnamBrickBreaker';
+import GangnamReactionTest from './GangnamReactionTest';
+import GangnamTypingGame from './GangnamTypingGame';
+import CardBattle from './CardBattle';
 import GangnamTarot from './GangnamTarot';
+import { getRankTop10 } from '../lib/gameRank';
 
 
 const LOUNGE_ENTRY_COST = 1; // 콘텐츠 이용 시 소모되는 온
 
 const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
-     const [activeFeature, setActiveFeature] = useState(null); // 'balance', 'mbti', 'chat', 'bingo', 'block'
+     const [activeFeature, setActiveFeature] = useState(null); // 'balance', 'mbti', 'chat', 'bingo', 'block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'cardbattle'
 
      // Handle Browser Back Button
      useEffect(() => {
@@ -31,7 +38,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
      };
 
      // 유료 콘텐츠(블록 게임, 밸런스, MBTI, 타로): 1온 소모 + 확인 후 진입
-     const paidFeatures = ['block', 'balance', 'mbti', 'tarot'];
+     const paidFeatures = ['block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'cardbattle', 'balance', 'mbti', 'tarot'];
      const handleLoungeEntry = (feature) => {
           if (paidFeatures.includes(feature)) {
                if (beanCount < LOUNGE_ENTRY_COST) {
@@ -147,6 +154,30 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
      const renderContent = () => {
           if (activeFeature === 'block') {
                return <GangnamBlockGame onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'snake') {
+               return <GangnamSnake onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'whack') {
+               return <GangnamWhackAMole onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'brick') {
+               return <GangnamBrickBreaker onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'reaction') {
+               return <GangnamReactionTest onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'typing') {
+               return <GangnamTypingGame onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'cardbattle') {
+               return <CardBattle onClose={handleCloseFeature} user={user} />;
           }
 
           if (activeFeature === 'tarot') {
@@ -426,21 +457,141 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                    <div className="flex text-center md:text-left flex-col items-center md:items-start">
                                         <div className="bg-yellow-400 text-black text-xs font-black px-3 py-1 rounded-full inline-block mb-3 animate-bounce">NEW GAME!</div>
                                         <h3 className="text-3xl font-black mb-2 flex items-center justify-center md:justify-start gap-3">
-                                             GANGNAM BLOCK <Gamepad2 className="w-8 h-8 text-purple-400" />
+                                             테트리스 <Gamepad2 className="w-8 h-8 text-purple-400" />
                                         </h3>
-                                        <p className="text-gray-400 mb-6">90년대 오락실 감성 그대로!<br />실시간 랭킹에 도전하고 강남 짱이 되어보세요.</p>
+                                        <p className="text-gray-400 mb-6">90년대 오락실 감성 그대로!<br />실시간 랭킹에 도전하고 짱이 되어보세요.</p>
                                         <button className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-purple-900/50 transition-all transform group-hover:scale-105">
                                              게임 시작하기 🕹️
                                         </button>
                                    </div>
 
-                                   {/* Mini Leaderboard Preview */}
-                                   <div className="bg-black/50 p-4 rounded-xl border border-white/10 w-full md:w-64 backdrop-blur-sm">
-                                        <div className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Daily Rank Top 3</div>
-                                        <div className="space-y-2">
-                                             <div className="flex justify-between text-sm"><span className="text-yellow-400 font-bold">1. 강남불주먹</span> <span className="text-gray-400">12,500</span></div>
-                                             <div className="flex justify-between text-sm"><span className="text-gray-300">2. 역삼테트신</span> <span className="text-gray-500">10,200</span></div>
-                                             <div className="flex justify-between text-sm"><span className="text-gray-300">3. 강남고양이</span> <span className="text-gray-500">8,800</span></div>
+                                   {/* Mini Leaderboard Top 10 */}
+                                   <div className="bg-black/50 p-4 rounded-xl border border-white/10 w-full md:w-56 backdrop-blur-sm max-h-64 overflow-y-auto">
+                                        <div className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Daily Rank Top 10</div>
+                                        <div className="space-y-1.5">
+                                             {(getRankTop10('block', true)).map((e, i) => (
+                                                  <div key={i} className="flex justify-between text-sm">
+                                                       <span className={e.rank === 1 ? 'text-yellow-400 font-bold' : e.rank === 2 ? 'text-gray-300' : 'text-gray-400'}>{e.rank}. {e.name}</span>
+                                                       <span className="text-gray-500 font-mono text-xs">{e.score}</span>
+                                                  </div>
+                                             ))}
+                                             {(getRankTop10('block', true)).length === 0 && <p className="text-gray-500 text-xs">아직 기록이 없어요.</p>}
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+
+                         {/* 스네이크 */}
+                         <div
+                              onClick={() => handleLoungeEntry('snake')}
+                              className="bg-gradient-to-br from-green-900 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-green-700/50 hover:shadow-green-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
+                         >
+                              <div className="absolute top-0 right-0 w-40 h-40 bg-green-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
+                              <div className="relative z-10 flex items-center justify-between gap-4">
+                                   <div>
+                                        <div className="bg-green-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
+                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">스네이크 🐍</h3>
+                                        <p className="text-green-200/80 text-sm mb-4">붕어빵·커피 먹고 길러보세요!<br />90년대 감성 스네이크 게임.</p>
+                                        <span className="inline-flex items-center text-green-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
+                                   </div>
+                                   <div className="w-16 h-16 bg-green-600/50 rounded-2xl flex items-center justify-center text-4xl">🐍</div>
+                              </div>
+                         </div>
+
+                         {/* 두더지 */}
+                         <div
+                              onClick={() => handleLoungeEntry('whack')}
+                              className="bg-gradient-to-br from-amber-900 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-amber-700/50 hover:shadow-amber-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
+                         >
+                              <div className="absolute top-0 right-0 w-40 h-40 bg-amber-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
+                              <div className="relative z-10 flex items-center justify-between gap-4">
+                                   <div>
+                                        <div className="bg-amber-500/80 text-black text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
+                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">두더지 🐹</h3>
+                                        <p className="text-amber-200/80 text-sm mb-4">30초 동안 두더지를 잡아보세요!<br />반응속도 대결.</p>
+                                        <span className="inline-flex items-center text-amber-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
+                                   </div>
+                                   <div className="w-16 h-16 bg-amber-600/50 rounded-2xl flex items-center justify-center text-4xl">🐹</div>
+                              </div>
+                         </div>
+
+                         {/* 벽돌깨기 */}
+                         <div
+                              onClick={() => handleLoungeEntry('brick')}
+                              className="bg-gradient-to-br from-slate-800 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-slate-600 hover:shadow-slate-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
+                         >
+                              <div className="absolute top-0 right-0 w-40 h-40 bg-slate-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
+                              <div className="relative z-10 flex items-center justify-between gap-4">
+                                   <div>
+                                        <div className="bg-slate-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
+                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">벽돌깨기 🧱</h3>
+                                        <p className="text-slate-200/80 text-sm mb-4">패들로 공을 튕겨 벽돌을 깨세요!<br />TOP 10 랭킹에 도전.</p>
+                                        <span className="inline-flex items-center text-slate-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
+                                   </div>
+                                   <div className="w-16 h-16 bg-slate-600/50 rounded-2xl flex items-center justify-center text-4xl">🧱</div>
+                              </div>
+                         </div>
+
+                         {/* 반응속도 대결 */}
+                         <div
+                              onClick={() => handleLoungeEntry('reaction')}
+                              className="bg-gradient-to-br from-emerald-900 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-emerald-700/50 hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
+                         >
+                              <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
+                              <div className="relative z-10 flex items-center justify-between gap-4">
+                                   <div>
+                                        <div className="bg-emerald-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
+                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">반응속도 대결 ⚡</h3>
+                                        <p className="text-emerald-200/80 text-sm mb-4">초록색이 되면 클릭!<br />ms 단위로 기록, TOP 10.</p>
+                                        <span className="inline-flex items-center text-emerald-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
+                                   </div>
+                                   <div className="w-16 h-16 bg-emerald-600/50 rounded-2xl flex items-center justify-center text-4xl">⚡</div>
+                              </div>
+                         </div>
+
+                         {/* 격파 */}
+                         <div
+                              onClick={() => handleLoungeEntry('typing')}
+                              className="bg-gradient-to-br from-indigo-900 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-indigo-700/50 hover:shadow-indigo-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
+                         >
+                              <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
+                              <div className="relative z-10 flex items-center justify-between gap-4">
+                                   <div>
+                                        <div className="bg-indigo-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
+                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">격파 ⌨️</h3>
+                                        <p className="text-indigo-200/80 text-sm mb-4">떨어지는 단어를 입력해서 격파!<br />TOP 10 랭킹.</p>
+                                        <span className="inline-flex items-center text-indigo-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
+                                   </div>
+                                   <div className="w-16 h-16 bg-indigo-600/50 rounded-2xl flex items-center justify-center text-4xl">⌨️</div>
+                              </div>
+                         </div>
+
+                         {/* 카드 배틀 */}
+                         <div
+                              onClick={() => handleLoungeEntry('cardbattle')}
+                              className="col-span-1 md:col-span-2 bg-gradient-to-br from-violet-900 via-purple-900 to-slate-900 rounded-[2rem] p-8 shadow-xl border border-violet-700/50 hover:shadow-violet-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
+                         >
+                              <div className="absolute top-0 right-0 w-48 h-48 bg-violet-600 rounded-full blur-[100px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
+                              <div className="relative z-10 flex flex-col md:flex-row items-center md:items-center justify-between gap-6">
+                                   <div className="flex text-center md:text-left flex-col items-center md:items-start">
+                                        <div className="bg-violet-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW · 카드 배틀</div>
+                                        <h3 className="text-2xl md:text-3xl font-black mb-2 flex items-center gap-3">
+                                             카드 배틀 🃏
+                                        </h3>
+                                        <p className="text-violet-200/80 text-sm mb-4">덱을 짜고 카드를 내서 적을 쓰러뜨리세요.<br />층을 올릴수록 점수가 올라가요. TOP 10 랭킹!</p>
+                                        <button className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all transform group-hover:scale-105">
+                                             게임 시작하기 🕹️
+                                        </button>
+                                   </div>
+                                   <div className="bg-black/30 p-4 rounded-xl border border-white/10 w-full md:w-56 backdrop-blur-sm">
+                                        <div className="text-xs font-bold text-violet-300 mb-2 uppercase tracking-wider">TOP 10</div>
+                                        <div className="space-y-1.5 max-h-24 overflow-y-auto">
+                                             {(getRankTop10('cardbattle', true)).slice(0, 5).map((e, i) => (
+                                                  <div key={i} className="flex justify-between text-sm">
+                                                       <span className="text-violet-200 truncate max-w-[70px]">{e.rank}. {e.name}</span>
+                                                       <span className="text-violet-400 font-mono text-xs">{e.score}</span>
+                                                  </div>
+                                             ))}
                                         </div>
                                    </div>
                               </div>
@@ -498,7 +649,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                    </div>
                                    <div className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest mb-2 backdrop-blur-sm">NEW ARRIVAL</div>
                                    <h3 className="text-2xl font-black mb-2 flex items-center gap-2">
-                                        오늘의 강남 타로 <span className="text-yellow-300">☪</span>
+                                        오늘의 타로 <span className="text-yellow-300">☪</span>
                                    </h3>
                                    <p className="text-purple-200 text-sm mb-6 max-w-sm">
                                         "연애, 금전, 오늘의 운세..."<br />
