@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Database } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap } from 'lucide-react';
 import logo from '../assets/gangnam_on_logo.png';
 
 const LeftSidebar = ({ activeTab, setActiveTab }) => {
@@ -87,20 +87,6 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                     { id: 'schedule', label: '나의 모임 일정', icon: Calendar, subtext: '일정관리' },
                ]
           },
-          {
-               id: 'admin_zone',
-               title: '[관리자]',
-               items: [
-                    { id: 'admin', label: '관리자 홈', icon: Shield, subtext: '현황/통계' }
-               ]
-          },
-          {
-               id: 'project',
-               title: '[프로젝트 문서]',
-               items: [
-                    { id: 'db_presentation', label: 'DB 구축 PPT', icon: Database, subtext: '상세 설계서' },
-               ]
-          }
      ];
 
      return (
@@ -119,26 +105,19 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                <div className="mb-2 px-0">
                     <button
                          onClick={() => setActiveTab('romance')}
-                         className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group shadow-md ${activeTab === 'romance'
-                              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-pink-200 scale-[1.02]'
-                              : 'bg-white border border-pink-100 text-gray-800 hover:border-pink-300 hover:shadow-lg'
+                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 ${activeTab === 'romance'
+                              ? 'bg-[#1a0810] border border-rose-800/60 shadow-[0_2px_16px_rgba(220,38,38,0.08)]'
+                              : 'bg-white border border-rose-100 hover:border-rose-200 hover:bg-rose-50/30'
                               }`}
                     >
-                         <div className="flex items-center gap-3">
-                              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === 'romance' ? 'bg-white/20 text-white' : 'bg-pink-50 text-pink-500'
-                                   }`}>
-                                   <span className="text-lg">🔥</span>
+                         <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${activeTab === 'romance' ? 'bg-rose-500/20' : 'bg-rose-50'}`}>
+                              <span className="text-base leading-none">🔥</span>
+                         </div>
+                         <div className="text-left min-w-0">
+                              <div className={`text-sm font-bold truncate ${activeTab === 'romance' ? 'text-rose-300' : 'text-rose-700'}`}>
+                                   강남 썸&쌈
                               </div>
-                              <div className="text-left">
-                                   <div className={`text-sm font-black ${activeTab === 'romance' ? 'text-white' : 'text-pink-600'
-                                        }`}>
-                                        강남 썸&쌈
-                                   </div>
-                                   <div className={`text-[10px] font-medium ${activeTab === 'romance' ? 'text-pink-100' : 'text-gray-400'
-                                        }`}>
-                                        2030 핫플레이스
-                                   </div>
-                              </div>
+                              <div className="text-[10px] text-gray-400 font-medium">2030 핫플레이스</div>
                          </div>
                     </button>
                </div>
@@ -147,26 +126,19 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                <div className="mb-6 px-0">
                     <button
                          onClick={() => setActiveTab('gangnam_lounge')}
-                         className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group shadow-md ${activeTab === 'gangnam_lounge'
-                              ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-indigo-200 scale-[1.02]'
-                              : 'bg-white border border-indigo-100 text-gray-800 hover:border-indigo-300 hover:shadow-lg'
+                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 ${activeTab === 'gangnam_lounge'
+                              ? 'bg-[#0a0c18] border border-amber-500/25 shadow-[0_2px_16px_rgba(251,191,36,0.06)]'
+                              : 'bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
                               }`}
                     >
-                         <div className="flex items-center gap-3">
-                              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === 'gangnam_lounge' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-500'
-                                   }`}>
-                                   <Zap className="w-5 h-5 fill-current" />
+                         <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${activeTab === 'gangnam_lounge' ? 'bg-amber-500/15' : 'bg-slate-100'}`}>
+                              <Zap className={`w-4 h-4 ${activeTab === 'gangnam_lounge' ? 'text-amber-400 fill-amber-400' : 'text-slate-500'}`} />
+                         </div>
+                         <div className="text-left min-w-0">
+                              <div className={`text-sm font-bold truncate ${activeTab === 'gangnam_lounge' ? 'text-amber-200' : 'text-slate-700'}`}>
+                                   강남 라운지
                               </div>
-                              <div className="text-left">
-                                   <div className={`text-sm font-black ${activeTab === 'gangnam_lounge' ? 'text-white' : 'text-indigo-600'
-                                        }`}>
-                                        강남 라운지
-                                   </div>
-                                   <div className={`text-[10px] font-medium ${activeTab === 'gangnam_lounge' ? 'text-indigo-100' : 'text-gray-400'
-                                        }`}>
-                                        게임/MBTI/수다
-                                   </div>
-                              </div>
+                              <div className={`text-[10px] font-medium ${activeTab === 'gangnam_lounge' ? 'text-amber-500/50' : 'text-gray-400'}`}>게임 · 경쟁 · 수다</div>
                          </div>
                     </button>
                </div>
@@ -183,7 +155,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                                    {/* Group Header */}
                                    <button
                                         onClick={() => toggleSection(group.id)}
-                                        className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-600 px-2 py-1"
+                                        className="w-full flex items-center justify-between text-[9px] font-semibold text-gray-300 uppercase tracking-[0.18em] hover:text-gray-400 px-2 py-1 transition-colors"
                                    >
                                         <span>{group.title}</span>
                                         {expandedSections[group.id] ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
@@ -198,19 +170,19 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                                                        <button
                                                             key={item.id}
                                                             onClick={() => setActiveTab(item.id)}
-                                                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-left ${activeTab === item.id
-                                                                 ? 'bg-purple-50 text-purple-700'
-                                                                 : 'text-gray-600 hover:bg-gray-50'
+                                                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group text-left ${activeTab === item.id
+                                                                 ? 'bg-slate-900 shadow-sm'
+                                                                 : 'hover:bg-gray-50'
                                                                  }`}
                                                        >
-                                                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${activeTab === item.id ? 'bg-white' : 'bg-gray-100 group-hover:bg-white'} transition-colors shadow-sm`}>
-                                                                 <Icon className={`w-4 h-4 ${activeTab === item.id ? 'text-purple-600' : 'text-gray-500'}`} />
+                                                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors shrink-0 ${activeTab === item.id ? 'bg-white/10' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
+                                                                 <Icon className={`w-4 h-4 ${activeTab === item.id ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
                                                             </div>
-                                                            <div>
-                                                                 <div className={`text-sm font-bold ${activeTab === item.id ? 'text-gray-900' : 'text-gray-700'}`}>
+                                                            <div className="min-w-0">
+                                                                 <div className={`text-sm font-semibold truncate ${activeTab === item.id ? 'text-white' : 'text-gray-700'}`}>
                                                                       {item.label}
                                                                  </div>
-                                                                 <div className="text-[10px] text-gray-400 font-medium">{item.subtext}</div>
+                                                                 <div className={`text-[10px] font-medium truncate ${activeTab === item.id ? 'text-slate-400' : 'text-gray-400'}`}>{item.subtext}</div>
                                                             </div>
                                                        </button>
                                                   );
@@ -223,8 +195,9 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                </nav>
 
 
-               <div className="mt-auto pt-4 border-t border-gray-50 text-center">
-                    <span className="text-[10px] text-gray-300 font-mono">v1.2.5 (Game Update)</span>
+               <div className="mt-auto pt-4 border-t border-gray-100/60 flex items-center justify-between">
+                    <span className="text-[10px] text-gray-300 font-mono">v1.3.0</span>
+                    <span className="text-[10px] text-gray-300">강남온 © 2026</span>
                </div>
                <div className="h-4"></div>
           </div>

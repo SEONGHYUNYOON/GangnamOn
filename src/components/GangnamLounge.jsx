@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, Send, Gamepad2, ArrowLeft } from 'lucide-react';
+import { Zap, Send, Gamepad2, ArrowLeft, Trophy, Crown } from 'lucide-react';
 import GangnamBlockGame from './GangnamBlockGame';
 import GangnamSnake from './GangnamSnake';
 import GangnamWhackAMole from './GangnamWhackAMole';
@@ -11,7 +11,28 @@ import GangnamTarot from './GangnamTarot';
 import { getRankTop10 } from '../lib/gameRank';
 
 
-const LOUNGE_ENTRY_COST = 1; // 콘텐츠 이용 시 소모되는 온
+const LOUNGE_ENTRY_COST = 1;
+
+const MEDALS = ['🥇', '🥈', '🥉'];
+
+const MiniRank = ({ gameId, max = 3 }) => {
+     const top = getRankTop10(gameId, true).slice(0, max);
+     if (top.length === 0) {
+          return <div className="text-slate-700 text-[11px] py-1 italic">첫 도전자가 되세요!</div>;
+     }
+     return (
+          <div className="space-y-1.5">
+               {top.map((entry, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs">
+                         <span className={`flex items-center gap-1 ${i === 0 ? 'text-amber-400 font-bold' : i === 1 ? 'text-slate-300' : 'text-slate-500'}`}>
+                              {MEDALS[i]} <span className="truncate max-w-[80px]">{entry.name}</span>
+                         </span>
+                         <span className="text-slate-700 font-mono text-[11px]">{(entry.score || 0).toLocaleString()}</span>
+                    </div>
+               ))}
+          </div>
+     );
+};
 
 const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
      const [activeFeature, setActiveFeature] = useState(null); // 'balance', 'mbti', 'chat', 'bingo', 'block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'towerdefense'
@@ -73,7 +94,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
           { q: "자주 가는 카페, 사장님이 나를 알아보고 서비스를 주셨다.", a: { text: "'우와 사장님 감사합니다! 이거 진짜 맛있네요!' 폭풍 리액션.", type: "E" }, b: { text: "'아... 감사합니다 ㅎㅎ' (감동했지만 표현은 소심하게)", type: "I" } },
           { q: "내 핸드폰의 연락처 목록이나 카톡 친구 수는?", a: { text: "아주 많다. 얕고 넓은 인맥도 소중하다.", type: "E" }, b: { text: "정예 멤버만 있다. 깊고 좁은 관계가 편하다.", type: "I" } },
           { q: "엘리베이터에서 이웃 주민과 마주쳤을 때?", a: { text: "'안녕하세요~ 날씨 춥죠?' 가볍게 스몰토크를 건넨다.", type: "E" }, b: { text: "가볍게 목례만 하고 층수가 바뀌길 기다린다.", type: "I" } },
-          { q: "파티나 회식 자리에서 나의 위치는?", a: { text: "분위기의 중심. 테이블을 옮겨 다니며 건배 제의를 한다.", type: "E" }, b: { text: "구석 자리. 친한 동료 한두 명과 조용히 이야기한다.", type: "I" } },
+          { q: "파티나 회식 자리에서 나의 위치는?", a: { text: "분위기의 중심. 테이블을 옮겨 다니며 건배 제안을 한다.", type: "E" }, b: { text: "구석 자리. 친한 동료 한두 명과 조용히 이야기한다.", type: "I" } },
 
           // PART 2. S vs N
           { q: "멍 때릴 때 나의 머릿속은?", a: { text: "아무 생각 없다. 그냥 멍... 하니 있는다.", type: "S" }, b: { text: "'만약 좀비가 나타나면?', '로또 당첨되면 뭐 하지?' 등 상상의 나래를 펼친다.", type: "N" } },
@@ -252,7 +273,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                         </div>
 
                                         <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100">
-                                             <p className="text-purple-600 font-bold mb-1">
+                                             <p className="text-amber-600 font-bold mb-1">
                                                   {balanceVote === 'A' ? "크으~ 잘 아시네요! 탕수육은 찍먹이죠! 👍" : "오! 부먹파시군요! 촉촉한 매력을 아시는 분! 😋"}
                                              </p>
                                              <p className="text-xs text-gray-400">참여자 1,240명 • 의견 52개</p>
@@ -309,7 +330,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                         {char.animal}
                                    </div>
                                    <h2 className="text-xl font-bold text-gray-400 mb-2">나의 강남 캐릭터는?</h2>
-                                   <div className="text-2xl font-black text-purple-600 mb-2 tracking-widest">{result}</div>
+                                   <div className="text-2xl font-black text-amber-500 mb-2 tracking-widest">{result}</div>
                                    <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 mb-6">{char.title}</h1>
                                    <div className="bg-orange-50 rounded-xl p-6 mb-8">
                                         <p className="text-gray-700 font-medium leading-relaxed">
@@ -340,26 +361,26 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                               <button onClick={handleCloseFeature} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ArrowLeft className="w-6 h-6 text-gray-500" /></button>
                               <div className="flex flex-col items-center">
                                    <h2 className="text-lg font-black text-gray-800">나의 MBTI 테스트</h2>
-                                   <span className="text-xs text-purple-600 font-bold">{mbtiStep + 1} / {totalSteps}</span>
+                                   <span className="text-xs text-amber-500 font-bold">{mbtiStep + 1} / {totalSteps}</span>
                               </div>
                               <div className="w-10" />
                          </div>
 
                          <div className="w-full bg-gray-100 h-2 rounded-full mb-8">
-                              <div className="bg-purple-600 h-2 rounded-full transition-all duration-300 ease-out" style={{ width: `${((mbtiStep + 1) / totalSteps) * 100}%` }} />
+                              <div className="bg-amber-500 h-2 rounded-full transition-all duration-300 ease-out" style={{ width: `${((mbtiStep + 1) / totalSteps) * 100}%` }} />
                          </div>
 
                          <div className="flex-1 flex flex-col justify-center">
-                              <span className="text-purple-600 font-black text-lg mb-4 block">Q{mbtiStep + 1}.</span>
+                              <span className="text-amber-500 font-black text-lg mb-4 block">Q{mbtiStep + 1}.</span>
                               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-12 leading-relaxed">
                                    {q.q}
                               </h2>
                               <div className="space-y-4 w-full">
-                                   <button onClick={() => handleMbtiSelect(q.a.type)} className="w-full p-6 text-left bg-white border-2 border-gray-100 rounded-3xl hover:border-purple-500 hover:bg-purple-50 hover:shadow-md transition-all group relative overflow-hidden">
-                                        <span className="relative z-10 text-lg font-bold text-gray-700 group-hover:text-purple-700">{q.a.text}</span>
+                                   <button onClick={() => handleMbtiSelect(q.a.type)} className="w-full p-6 text-left bg-white border-2 border-gray-100 rounded-3xl hover:border-amber-400 hover:bg-amber-50 hover:shadow-md transition-all group relative overflow-hidden">
+                                        <span className="relative z-10 text-lg font-bold text-gray-700 group-hover:text-amber-800">{q.a.text}</span>
                                    </button>
-                                   <button onClick={() => handleMbtiSelect(q.b.type)} className="w-full p-6 text-left bg-white border-2 border-gray-100 rounded-3xl hover:border-purple-500 hover:bg-purple-50 hover:shadow-md transition-all group relative overflow-hidden">
-                                        <span className="relative z-10 text-lg font-bold text-gray-700 group-hover:text-purple-700">{q.b.text}</span>
+                                   <button onClick={() => handleMbtiSelect(q.b.type)} className="w-full p-6 text-left bg-white border-2 border-gray-100 rounded-3xl hover:border-amber-400 hover:bg-amber-50 hover:shadow-md transition-all group relative overflow-hidden">
+                                        <span className="relative z-10 text-lg font-bold text-gray-700 group-hover:text-amber-800">{q.b.text}</span>
                                    </button>
                               </div>
                          </div>
@@ -400,9 +421,9 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
                               {messages.map(msg => (
                                    <div key={msg.id} className={`flex ${msg.type === 'sent' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${msg.type === 'sent' ? 'bg-purple-500 text-white rounded-tr-none' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm'}`}>
+                                        <div className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${msg.type === 'sent' ? 'bg-slate-800 text-white rounded-tr-none' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm'}`}>
                                              {msg.text}
-                                             <div className={`text-[10px] mt-1 text-right ${msg.type === 'sent' ? 'text-purple-200' : 'text-gray-400'}`}>{msg.time}</div>
+                                             <div className={`text-[10px] mt-1 text-right ${msg.type === 'sent' ? 'text-slate-400' : 'text-gray-400'}`}>{msg.time}</div>
                                         </div>
                                    </div>
                               ))}
@@ -412,9 +433,9 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                    value={chatInput}
                                    onChange={e => setChatInput(e.target.value)}
                                    placeholder="메시지를 입력하세요..."
-                                   className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                   className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                               />
-                              <button type="submit" className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white hover:bg-purple-700 transition-colors">
+                              <button type="submit" className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-white hover:bg-slate-700 transition-colors">
                                    <Send className="w-4 h-4" />
                               </button>
                          </form>
@@ -424,278 +445,299 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
 
           // DEFAULT DASHBOARD
           return (
-               <div className="max-w-6xl mx-auto">
-                    <div className="mb-10 text-center relative">
-                         <button
-                              onClick={onExit}
-                              className="absolute left-0 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors md:hidden"
-                         >
-                              <ArrowLeft className="w-6 h-6" />
-                         </button>
-                         <h1 className="text-4xl font-black text-gray-900 mb-2 flex items-center justify-center gap-3">
-                              Gangnam Lounge <span className="text-4xl text-purple-600 animate-pulse">⚡️</span>
-                         </h1>
-                         <p className="text-gray-500 font-medium">
-                              심심할 땐 여기로 모여라! 강남 사람들의 인터랙티브 놀이터
-                         </p>
+               <div className="max-w-4xl mx-auto">
+
+                    {/* ── Header ── */}
+                    <div className="flex items-start justify-between mb-10">
+                         <div>
+                              <div className="flex items-center gap-3 mb-1.5">
+                                   <button
+                                        onClick={onExit}
+                                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all md:hidden"
+                                   >
+                                        <ArrowLeft className="w-5 h-5" />
+                                   </button>
+                                   <div className="flex items-center gap-2">
+                                        <Gamepad2 className="w-5 h-5 text-amber-400" />
+                                        <h1 className="text-xl font-black text-white tracking-tight">강남 라운지</h1>
+                                   </div>
+                              </div>
+                              <p className="text-slate-600 text-xs pl-1">점수를 올리고 강남 TOP을 차지하세요</p>
+                         </div>
+                         <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
+                              <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                              <span className="text-white font-black text-sm">{beanCount.toLocaleString()}</span>
+                              <span className="text-slate-500 text-xs">온</span>
+                         </div>
                     </div>
 
+                    {/* ── Section 1: 랭킹 아케이드 ── */}
+                    <div className="flex items-center gap-3 mb-5">
+                         <span className="text-[11px] font-bold text-amber-400 uppercase tracking-[0.15em] shrink-0">⚔️ 랭킹 아케이드</span>
+                         <div className="flex-1 h-px bg-white/5" />
+                         <span className="text-slate-700 text-[10px] shrink-0">랭킹에 이름을 올리세요</span>
+                    </div>
 
+                    <div className="space-y-3 mb-10">
 
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
-                         {/* 0. Gangnam Block Game */}
+                         {/* Tetris — Hero */}
                          <div
                               onClick={() => handleLoungeEntry('block')}
-                              className="col-span-1 md:col-span-2 bg-gray-900 rounded-[2rem] p-8 shadow-2xl shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden text-white border border-gray-800"
+                              className="bg-[#111520] rounded-2xl border border-purple-500/20 hover:border-purple-500/40 overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_40px_rgba(139,92,246,0.12)]"
                          >
-                              {/* Decorative Background */}
-                              <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0)_25%,rgba(255,255,255,0.05)_25%,rgba(255,255,255,0.05)_50%,rgba(0,0,0,0)_50%,rgba(0,0,0,0)_75%,rgba(255,255,255,0.05)_75%,rgba(255,255,255,0.05)_100%)] bg-[length:20px_20px] opacity-20" />
-                              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-30 -mr-20 -mt-20 group-hover:opacity-50 transition-opacity" />
-
-                              <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
-                                   <div className="flex text-center md:text-left flex-col items-center md:items-start">
-                                        <div className="bg-yellow-400 text-black text-xs font-black px-3 py-1 rounded-full inline-block mb-3 animate-bounce">NEW GAME!</div>
-                                        <h3 className="text-3xl font-black mb-2 flex items-center justify-center md:justify-start gap-3">
-                                             테트리스 <Gamepad2 className="w-8 h-8 text-purple-400" />
-                                        </h3>
-                                        <p className="text-gray-400 mb-6">90년대 오락실 감성 그대로!<br />실시간 랭킹에 도전하고 짱이 되어보세요.</p>
-                                        <button className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-purple-900/50 transition-all transform group-hover:scale-105">
-                                             게임 시작하기 🕹️
-                                        </button>
+                              <div className="h-px bg-gradient-to-r from-purple-500 via-violet-500 to-transparent" />
+                              <div className="p-5 flex flex-col md:flex-row gap-5 items-start">
+                                   <div className="flex-1">
+                                        <div className="flex items-center gap-3 mb-3">
+                                             <span className="text-3xl">🟦</span>
+                                             <div>
+                                                  <div className="flex items-center gap-2">
+                                                       <span className="text-white font-black text-lg leading-tight">테트리스</span>
+                                                       <span className="bg-amber-500 text-black text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">HOT</span>
+                                                  </div>
+                                                  <div className="text-slate-500 text-xs mt-0.5">90년대 오락실 감성 · 실시간 랭킹 1위 도전</div>
+                                             </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                             <button className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-5 rounded-xl text-sm transition-all flex items-center gap-1.5 group-hover:shadow-lg group-hover:shadow-purple-900/50">
+                                                  <Gamepad2 className="w-3.5 h-3.5" /> 게임 시작
+                                             </button>
+                                             <span className="flex items-center gap-1 text-slate-600 text-xs">
+                                                  <Zap className="w-3 h-3 text-amber-600" />1온 소모
+                                             </span>
+                                        </div>
                                    </div>
-
-                                   {/* Mini Leaderboard Top 10 */}
-                                   <div className="bg-black/50 p-4 rounded-xl border border-white/10 w-full md:w-56 backdrop-blur-sm max-h-64 overflow-y-auto">
-                                        <div className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Daily Rank Top 10</div>
+                                   <div className="w-full md:w-52 bg-black/40 rounded-xl border border-white/5 p-3.5 shrink-0">
+                                        <div className="flex items-center gap-1.5 mb-2.5">
+                                             <Trophy className="w-3 h-3 text-amber-400" />
+                                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Daily Top 10</span>
+                                        </div>
                                         <div className="space-y-1.5">
-                                             {(getRankTop10('block', true)).map((e, i) => (
-                                                  <div key={i} className="flex justify-between text-sm">
-                                                       <span className={e.rank === 1 ? 'text-yellow-400 font-bold' : e.rank === 2 ? 'text-gray-300' : 'text-gray-400'}>{e.rank}. {e.name}</span>
-                                                       <span className="text-gray-500 font-mono text-xs">{e.score}</span>
+                                             {getRankTop10('block', true).map((e, i) => (
+                                                  <div key={i} className="flex items-center justify-between text-xs">
+                                                       <span className={`flex items-center gap-1 ${i === 0 ? 'text-amber-400 font-bold' : i < 3 ? 'text-slate-300' : 'text-slate-600'}`}>
+                                                            {i < 3 ? MEDALS[i] : `${i + 1}.`} <span className="truncate max-w-[80px]">{e.name}</span>
+                                                       </span>
+                                                       <span className="text-slate-700 font-mono text-[10px]">{(e.score || 0).toLocaleString()}</span>
                                                   </div>
                                              ))}
-                                             {(getRankTop10('block', true)).length === 0 && <p className="text-gray-500 text-xs">아직 기록이 없어요.</p>}
+                                             {getRankTop10('block', true).length === 0 && <p className="text-slate-700 text-xs text-center py-2 italic">첫 도전자가 되세요!</p>}
                                         </div>
                                    </div>
                               </div>
                          </div>
 
-                         {/* 스네이크 */}
-                         <div
-                              onClick={() => handleLoungeEntry('snake')}
-                              className="bg-gradient-to-br from-green-900 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-green-700/50 hover:shadow-green-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
-                         >
-                              <div className="absolute top-0 right-0 w-40 h-40 bg-green-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
-                              <div className="relative z-10 flex items-center justify-between gap-4">
-                                   <div>
-                                        <div className="bg-green-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
-                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">스네이크 🐍</h3>
-                                        <p className="text-green-200/80 text-sm mb-4">붕어빵·커피 먹고 길러보세요!<br />90년대 감성 스네이크 게임.</p>
-                                        <span className="inline-flex items-center text-green-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
+                         {/* Snake + Whack — 2col */}
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div onClick={() => handleLoungeEntry('snake')} className="bg-[#111520] rounded-2xl border border-green-500/20 hover:border-green-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-green-500 to-emerald-500 opacity-60" />
+                                   <div className="p-5">
+                                        <div className="flex items-start justify-between mb-3">
+                                             <div className="flex items-center gap-2">
+                                                  <span className="text-2xl">🐍</span>
+                                                  <div>
+                                                       <div className="text-white font-bold text-sm">스네이크</div>
+                                                       <div className="text-slate-600 text-[11px]">붕어빵 먹고 길러보세요</div>
+                                                  </div>
+                                             </div>
+                                             <span className="flex items-center gap-0.5 text-slate-700 text-[10px]"><Zap className="w-2.5 h-2.5 text-amber-600" />1</span>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-3 mb-3 min-h-[52px]">
+                                             <MiniRank gameId="snake" />
+                                        </div>
+                                        <button className="w-full py-1.5 bg-green-600/15 hover:bg-green-600/25 text-green-400 rounded-lg text-xs font-bold transition-colors border border-green-600/20">게임 시작</button>
                                    </div>
-                                   <div className="w-16 h-16 bg-green-600/50 rounded-2xl flex items-center justify-center text-4xl">🐍</div>
+                              </div>
+
+                              <div onClick={() => handleLoungeEntry('whack')} className="bg-[#111520] rounded-2xl border border-amber-500/20 hover:border-amber-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-amber-500 to-orange-500 opacity-60" />
+                                   <div className="p-5">
+                                        <div className="flex items-start justify-between mb-3">
+                                             <div className="flex items-center gap-2">
+                                                  <span className="text-2xl">🐹</span>
+                                                  <div>
+                                                       <div className="text-white font-bold text-sm">두더지</div>
+                                                       <div className="text-slate-600 text-[11px]">30초 반응속도 대결</div>
+                                                  </div>
+                                             </div>
+                                             <span className="flex items-center gap-0.5 text-slate-700 text-[10px]"><Zap className="w-2.5 h-2.5 text-amber-600" />1</span>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-3 mb-3 min-h-[52px]">
+                                             <MiniRank gameId="whack" />
+                                        </div>
+                                        <button className="w-full py-1.5 bg-amber-600/15 hover:bg-amber-600/25 text-amber-400 rounded-lg text-xs font-bold transition-colors border border-amber-600/20">게임 시작</button>
+                                   </div>
                               </div>
                          </div>
 
-                         {/* 두더지 */}
-                         <div
-                              onClick={() => handleLoungeEntry('whack')}
-                              className="bg-gradient-to-br from-amber-900 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-amber-700/50 hover:shadow-amber-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
-                         >
-                              <div className="absolute top-0 right-0 w-40 h-40 bg-amber-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
-                              <div className="relative z-10 flex items-center justify-between gap-4">
-                                   <div>
-                                        <div className="bg-amber-500/80 text-black text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
-                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">두더지 🐹</h3>
-                                        <p className="text-amber-200/80 text-sm mb-4">30초 동안 두더지를 잡아보세요!<br />반응속도 대결.</p>
-                                        <span className="inline-flex items-center text-amber-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
+                         {/* Brick + Reaction + Typing — 3col */}
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              <div onClick={() => handleLoungeEntry('brick')} className="bg-[#111520] rounded-2xl border border-slate-600/20 hover:border-slate-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-slate-400 to-gray-600 opacity-40" />
+                                   <div className="p-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                             <span className="text-xl">🧱</span>
+                                             <div>
+                                                  <div className="text-white font-bold text-sm">벽돌깨기</div>
+                                                  <div className="text-slate-600 text-[10px]">공 튕겨 격파</div>
+                                             </div>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]">
+                                             <MiniRank gameId="brick" />
+                                        </div>
+                                        <button className="w-full py-1.5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
                                    </div>
-                                   <div className="w-16 h-16 bg-amber-600/50 rounded-2xl flex items-center justify-center text-4xl">🐹</div>
+                              </div>
+
+                              <div onClick={() => handleLoungeEntry('reaction')} className="bg-[#111520] rounded-2xl border border-emerald-500/20 hover:border-emerald-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-emerald-500 to-teal-500 opacity-60" />
+                                   <div className="p-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                             <span className="text-xl">⚡</span>
+                                             <div>
+                                                  <div className="text-white font-bold text-sm">반응속도</div>
+                                                  <div className="text-slate-600 text-[10px]">ms 단위 기록 도전</div>
+                                             </div>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]">
+                                             <MiniRank gameId="reaction" />
+                                        </div>
+                                        <button className="w-full py-1.5 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
+                                   </div>
+                              </div>
+
+                              <div onClick={() => handleLoungeEntry('typing')} className="bg-[#111520] rounded-2xl border border-indigo-500/20 hover:border-indigo-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-indigo-500 to-blue-500 opacity-60" />
+                                   <div className="p-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                             <span className="text-xl">⌨️</span>
+                                             <div>
+                                                  <div className="text-white font-bold text-sm">격파</div>
+                                                  <div className="text-slate-600 text-[10px]">단어 타이핑 격파</div>
+                                             </div>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]">
+                                             <MiniRank gameId="typing" />
+                                        </div>
+                                        <button className="w-full py-1.5 bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
+                                   </div>
                               </div>
                          </div>
 
-                         {/* 벽돌깨기 */}
-                         <div
-                              onClick={() => handleLoungeEntry('brick')}
-                              className="bg-gradient-to-br from-slate-800 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-slate-600 hover:shadow-slate-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
-                         >
-                              <div className="absolute top-0 right-0 w-40 h-40 bg-slate-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
-                              <div className="relative z-10 flex items-center justify-between gap-4">
-                                   <div>
-                                        <div className="bg-slate-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
-                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">벽돌깨기 🧱</h3>
-                                        <p className="text-slate-200/80 text-sm mb-4">패들로 공을 튕겨 벽돌을 깨세요!<br />TOP 10 랭킹에 도전.</p>
-                                        <span className="inline-flex items-center text-slate-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
-                                   </div>
-                                   <div className="w-16 h-16 bg-slate-600/50 rounded-2xl flex items-center justify-center text-4xl">🧱</div>
-                              </div>
-                         </div>
-
-                         {/* 반응속도 대결 */}
-                         <div
-                              onClick={() => handleLoungeEntry('reaction')}
-                              className="bg-gradient-to-br from-emerald-900 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-emerald-700/50 hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
-                         >
-                              <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
-                              <div className="relative z-10 flex items-center justify-between gap-4">
-                                   <div>
-                                        <div className="bg-emerald-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
-                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">반응속도 대결 ⚡</h3>
-                                        <p className="text-emerald-200/80 text-sm mb-4">초록색이 되면 클릭!<br />ms 단위로 기록, TOP 10.</p>
-                                        <span className="inline-flex items-center text-emerald-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
-                                   </div>
-                                   <div className="w-16 h-16 bg-emerald-600/50 rounded-2xl flex items-center justify-center text-4xl">⚡</div>
-                              </div>
-                         </div>
-
-                         {/* 격파 */}
-                         <div
-                              onClick={() => handleLoungeEntry('typing')}
-                              className="bg-gradient-to-br from-indigo-900 to-gray-900 rounded-[2rem] p-8 shadow-xl border border-indigo-700/50 hover:shadow-indigo-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
-                         >
-                              <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
-                              <div className="relative z-10 flex items-center justify-between gap-4">
-                                   <div>
-                                        <div className="bg-indigo-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW</div>
-                                        <h3 className="text-2xl font-black mb-2 flex items-center gap-2">격파 ⌨️</h3>
-                                        <p className="text-indigo-200/80 text-sm mb-4">떨어지는 단어를 입력해서 격파!<br />TOP 10 랭킹.</p>
-                                        <span className="inline-flex items-center text-indigo-300 font-bold text-sm group-hover:translate-x-1 transition-transform">게임 시작하기 <Gamepad2 className="w-4 h-4 ml-1" /></span>
-                                   </div>
-                                   <div className="w-16 h-16 bg-indigo-600/50 rounded-2xl flex items-center justify-center text-4xl">⌨️</div>
-                              </div>
-                         </div>
-
-                         {/* 타워 디펜스 */}
+                         {/* Tower Defense — Hero */}
                          <div
                               onClick={() => handleLoungeEntry('towerdefense')}
-                              className="col-span-1 md:col-span-2 bg-gradient-to-br from-violet-900 via-purple-900 to-slate-900 rounded-[2rem] p-8 shadow-xl border border-violet-700/50 hover:shadow-violet-500/20 hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
+                              className="bg-[#0e0b1a] rounded-2xl border border-violet-500/20 hover:border-violet-500/40 overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_40px_rgba(124,58,237,0.1)]"
                          >
-                              <div className="absolute top-0 right-0 w-48 h-48 bg-violet-600 rounded-full blur-[100px] opacity-30 -mr-10 -mt-10 group-hover:opacity-50 transition-opacity" />
-                              <div className="relative z-10 flex flex-col md:flex-row items-center md:items-center justify-between gap-6">
-                                   <div className="flex text-center md:text-left flex-col items-center md:items-start">
-                                        <div className="bg-violet-500/80 text-white text-xs font-black px-3 py-1 rounded-full inline-block mb-3">NEW · 타워 디펜스</div>
-                                        <h3 className="text-2xl md:text-3xl font-black mb-2 flex items-center gap-3">
-                                             타워 디펜스 🏰
-                                        </h3>
-                                        <p className="text-violet-200/80 text-sm mb-4">타워를 세워 적을 막아내세요!<br />웨이브를 넘길수록 점수가 올라갑니다. TOP 10 랭킹!</p>
-                                        <button className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all transform group-hover:scale-105">
-                                             게임 시작하기 🕹️
-                                        </button>
+                              <div className="h-px bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 opacity-70" />
+                              <div className="p-5 flex flex-col md:flex-row gap-5 items-start">
+                                   <div className="flex-1">
+                                        <div className="flex items-center gap-3 mb-3">
+                                             <span className="text-3xl">🏰</span>
+                                             <div>
+                                                  <div className="flex items-center gap-2">
+                                                       <span className="text-white font-black text-lg leading-tight">타워 디펜스</span>
+                                                       <span className="bg-violet-500/25 text-violet-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-violet-500/30">전략</span>
+                                                  </div>
+                                                  <div className="text-slate-500 text-xs mt-0.5">타워를 세워 적을 막아내세요! 웨이브를 넘길수록 고득점</div>
+                                             </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                             <button className="bg-violet-700 hover:bg-violet-600 text-white font-bold py-2 px-5 rounded-xl text-sm transition-all flex items-center gap-1.5 group-hover:shadow-lg group-hover:shadow-violet-900/50">
+                                                  <Gamepad2 className="w-3.5 h-3.5" /> 게임 시작
+                                             </button>
+                                             <span className="flex items-center gap-1 text-slate-600 text-xs"><Zap className="w-3 h-3 text-amber-600" />1온 소모</span>
+                                        </div>
                                    </div>
-                                   <div className="bg-black/30 p-4 rounded-xl border border-white/10 w-full md:w-56 backdrop-blur-sm">
-                                        <div className="text-xs font-bold text-violet-300 mb-2 uppercase tracking-wider">TOP 10</div>
-                                        <div className="space-y-1.5 max-h-24 overflow-y-auto">
-                                             {(getRankTop10('towerdefense', true)).slice(0, 5).map((e, i) => (
-                                                  <div key={i} className="flex justify-between text-sm">
-                                                       <span className="text-violet-200 truncate max-w-[70px]">{e.rank}. {e.name}</span>
-                                                       <span className="text-violet-400 font-mono text-xs">{e.score}</span>
+                                   <div className="w-full md:w-48 bg-black/40 rounded-xl border border-white/5 p-3.5 shrink-0">
+                                        <div className="flex items-center gap-1.5 mb-2.5">
+                                             <Crown className="w-3 h-3 text-violet-400" />
+                                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Top 5</span>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                             {getRankTop10('towerdefense', true).slice(0, 5).map((e, i) => (
+                                                  <div key={i} className="flex items-center justify-between text-xs">
+                                                       <span className={`flex items-center gap-1 ${i === 0 ? 'text-amber-400 font-bold' : i < 3 ? 'text-slate-300' : 'text-slate-600'}`}>
+                                                            {i < 3 ? MEDALS[i] : `${i + 1}.`} <span className="truncate max-w-[70px]">{e.name}</span>
+                                                       </span>
+                                                       <span className="text-slate-700 font-mono text-[10px]">{(e.score || 0).toLocaleString()}</span>
                                                   </div>
                                              ))}
+                                             {getRankTop10('towerdefense', true).length === 0 && <p className="text-slate-700 text-xs text-center py-2 italic">첫 도전자가 되세요!</p>}
                                         </div>
                                    </div>
                               </div>
                          </div>
+                    </div>
 
-                         {/* 1. Balance Game */}
-                         <div
-                              onClick={() => handleLoungeEntry('balance')}
-                              className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden relative"
-                         >
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-100 rounded-full blur-3xl opacity-50 -mr-10 -mt-10 pointer-events-none" />
-                              <div className="relative z-10">
-                                   <div className="flex justify-between items-start mb-6">
-                                        <div className="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">⚖️</div>
-                                        <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full animate-pulse">HOT</span>
+                    {/* ── Section 2: 소통·심리 ── */}
+                    <div className="flex items-center gap-3 mb-5">
+                         <span className="text-[11px] font-bold text-rose-400 uppercase tracking-[0.15em] shrink-0">🎭 소통 · 심리</span>
+                         <div className="flex-1 h-px bg-white/5" />
+                         <span className="text-slate-700 text-[10px] shrink-0">이웃들과 함께하는 콘텐츠</span>
+                    </div>
+
+                    <div className="space-y-3 pb-8">
+                         {/* Balance + MBTI + Tarot */}
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              <div onClick={() => handleLoungeEntry('balance')} className="bg-[#111520] rounded-2xl border border-yellow-500/20 hover:border-yellow-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 p-5">
+                                   <div className="flex items-start justify-between mb-4">
+                                        <div className="w-10 h-10 bg-yellow-500/10 rounded-xl flex items-center justify-center text-xl border border-yellow-500/10">⚖️</div>
+                                        <span className="text-[10px] bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-bold">HOT</span>
                                    </div>
-                                   <h3 className="text-2xl font-bold text-gray-900 mb-2">밸런스 게임</h3>
-                                   <p className="text-gray-500 text-sm mb-4">매일 바뀌는 난제!<br />부먹 vs 찍먹, 당신의 선택은?</p>
-                                   <div className="inline-flex items-center text-purple-600 font-bold text-sm group-hover:translate-x-1 transition-transform">
-                                        참여하기 <Zap className="w-4 h-4 ml-1" />
-                                   </div>
+                                   <div className="text-white font-bold mb-1 text-sm">밸런스 게임</div>
+                                   <div className="text-slate-600 text-xs mb-4">매일 바뀌는 난제! 강남 사람들의 선택은?</div>
+                                   <div className="text-amber-400 text-xs font-bold flex items-center gap-1">참여하기 <Zap className="w-3 h-3" /></div>
                               </div>
-                         </div>
 
-                         {/* 2. MBTI */}
-                         <div
-                              onClick={() => handleLoungeEntry('mbti')}
-                              className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-[2rem] p-8 shadow-lg shadow-purple-200 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
-                         >
-                              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-                              <div className="relative z-10">
-                                   <div className="flex justify-between items-start mb-6">
-                                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl group-hover:rotate-12 transition-transform">🧠</div>
+                              <div onClick={() => handleLoungeEntry('mbti')} className="bg-[#111520] rounded-2xl border border-purple-500/20 hover:border-purple-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 p-5">
+                                   <div className="flex items-start justify-between mb-4">
+                                        <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center text-xl border border-purple-500/10">🧠</div>
+                                        <span className="flex items-center gap-0.5 text-slate-700 text-[10px]"><Zap className="w-2.5 h-2.5 text-amber-600" />1</span>
                                    </div>
-                                   <h3 className="text-2xl font-bold mb-2">나의 MBTI 테스트</h3>
-                                   <p className="text-purple-100 text-sm mb-4">내 안에 숨겨진 강남 캐릭터 찾기!<br />총 28문항 (약 3분 소요)</p>
-                                   <div className="inline-flex items-center text-white font-bold text-sm bg-white/20 px-4 py-2 rounded-full backdrop-blur-md group-hover:bg-white/30 transition-colors">
-                                        테스트 시작
-                                   </div>
+                                   <div className="text-white font-bold mb-1 text-sm">MBTI 테스트</div>
+                                   <div className="text-slate-600 text-xs mb-4">내 안에 숨겨진 강남 캐릭터 찾기 · 28문항</div>
+                                   <div className="text-purple-400 text-xs font-bold">테스트 시작 →</div>
                               </div>
-                         </div>
 
-                         {/* 3. NEW: Tarot Card */}
-                         <div
-                              onClick={() => handleLoungeEntry('tarot')}
-                              className="col-span-1 md:col-span-2 bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 rounded-[2rem] p-8 shadow-xl shadow-indigo-200 hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group text-white relative overflow-hidden"
-                         >
-                              {/* Stars Background */}
-                              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 animate-pulse" />
-                              <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500 rounded-full blur-[80px] opacity-20 -mr-10 -mt-10 pointer-events-none" />
-
-                              <div className="relative z-10 flex flex-col items-center text-center">
-                                   <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                                        🔮
-                                   </div>
-                                   <div className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest mb-2 backdrop-blur-sm">NEW ARRIVAL</div>
-                                   <h3 className="text-2xl font-black mb-2 flex items-center gap-2">
-                                        오늘의 타로 <span className="text-yellow-300">☪</span>
-                                   </h3>
-                                   <p className="text-purple-200 text-sm mb-6 max-w-sm">
-                                        "연애, 금전, 오늘의 운세..."<br />
-                                        신비로운 타로 카드가 당신에게 따뜻한 조언을 드려요.
-                                   </p>
-                                   <button className="bg-white text-purple-900 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-purple-50 transition-colors transform group-hover:scale-105">
-                                        카드 뽑으러 가기 ✨
-                                   </button>
-                              </div>
-                         </div>
-
-                         {/* 3. Live Chat */}
-                         <div
-                              onClick={() => handleOpenFeature('chat')}
-                              className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden relative"
-                         >
-                              <div className="absolute top-0 left-0 w-32 h-32 bg-green-100 rounded-full blur-3xl opacity-50 -ml-10 -mt-10 pointer-events-none" />
-                              <div className="relative z-10">
-                                   <div className="flex justify-between items-start mb-6">
-                                        <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💬</div>
-                                        <div className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded-full border border-green-100">
-                                             <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
-                                             <span className="text-xs font-bold text-green-700">42명 접속중</span>
+                              <div onClick={() => handleLoungeEntry('tarot')} className="bg-[#0f0c1a] rounded-2xl border border-pink-500/20 hover:border-pink-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 p-5 relative">
+                                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/50 via-transparent to-pink-950/30 rounded-2xl pointer-events-none" />
+                                   <div className="relative z-10">
+                                        <div className="flex items-start justify-between mb-4">
+                                             <div className="w-10 h-10 bg-pink-500/10 rounded-xl flex items-center justify-center text-xl border border-pink-500/10">🔮</div>
+                                             <span className="text-[10px] text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20 font-bold">NEW</span>
                                         </div>
+                                        <div className="text-white font-bold mb-1 text-sm">오늘의 타로</div>
+                                        <div className="text-slate-500 text-xs mb-4">연애 · 금전 · 오늘의 운세</div>
+                                        <div className="text-pink-400 text-xs font-bold">카드 뽑기 ✨</div>
                                    </div>
-                                   <h3 className="text-2xl font-bold text-gray-900 mb-2">실시간 톡</h3>
-                                   <p className="text-gray-500 text-sm mb-4">지금 접속 중인 이웃들과<br />가볍게 수다 떨어요!</p>
                               </div>
                          </div>
 
-                         {/* 4. Bingo */}
-                         <div
-                              onClick={() => handleOpenFeature('bingo')}
-                              className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden relative"
-                         >
-                              <div className="absolute bottom-0 right-0 w-32 h-32 bg-pink-100 rounded-full blur-3xl opacity-50 -mr-10 -mb-10 pointer-events-none" />
-                              <div className="relative z-10">
-                                   <div className="flex justify-between items-start mb-6">
-                                        <div className="w-12 h-12 bg-pink-100 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📅</div>
+                         {/* Chat + Bingo */}
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div onClick={() => handleOpenFeature('chat')} className="bg-[#111520] rounded-2xl border border-teal-500/20 hover:border-teal-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 p-5 flex items-center gap-4">
+                                   <div className="w-12 h-12 bg-teal-500/10 rounded-xl flex items-center justify-center text-2xl border border-teal-500/10 shrink-0">💬</div>
+                                   <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                             <span className="text-white font-bold text-sm">실시간 강남 톡</span>
+                                             <span className="flex items-center gap-1 text-[10px] text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded-full border border-green-500/20 shrink-0">
+                                                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping" />42명 접속중
+                                             </span>
+                                        </div>
+                                        <div className="text-slate-600 text-xs">지금 이웃들과 수다 떨기</div>
                                    </div>
-                                   <h3 className="text-2xl font-bold text-gray-900 mb-2">출석 빙고</h3>
-                                   <p className="text-gray-500 text-sm mb-4">매일매일 도장 쾅!<br />빙고 완성하고 경품 받자</p>
-                                   <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                        <div className="w-2/3 h-full bg-pink-500" />
+                              </div>
+
+                              <div onClick={() => handleOpenFeature('bingo')} className="bg-[#111520] rounded-2xl border border-rose-500/20 hover:border-rose-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 p-5 flex items-center gap-4">
+                                   <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center text-2xl border border-rose-500/10 shrink-0">📅</div>
+                                   <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                             <span className="text-white font-bold text-sm">출석 빙고</span>
+                                             <span className="text-[10px] text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded-full border border-rose-500/20 shrink-0">오늘 완료!</span>
+                                        </div>
+                                        <div className="text-slate-600 text-xs">매일 도장 쾅! 빙고 완성하고 경품 받자</div>
                                    </div>
-                                   <p className="text-xs text-right text-pink-500 font-bold mt-1">오늘 미션 완료!</p>
                               </div>
                          </div>
                     </div>
@@ -704,7 +746,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
      };
 
      return (
-          <div className="min-h-full py-8 px-4 animate-in fade-in duration-500">
+          <div className={`min-h-full animate-in fade-in duration-500 ${!activeFeature ? 'bg-[#08090f] py-8 px-4' : 'py-8 px-4'}`}>
                {renderContent()}
           </div>
      );
