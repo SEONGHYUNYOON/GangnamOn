@@ -96,7 +96,7 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
 
                               <div className="flex items-center gap-3">
                                    <div className="px-3 py-1 bg-yellow-100 rounded-full border border-yellow-200 flex items-center gap-1">
-                                        <span className="text-xs">🫘</span>
+                                        <span className="text-xs">⚡</span>
                                         <span className="text-xs font-bold text-yellow-700">{userBeanCount.toLocaleString()}</span>
                                    </div>
                                    <button
@@ -228,7 +228,7 @@ const AvatarCustomizer = ({ onClose, onSave, currentAvatarUrl, unlockedStyles = 
 
                                                        <div className="font-bold text-gray-900 text-sm mb-1">{s.name}</div>
                                                        <div className="flex items-center gap-1">
-                                                            <span className="text-xs">🫘</span>
+                                                            <span className="text-xs">⚡</span>
                                                             <span className="text-sm font-black text-purple-600">{s.price}</span>
                                                        </div>
                                                   </button>

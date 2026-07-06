@@ -41,7 +41,7 @@ const ActivityRewardCenter = ({ onClose, onRewardClaim, onOpenCreatePost, curren
                {/* Reward Animation Overlay */}
                {showConfetti && (
                     <div className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
-                         <div className="text-6xl animate-bounce mb-4">🫘</div>
+                         <div className="text-6xl animate-bounce mb-4">⚡</div>
                          <h2 className="text-4xl font-black text-yellow-400 drop-shadow-lg animate-in zoom-in spin-in duration-500">
                               +{rewardAmount} 온 획득!
                          </h2>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ChevronRight, User, MapPin, Smile } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { account, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role } from '../lib/appwrite';
 
 const AuthWidget = ({ onLoginSuccess }) => {
      const [email, setEmail] = useState('');
@@ -35,20 +35,19 @@ const AuthWidget = ({ onLoginSuccess }) => {
           e.preventDefault();
           setAuthLoading(true);
           setAuthError(null);
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) {
+          try {
+               await account.createEmailPasswordSession(email, password);
+               if (onLoginSuccess) onLoginSuccess();
+          } catch (error) {
                console.error("Login error:", error);
-               if (error.message.includes("Email not confirmed")) {
-                    setAuthError("이메일 인증이 완료되지 않았습니다. 메일함을 확인해주세요!");
-               } else if (error.message.includes("Invalid login")) {
+               if (error.code === 401) {
                     setAuthError("이메일 또는 비밀번호를 확인해주세요.");
                } else {
                     setAuthError(error.message);
                }
-          } else {
-               if (onLoginSuccess) onLoginSuccess();
+          } finally {
+               setAuthLoading(false);
           }
-          setAuthLoading(false);
      };
 
      const handleSignUp = async (e) => {
@@ -66,44 +65,44 @@ const AuthWidget = ({ onLoginSuccess }) => {
                ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
                : 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka';
 
-          const { data, error } = await supabase.auth.signUp({
-               email,
-               password,
-               options: {
-                    data: {
-                         username: username,
-                         full_name: username,
-                         region: region,
-                         gender: gender,
-                         avatar_url: defaultAvatar
-                    }
-               }
-          });
-          if (error) {
-               console.error("Signup error:", error);
-               setAuthError(error.message);
-          } else if (data.user) {
-               // SUCCESS: Create Profile Entry immediately
-               const { error: profileError } = await supabase
-                    .from('profiles')
-                    .insert({
-                         id: data.user.id,
-                         username: username,
-                         full_name: username,
-                         region: region, // Ensure column match or map correctly (schema has 'location')
-                         avatar_url: defaultAvatar,
-                         beans: 1250,
-                         location: region
-                    });
+          try {
+               const newAccount = await account.create(ID.unique(), email, password, username);
 
-               if (profileError) {
-                    console.error("Profile creation failed:", profileError);
-                    setAuthError("계정은 생성되었으나 프로필 설정에 실패했습니다.");
+               // 이메일 인증 절차 없이 바로 로그인 처리 (보안 강화는 추후 별도 작업 예정)
+               await account.createEmailPasswordSession(email, password);
+
+               // 프로필 문서 생성
+               await databases.createDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    documentId: newAccount.$id,
+                    data: {
+                         username,
+                         fullName: username,
+                         avatarUrl: defaultAvatar,
+                         location: region,
+                         gender,
+                         beans: 1250,
+                         unlockedStyles: ['lorelei', 'avataaars'],
+                    },
+                    permissions: [
+                         Permission.read(Role.any()),
+                         Permission.update(Role.user(newAccount.$id)),
+                         Permission.delete(Role.user(newAccount.$id)),
+                    ],
+               });
+
+               if (onLoginSuccess) onLoginSuccess();
+          } catch (error) {
+               console.error("Signup error:", error);
+               if (error.code === 409) {
+                    setAuthError("이미 가입된 이메일입니다.");
                } else {
-                    setAuthError("가입 확인 메일을 전송했습니다! 메일함을 확인해주세요 📧");
+                    setAuthError(error.message || '가입에 실패했습니다.');
                }
+          } finally {
+               setAuthLoading(false);
           }
-          setAuthLoading(false);
      };
 
      return (
@@ -225,43 +224,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                          </button>
                     </form>
 
-                    <div className="mt-4 space-y-3">
-                         <div className="relative">
-                              <div className="absolute inset-0 flex items-center">
-                                   <span className="w-full border-t border-gray-100"></span>
-                              </div>
-                              <div className="relative flex justify-center text-xs uppercase">
-                                   <span className="bg-white px-2 text-gray-400">Or continue with</span>
-                              </div>
-                         </div>
-
-                         <button
-                              type="button"
-                              onClick={async () => {
-                                   setAuthLoading(true);
-                                   const { error } = await supabase.auth.signInWithOAuth({
-                                        provider: 'kakao',
-                                        options: {
-                                             redirectTo: window.location.origin,
-                                        },
-                                   });
-                                   if (error) {
-                                        console.error('Kakao login error:', error);
-                                        setAuthError(error.message);
-                                        setAuthLoading(false);
-                                   }
-                              }}
-                              disabled={authLoading}
-                              className="w-full bg-[#FEE500] text-[#191919] font-bold py-3 rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
-                         >
-                              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
-                                   <path d="M12 3C5.925 3 1 6.925 1 11.775c0 3.325 2.3 6.175 5.75 7.625-.25.925-1 3.5-1.125 4.075-.025.1.025.2.125.25.075.025.125.025.2-.025.6-.4 3.725-2.525 4.375-3 .775.1 1.575.175 2.4.175 6.075 0 11-3.925 11-8.775C23.725 6.925 18.225 3 12 3z" />
-                              </svg>
-                              카카오로 시작하기
-                         </button>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-gray-50 text-center">
+                    <div className="mt-6 pt-4 border-t border-gray-50 text-center">
                          <p className="text-xs text-gray-400">
                               {isSignUpMode ? '이미 계정이 있으신가요? ' : '아직 계정이 없으신가요? '}
                               <button

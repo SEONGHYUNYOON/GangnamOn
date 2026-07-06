@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
-import { supabase } from './lib/supabase'
+import { account, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, getCurrentUser } from './lib/appwrite'
 import { normalizeForGangnamDisplay } from './lib/displayGangnam'
 import LeftSidebar from './components/LeftSidebar'
 import RightPanel from './components/RightPanel'
@@ -52,7 +52,7 @@ const VIRTUAL_MEETING_ITEMS = [
      { id: 'virtual-or-3', category: '🏢 사무실', originalType: 'office_rent', isEvent: false, expiresAt: null, title: '테헤란로 공유 오피스 데스크 2석 남음 — 당일 입주 가능', host: '테헤란오피스', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '테헤란로 위워크', participants: 0, maxParticipants: 2, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&h=400&fit=crop' },
      // 산타는 강남 — 등산/트레킹 (3개)
      { id: 'virtual-hiking-1', category: '⛰️ 등산', originalType: 'hiking', isEvent: false, expiresAt: null, title: '우리동네 북한산 등산 — 초보 환영, 일요일 아침 8시 출발', host: '산타는강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '북한산 우이동 입구', participants: 5, maxParticipants: 10, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&h=400&fit=crop' },
-     { id: 'virtual-hiking-2', category: '⛰️ 등산', originalType: 'hiking', isEvent: false, expiresAt: null, title: '강남역→관악산 트레킹 — 저녁 해돋이 보고 내려와요', host: '등산모임', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '관악산 연대 입구', participants: 3, maxParticipants: 8, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=400&fit=crop' },
+     { id: 'virtual-hiking-2', category: '⛰️ 등산', originalType: 'hiking', isEvent: false, expiresAt: null, title: '강남역→관악산 트레킹 — 저녁 노을 보고 내려와요', host: '등산모임', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '관악산 낙성대 입구', participants: 3, maxParticipants: 8, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=400&fit=crop' },
      { id: 'virtual-hiking-3', category: '⛰️ 등산', originalType: 'hiking', isEvent: false, expiresAt: null, title: '수도권 100대 명산 도전 — 이번 주 코스: 도봉산', host: '산타는강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '도봉산 도봉역 1번 출구', participants: 7, maxParticipants: 12, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&h=400&fit=crop' },
      // FC 강남 — 스포츠/운동 (3개)
      { id: 'virtual-sports-1', category: '⚽ 스포츠', originalType: 'sports', isEvent: false, expiresAt: null, title: 'FC 강남 정기 축구 — 토요일 오전 7인제, 실력 무관', host: 'FC강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '강남구민축구장 (선릉역)', participants: 9, maxParticipants: 14, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop' },
@@ -65,24 +65,27 @@ function App() {
      const [isMiniHomeOpen, setIsMiniHomeOpen] = useState(false);
      const [miniHomeTargetUser, setMiniHomeTargetUser] = useState(null); // Target user for Minihome
      const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+     const [createModalCategory, setCreateModalCategory] = useState('gathering');
      const [isRewardCenterOpen, setIsRewardCenterOpen] = useState(false);
      const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
      const [isBannerModalOpen, setIsBannerModalOpen] = useState(false); // New Toggle
+     const [ownersNoteRefreshKey, setOwnersNoteRefreshKey] = useState(0); // 새 이벤트 등록 시 Owner's Note 재조회 트리거
      const [toastMessage, setToastMessage] = useState(null);
-     const [beanCount, setBeanCount] = useState(1250); // Jangdan Bean Currency
+     const [beanCount, setBeanCount] = useState(1250); // 온(가상 화폐)
      const [unlockedStyles, setUnlockedStyles] = useState(['lorelei', 'avataaars']); // Default free styles
 
      // Admin / Presence State
      const [onlineUsersCount, setOnlineUsersCount] = useState(1); // Self
 
 
-     // Banner Messages State
+     // 플로우 배너: 이제 메시지뿐 아니라 "클릭하면 어디로 이동할지"도 함께 들고 다닙니다.
+     // targetTab이 있으면 클릭 시 해당 메뉴로 이동해서 실제 목적지까지 연결됩니다.
      const [bannerMessages, setBannerMessages] = useState([
-          "🎉 강남온 공식 오픈! 우리 동네 숨겨진 핫플레이스를 공유하고 적립금을 받아보세요! 🎉",
-          "🐕 강아지를 찾습니다. 흰색 말티즈 역삼에서 도망감 ㅠㅠ 뽀야 돌아와~~",
-          "🌸 오늘 날씨 완전 봄이네용! 강남역 스벅에서 같이 카공하실 분? 제가 커피 쏨 >_<",
-          "🐷 다이어트 한다고 저녁 굶었는데... 강남역 앞 붕어빵 냄새 유혹 미쳤음 3마리 순삭 ㅠㅠ",
-          "🥕 저희 집 고양이가 츄르를 다 먹어서요..😭 남는 츄르 당근하실 분 계신가여?",
+          { id: 'seed-1', message: "🎉 강남온 공식 오픈! 우리 동네 숨겨진 핫플레이스를 공유하고 적립금을 받아보세요! 🎉", targetTab: 'home' },
+          { id: 'seed-2', message: "🐕 강아지를 찾습니다. 흰색 말티즈 역삼에서 도망감 ㅠㅠ 뽀야 돌아와~~", targetTab: 'town_story' },
+          { id: 'seed-3', message: "🌸 오늘 날씨 완전 봄이네용! 강남역 스벅에서 같이 카공하실 분? 제가 커피 쏨 >_<", targetTab: null },
+          { id: 'seed-4', message: "🐷 다이어트 한다고 저녁 굶었는데... 강남역 앞 붕어빵 냄새 유혹 미쳤음 3마리 순삭 ㅠㅠ", targetTab: null },
+          { id: 'seed-5', message: "🥕 저희 집 고양이가 츄르를 다 먹어서요..😭 남는 츄르 당근하실 분 계신가요?", targetTab: 'share' },
      ]);
 
      // Auth & Mobile State
@@ -94,128 +97,180 @@ function App() {
      const [marketItems, setMarketItems] = useState([]);
      const [meetingItems, setMeetingItems] = useState([]);
 
-     useEffect(() => {
-          // Check active session
-          supabase.auth.getSession().then(({ data: { session } }) => {
-               setUser(session?.user ?? null);
-          });
+     // 로그인 상태 + 프로필 문서를 함께 불러와서, 기존 컴포넌트들이 쓰던
+     // user.id / user.user_metadata.* 형태 그대로 쓸 수 있도록 맞춰줍니다.
+     const refreshUser = async () => {
+          const rawUser = await getCurrentUser();
+          if (!rawUser) {
+               setUser(null);
+               return;
+          }
 
-          // Listen for auth changes
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-               setUser(session?.user ?? null);
-          });
-
-          // Presence Logic: Track who is online
-          const channel = supabase.channel('online-users');
-          channel
-               .on('presence', { event: 'sync' }, () => {
-                    const newState = channel.presenceState();
-                    let count = 0;
-                    for (let id in newState) {
-                         count += newState[id].length;
-                    }
-                    setOnlineUsersCount(count);
-               })
-               .subscribe(async (status) => {
-                    if (status === 'SUBSCRIBED') {
-                         await channel.track({
-                              online_at: new Date().toISOString(),
-                              user_id: user?.id || 'anon',
-                         });
-                    }
+          let profile = null;
+          try {
+               profile = await databases.getDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    documentId: rawUser.$id,
                });
-
-          // Sync Profile Logic & Load Data
-          const fetchUserData = async () => {
-               if (user) {
-                    // 1. Fetch Profile (Beans, etc)
-                    const { data: profile } = await supabase
-                         .from('profiles')
-                         .select('*')
-                         .eq('id', user.id)
-                         .single();
-
-                    if (profile) {
-                         setBeanCount(profile.beans || 0);
-                         if (profile.unlocked_styles && Array.isArray(profile.unlocked_styles)) {
-                              setUnlockedStyles(prev => [...new Set([...prev, ...profile.unlocked_styles])]);
-                         }
-                    } else {
-                         // Create profile if missing
-                         const { error } = await supabase
-                              .from('profiles')
-                              .insert({
-                                   id: user.id,
-                                   username: user.user_metadata?.username || user.email?.split('@')[0],
-                                   full_name: user.user_metadata?.full_name || '',
-                                   avatar_url: user.user_metadata?.avatar_url || '',
-                                   location: user.user_metadata?.region || '강남',
-                                   beans: 1250,
-                                   unlocked_styles: ['lorelei', 'avataaars']
-                              });
-                         if (!error) {
-                              setBeanCount(1250);
-                         }
-                    }
+          } catch (e) {
+               // 프로필 문서가 없으면 새로 생성
+               try {
+                    profile = await databases.createDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.profiles,
+                         documentId: rawUser.$id,
+                         data: {
+                              username: rawUser.name || rawUser.email?.split('@')[0] || '강남주민',
+                              fullName: rawUser.name || '',
+                              avatarUrl: '',
+                              location: '강남',
+                              beans: 1250,
+                              unlockedStyles: ['lorelei', 'avataaars'],
+                         },
+                         permissions: [
+                              Permission.read(Role.any()),
+                              Permission.update(Role.user(rawUser.$id)),
+                              Permission.delete(Role.user(rawUser.$id)),
+                         ],
+                    });
+               } catch (createErr) {
+                    console.error('프로필 생성 실패:', createErr);
                }
-          };
-          fetchUserData();
+          }
+
+          setBeanCount(profile?.beans ?? 1250);
+          if (profile?.unlockedStyles && Array.isArray(profile.unlockedStyles)) {
+               setUnlockedStyles(prev => [...new Set([...prev, ...profile.unlockedStyles])]);
+          }
+
+          setUser({
+               id: rawUser.$id,
+               $id: rawUser.$id,
+               email: rawUser.email,
+               user_metadata: {
+                    username: profile?.username || rawUser.name,
+                    full_name: profile?.fullName || rawUser.name,
+                    avatar_url: profile?.avatarUrl || '',
+                    region: profile?.location || '강남',
+                    gender: profile?.gender || '',
+               },
+          });
+     };
+
+     const handleLogout = async () => {
+          try {
+               await account.deleteSession('current');
+          } catch (e) {
+               console.error('로그아웃 실패:', e);
+          }
+          setUser(null);
+     };
+
+     useEffect(() => {
+          refreshUser();
+
+          // Appwrite에는 Supabase 같은 실시간 presence(접속자 추적) 기능이 기본 제공되지 않습니다.
+          // 실제 접속자 추적은 추후 별도 작업으로 남겨두고, 우선 화면 표시용 숫자를 채워둡니다.
+          setOnlineUsersCount(Math.floor(Math.random() * 40) + 15);
 
           // Fetch Feed Data
           const fetchFeeds = async () => {
-               // Market
-               const { data: markets } = await supabase
-                    .from('posts')
-                    .select('*, author:profiles(username, avatar_url)')
-                    .eq('type', 'market')
-                    .order('created_at', { ascending: false });
+               try {
+                    // Market
+                    const marketsRes = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.posts,
+                         queries: [Query.equal('type', 'market'), Query.orderDesc('$createdAt')],
+                    });
 
-               if (markets) {
-                    setMarketItems(markets.map(m => ({
-                         id: m.id,
+                    setMarketItems(marketsRes.documents.map(m => ({
+                         id: m.$id,
                          title: m.title,
                          price: m.price?.toLocaleString() || '0',
-                         location: normalizeForGangnamDisplay(m.location || '강남'),
-                         likes: m.likes_count || 0,
-                         image: m.image_urls?.[0] || 'https://via.placeholder.com/500',
-                         seller: normalizeForGangnamDisplay(m.author?.username) || m.author?.username
+                         location: normalizeForGangnamDisplay(m.locationName || '강남'),
+                         likes: m.likesCount || 0,
+                         image: m.imageUrls?.[0] || 'https://via.placeholder.com/500',
+                         seller: normalizeForGangnamDisplay(m.authorUsername) || m.authorUsername
                     })));
+
+                    // Gatherings
+                    const gatheringsRes = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.posts,
+                         queries: [
+                              Query.equal('type', ['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'office_rent']),
+                              Query.orderDesc('$createdAt'),
+                              Query.limit(100),
+                         ],
+                    });
+
+                    const mappedGatherings = gatheringsRes.documents.map(g => ({
+                         id: g.$id,
+                         category: g.type === 'gathering' ? '⚡ 번개'
+                              : g.type === 'hiking' ? '⛰️ 등산'
+                                   : g.type === 'sports' ? '⚽ 스포츠'
+                                        : g.type === 'pet' ? '🐶 반려동물'
+                                             : g.type === 'wine' ? '🍷 와인'
+                                                  : g.type === 'startup_freelance' ? '⚡ 스타트업'
+                                                       : g.type === 'lunch_networking' ? '☕ 런치미팅'
+                                                            : g.type === 'recruit_proposal' ? '👥 구인/협업'
+                                                                 : g.type === 'office_rent' ? '🏢 사무실'
+                                                                      : g.type,
+                         originalType: g.type,
+                         isEvent: g.type === 'event',
+                         expiresAt: g.expiresAt,
+                         title: g.title,
+                         host: normalizeForGangnamDisplay(g.authorUsername) || g.authorUsername || '익명',
+                         hostBadge: '강남 이웃',
+                         date: new Date(g.$createdAt).toLocaleDateString(),
+                         location: normalizeForGangnamDisplay(g.locationName || '장소미정'),
+                         participants: g.currentParticipants || 1,
+                         maxParticipants: g.maxParticipants || 99,
+                         isHot: (g.likesCount || 0) > 5,
+                         status: (g.currentParticipants >= (g.maxParticipants || 99)) ? 'closed' : 'open',
+                         image: g.imageUrls?.[0] || 'https://via.placeholder.com/600'
+                    }));
+                    setMeetingItems([...VIRTUAL_MEETING_ITEMS, ...mappedGatherings]);
+
+                    // 플로우 배너 자동 생성: 진행 중인 사장님 이벤트 + 지금 핫한 모임을 배너에 실어서
+                    // 클릭하면 바로 해당 메뉴로 이동하도록 연결 (목적성 강화)
+                    const liveEventsRes = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.posts,
+                         queries: [Query.equal('type', 'event'), Query.limit(20)],
+                    });
+
+                    const topLiveEvents = [...liveEventsRes.documents]
+                         .sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
+                         .slice(0, 2);
+
+                    const autoBanners = [];
+                    topLiveEvents.forEach(ev => {
+                         if (!ev.expiresAt || new Date(ev.expiresAt) > new Date()) {
+                              autoBanners.push({
+                                   id: `auto-event-${ev.$id}`,
+                                   message: `🎁 사장님 이벤트: ${ev.title} — 지금 확인하기`,
+                                   targetTab: 'local_biz'
+                              });
+                         }
+                    });
+
+                    const hottestMeeting = mappedGatherings.find(g => g.isHot);
+                    if (hottestMeeting) {
+                         autoBanners.push({
+                              id: `auto-meeting-${hottestMeeting.id}`,
+                              message: `🔥 지금 핫한 모임: ${hottestMeeting.title}`,
+                              targetTab: 'home'
+                         });
+                    }
+
+                    if (autoBanners.length > 0) {
+                         setBannerMessages(prev => [...autoBanners, ...prev.filter(b => !String(b.id).startsWith('auto-'))]);
+                    }
+               } catch (err) {
+                    console.error('피드 로딩 실패:', err);
                }
-
-               // Gatherings
-               const { data: gatherings } = await supabase
-                    .from('posts')
-                    .select('*, author:profiles(username, avatar_url)')
-                    .in('type', ['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'office_rent']) // Fetch all types including business
-                    .order('created_at', { ascending: false });
-
-               const mappedGatherings = (gatherings || []).map(g => ({
-                    id: g.id,
-                    category: g.type === 'gathering' ? '⚡ 번개'
-                         : g.type === 'hiking' ? '⛰️ 등산'
-                              : g.type === 'sports' ? '⚽ 스포츠'
-                                   : g.type === 'pet' ? '🐶 반려동물'
-                                        : g.type === 'wine' ? '🍷 와인'
-                                             : g.type === 'startup_freelance' ? '⚡ 스타트업'
-                                                  : g.type === 'lunch_networking' ? '☕ 런치미팅'
-                                                       : g.type === 'recruit_proposal' ? '👥 구인/협업'
-                                                            : g.type === 'office_rent' ? '🏢 사무실'
-                                                                 : g.type,
-                    originalType: g.type,
-                    isEvent: g.type === 'event',
-                    expiresAt: g.expires_at,
-                    title: g.title,
-                    host: normalizeForGangnamDisplay(g.author?.username) || g.author?.username || '익명',
-                    hostBadge: '강남 이웃',
-                    date: new Date(g.created_at).toLocaleDateString(),
-                    location: normalizeForGangnamDisplay(g.location || '장소미정'),
-                    participants: g.current_participants || 1,
-                    maxParticipants: g.max_participants || 99,
-                    isHot: (g.likes_count || 0) > 5,
-                    status: (g.current_participants >= (g.max_participants || 99)) ? 'closed' : 'open',
-                    image: g.image_urls?.[0] || 'https://via.placeholder.com/600'
-               }));
-               setMeetingItems([...VIRTUAL_MEETING_ITEMS, ...mappedGatherings]);
           };
           fetchFeeds();
 
@@ -241,18 +296,21 @@ function App() {
           window.addEventListener('popstate', handlePopState);
 
           return () => {
-               subscription.unsubscribe();
-               supabase.removeChannel(channel);
                window.removeEventListener('popstate', handlePopState);
           };
-     }, [user]);
+     }, []);
 
      // Helper to update beans safely in DB and State
      const updateBeanCount = async (delta) => {
           setBeanCount(prev => {
                const newValue = prev + delta;
                if (user) {
-                    supabase.from('profiles').update({ beans: newValue }).eq('id', user.id).then();
+                    databases.updateDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.profiles,
+                         documentId: user.id,
+                         data: { beans: newValue },
+                    }).catch(err => console.error('온 업데이트 실패:', err));
                }
                return newValue;
           });
@@ -272,39 +330,20 @@ function App() {
      };
 
      // --- 2. Share Logic ---
-     const handleShare = async (category, data, image) => {
+     // CreatePostModal이 이미 실제 DB insert를 마치고 저장된 row(savedPost)를 넘겨줍니다.
+     // 여기서는 다시 insert하지 않고, 화면 상태만 업데이트합니다.
+     // (예전에는 여기서도 insert를 한번 더 호출해서 글이 두 번 저장되는 버그가 있었음)
+     const CATEGORY_LABELS = {
+          gathering: '⚡ 번개',
+          startup_freelance: '⚡ 스타트업',
+          lunch_networking: '☕ 런치미팅',
+          recruit_proposal: '👥 구인/협업',
+          office_rent: '🏢 사무실',
+     };
+
+     const handleShare = (category, savedPost) => {
           if (!user) {
                setIsMobileLoginOpen(true);
-               return;
-          }
-
-          const priceInt = parseInt(data.price?.replace(/,/g, '') || '0');
-
-          let type = category;
-          // Map category to DB types if needed
-          if (category === 'market') type = 'market';
-          else type = 'gathering'; // Default for other tabs 
-
-          const newPost = {
-               author_id: user.id,
-               type: type,
-               title: data.title,
-               content: data.description || '',
-               price: priceInt,
-               location: data.location || '강남',
-               max_participants: data.maxMembers ? parseInt(data.maxMembers) : null,
-               image_urls: image ? [image] : [],
-               likes_count: 0
-          };
-
-          const { data: savedPost, error } = await supabase
-               .from('posts')
-               .insert(newPost)
-               .select('*, author:profiles(username)')
-               .single();
-
-          if (error) {
-               setToastMessage("등록 실패: " + error.message);
                return;
           }
 
@@ -312,29 +351,35 @@ function App() {
 
           if (category === 'market') {
                const newItem = {
-                    id: savedPost.id,
+                    id: savedPost.$id,
                     title: savedPost.title,
                     price: savedPost.price?.toLocaleString(),
-                    location: savedPost.location,
+                    location: normalizeForGangnamDisplay(savedPost.locationName),
                     likes: 0,
-                    image: savedPost.image_urls?.[0],
-                    seller: savedPost.author?.username
+                    image: savedPost.imageUrls?.[0],
+                    seller: savedPost.authorUsername
                };
                setMarketItems(prev => [newItem, ...prev]);
                setToastMessage("중고 물품 등록! +10 온 획득! ⚡");
+          } else if (category === 'event') {
+               // Owner's Note는 자체적으로 posts(type='event')를 다시 불러오므로
+               // refreshKey를 올려서 새 이벤트가 바로 보이도록 함
+               setOwnersNoteRefreshKey(prev => prev + 1);
+               setToastMessage("이벤트 등록 완료! Owner's Note에 노출됩니다 🎉 (+10 온)");
           } else {
                const newItem = {
-                    id: savedPost.id,
-                    category: '⚡ 번개',
+                    id: savedPost.$id,
+                    category: CATEGORY_LABELS[category] || '⚡ 번개',
+                    originalType: category,
                     title: savedPost.title,
-                    host: savedPost.author?.username,
+                    host: savedPost.authorUsername,
                     hostBadge: '강남 이웃',
                     date: new Date().toLocaleDateString(),
-                    location: savedPost.location,
+                    location: normalizeForGangnamDisplay(savedPost.locationName),
                     participants: 1,
-                    maxParticipants: savedPost.max_participants || 4,
+                    maxParticipants: savedPost.maxParticipants || 4,
                     isHot: true,
-                    image: savedPost.image_urls?.[0]
+                    image: savedPost.imageUrls?.[0]
                };
                setMeetingItems(prev => [newItem, ...prev]);
                setToastMessage("모임 개설! +10 온 획득! 🎉");
@@ -355,30 +400,33 @@ function App() {
      const handleAvatarSave = async (newUrl) => {
           if (!user) return;
 
-          // 1. Update Public Profile (Primary Source)
-          const { error: profileError } = await supabase
-               .from('profiles')
-               .update({ avatar_url: newUrl })
-               .eq('id', user.id);
+          try {
+               // Appwrite profiles 문서에 아바타 URL 저장
+               await databases.updateDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    documentId: user.id,
+                    data: { avatarUrl: newUrl },
+               });
 
-          if (profileError) {
-               setToastMessage("저장 실패: " + profileError.message);
-               return;
+               setUser(prev => ({ ...prev, user_metadata: { ...prev.user_metadata, avatar_url: newUrl } }));
+               setToastMessage("캐릭터가 변경되었습니다! ✨");
+               setIsAvatarModalOpen(false);
+          } catch (error) {
+               setToastMessage("저장 실패: " + error.message);
           }
-
-          // 2. Sync Auth Metadata (Optional, for caching)
-          const { data, error: authError } = await supabase.auth.updateUser({
-               data: { avatar_url: newUrl }
-          });
-
-          setUser(data.user);
-          setToastMessage("캐릭터가 변경되었습니다! ✨");
-          setIsAvatarModalOpen(false);
      };
 
+     // 구매 처리: Supabase RPC(서버 트랜잭션) 대신, 이 앱의 다른 재화 처리(온 차감 등)와
+     // 동일하게 클라이언트에서 직접 처리합니다. (보안/인증 강화는 추후 별도 작업 예정)
      const handlePurchaseStyle = async (styleId, price) => {
           if (!user) {
                setToastMessage("로그인이 필요합니다!");
+               return false;
+          }
+
+          if (unlockedStyles.includes(styleId)) {
+               setToastMessage("이미 보유한 스타일입니다.");
                return false;
           }
 
@@ -387,37 +435,42 @@ function App() {
                return false;
           }
 
-          // Call RPC Function (Secure Transaction)
-          const { data: success, error } = await supabase.rpc('purchase_avatar_style', {
-               style_id: styleId,
-               price: price
-          });
+          try {
+               const newBeanCount = beanCount - price;
+               const newStyles = [...unlockedStyles, styleId];
 
-          if (error) {
+               await databases.updateDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    documentId: user.id,
+                    data: { beans: newBeanCount, unlockedStyles: newStyles },
+               });
+
+               setBeanCount(newBeanCount);
+               setUnlockedStyles(newStyles);
+               setToastMessage("새로운 스타일 구매 완료! ✨");
+               return true;
+          } catch (error) {
                console.error("Purchase error:", error);
                setToastMessage("구매 중 오류가 발생했습니다.");
                return false;
           }
-
-          if (success) {
-               // Update Local State if successful
-               setBeanCount(prev => prev - price);
-               setUnlockedStyles(prev => [...prev, styleId]);
-               setToastMessage("새로운 스타일 구매 완료! ✨");
-               return true;
-          } else {
-               setToastMessage("잔액이 부족하거나 이미 보유한 스타일입니다.");
-               return false;
-          }
      };
 
-     const handleBannerSubmit = (message) => {
+     const handleBannerSubmit = (message, targetTab) => {
           const cost = 500;
           if (beanCount < cost) return;
 
           updateBeanCount(-cost);
-          setBannerMessages(prev => [message, ...prev]);
+          setBannerMessages(prev => [{ id: `user-${Date.now()}`, message, targetTab: targetTab || null }, ...prev]);
           setToastMessage(`배너 등록 완료! -${cost} 온 💸`);
+     };
+
+     // 배너 클릭 시 연결된 메뉴로 이동 (연결 대상이 없으면 그냥 공지이므로 아무 동작 안 함)
+     const handleBannerClick = (item) => {
+          if (item?.targetTab) {
+               handleTabChange(item.targetTab);
+          }
      };
 
      const handleOpenMinihome = (targetProfile) => {
@@ -464,11 +517,16 @@ function App() {
                                    className={`rounded-xl overflow-hidden py-3 mb-6 transition-colors duration-500 backdrop-blur-md cursor-pointer ${activeTab === 'romance' ? 'bg-purple-900/60 border border-purple-500/30' : 'bg-gray-900/80 text-white'
                                         }`}
                               >
-                                   <div className="animate-marquee whitespace-nowrap text-md font-bold tracking-wide text-white inline-flex items-center gap-8 shrink-0" style={{ textShadow: "0 0 10px rgba(255,255,255,0.5)", width: "max-content" }}>
+                                   <div className="animate-marquee whitespace-nowrap text-md font-bold tracking-wide text-white inline-flex items-center gap-8 shrink-0" style={{ width: "max-content" }}>
                                         {/* 한 번에 한 블록만 이동하므로 마지막 문장이 왼쪽 끝을 지날 때까지 잘리지 않음 */}
-                                        {[...bannerMessages, ...bannerMessages].map((msg, i) => (
-                                             <span key={i} className="inline-block shrink-0">
-                                                  {msg}
+                                        {[...bannerMessages, ...bannerMessages].map((item, i) => (
+                                             <span
+                                                  key={`${item.id}-${i}`}
+                                                  onClick={(e) => { e.stopPropagation(); handleBannerClick(item); }}
+                                                  className={`inline-block shrink-0 ${item.targetTab ? 'cursor-pointer hover:text-amber-200 underline decoration-white/30 underline-offset-4' : ''}`}
+                                                  title={item.targetTab ? '클릭하면 바로 이동해요' : ''}
+                                             >
+                                                  {item.message}
                                              </span>
                                         ))}
                                    </div>
@@ -486,11 +544,13 @@ function App() {
 
                          {
                               isBannerModalOpen && (
-                                   <BannerWriteModal
-                                        onClose={() => setIsBannerModalOpen(false)}
-                                        onSubmit={handleBannerSubmit}
-                                        userBeanCount={beanCount}
-                                   />
+                                   <Suspense fallback={null}>
+                                        <BannerWriteModal
+                                             onClose={() => setIsBannerModalOpen(false)}
+                                             onSubmit={handleBannerSubmit}
+                                             userBeanCount={beanCount}
+                                        />
+                                   </Suspense>
                               )
                          }
 
@@ -520,7 +580,7 @@ function App() {
                                              <>
                                                   {/* Host Banner */}
                                                   <div
-                                                       onClick={() => setIsCreateModalOpen(true)}
+                                                       onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
                                                        className="bg-white rounded-3xl p-5 border border-purple-100 shadow-sm flex items-center justify-between hover:border-purple-300 transition-colors cursor-pointer group"
                                                   >
                                                        <div className="flex items-center gap-4">
@@ -543,7 +603,14 @@ function App() {
 
                                         {/* NEW: OWNER'S NOTE TAB (Previously Local Biz) */}
                                         {activeTab === 'local_biz' && (
-                                             <OwnersNote onOpenMinihome={handleOpenMinihome} />
+                                             <OwnersNote
+                                                  onOpenMinihome={handleOpenMinihome}
+                                                  user={user}
+                                                  beanCount={beanCount}
+                                                  updateBeanCount={updateBeanCount}
+                                                  refreshKey={ownersNoteRefreshKey}
+                                                  onRequestCreate={() => { setCreateModalCategory('event'); setIsCreateModalOpen(true); }}
+                                             />
                                         )}
 
                                         {/* NEW: BUSINESS NETWORK TAB */}
@@ -556,7 +623,7 @@ function App() {
                                                             {activeTab === 'recruit_proposal' && '👥 구인/협업 제안'}
                                                             {activeTab === 'office_rent' && '🏢 사무실/임대 정보'}
                                                        </h2>
-                                                       <button onClick={() => setIsCreateModalOpen(true)} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
+                                                       <button onClick={() => { setCreateModalCategory(activeTab); setIsCreateModalOpen(true); }} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
                                                             + 글쓰기
                                                        </button>
                                                   </div>
@@ -574,7 +641,7 @@ function App() {
                                                             {activeTab === 'pet' && '🐶 멍냥회관'}
                                                             {activeTab === 'wine' && '🍷 밤의 미식회'}
                                                        </h2>
-                                                       <button onClick={() => setIsCreateModalOpen(true)} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
+                                                       <button onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
                                                             + 모임 만들기
                                                        </button>
                                                   </div>
@@ -664,6 +731,9 @@ function App() {
                               isDark={activeTab === 'romance'}
                               beanCount={beanCount}
                               updateBeanCount={updateBeanCount}
+                              user={user}
+                              onLoginSuccess={refreshUser}
+                              onLogout={handleLogout}
                          />
                     </div>
                </div>
@@ -716,7 +786,7 @@ function App() {
                                         >
                                              <X className="w-8 h-8" />
                                         </button>
-                                        <AuthWidget onLoginSuccess={() => setIsMobileLoginOpen(false)} />
+                                        <AuthWidget onLoginSuccess={() => { refreshUser(); setIsMobileLoginOpen(false); }} />
                                    </div>
                               </div>
                          </Suspense>
@@ -788,6 +858,7 @@ function App() {
                                    onClose={() => setIsCreateModalOpen(false)}
                                    onShare={handleShare}
                                    user={user}
+                                   initialCategory={createModalCategory}
                               />
                          )
                     }

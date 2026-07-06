@@ -100,3 +100,30 @@
 .animation-delay-4000 {
      animation-delay: 4s;
 }
+
+/* ============================================================
+   강남온 공통 UI 토큰 (버튼/배지/카드)
+   여러 화면에서 그라데이션·모서리·그림자가 제각각이던 것을
+   여기 정의된 클래스로 점진적으로 통일합니다.
+   ============================================================ */
+@layer components {
+     .btn-brand {
+          @apply bg-brand hover:bg-brand-dark text-white font-bold rounded-xl shadow-soft transition-all active:scale-95;
+     }
+
+     .btn-brand-outline {
+          @apply border border-brand/30 text-brand font-bold rounded-xl hover:bg-brand-light transition-all active:scale-95;
+     }
+
+     .card-surface {
+          @apply bg-white rounded-card border border-gray-100 shadow-soft;
+     }
+
+     .badge-brand {
+          @apply text-brand bg-brand-light border border-brand/10 text-xs font-bold px-2 py-1 rounded-lg;
+     }
+
+     .badge-pick {
+          @apply bg-amber-400 text-amber-950 text-[10px] font-bold px-2 py-1 rounded-full shadow-soft;
+     }
+}

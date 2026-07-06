@@ -5,6 +5,13 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 
+// PWA: 서비스 워커 등록
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}
+
 // Create a client
 const queryClient = new QueryClient({
      defaultOptions: {

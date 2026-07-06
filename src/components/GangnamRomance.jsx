@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role } from '../lib/appwrite';
 import { Heart, X, MessageCircle, MapPin, Zap, Star, Lock, Send, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
@@ -161,23 +161,37 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
      useEffect(() => {
           const fetchProfiles = async () => {
                if (!user) return;
-               const { data: interactions } = await supabase.from('romance_interactions').select('target_id').eq('actor_id', user.id);
-               const interactedIds = interactions?.map(i => i.target_id) || [];
-               const { data: candidates } = await supabase.from('profiles').select('*').neq('id', user.id).not('id', 'in', `(${interactedIds.join(',')})`).limit(10);
+               try {
+                    // 이미 상호작용(좋아요/패스)한 상대는 제외 — Appwrite에는 "not in" 쿼리가 없어
+                    // 클라이언트에서 걸러냅니다 (커뮤니티 규모상 충분히 가벼운 처리)
+                    const interactionsRes = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.romanceInteractions,
+                         queries: [Query.equal('actorId', user.id), Query.limit(200)],
+                    });
+                    const interactedIds = interactionsRes.documents.map(i => i.targetId);
 
-               if (candidates) {
+                    const candidatesRes = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.profiles,
+                         queries: [Query.limit(50)],
+                    });
+                    const candidates = candidatesRes.documents.filter(p => p.$id !== user.id && !interactedIds.includes(p.$id));
+
                     const formattedCandidates = candidates.map(p => ({
-                         id: p.id,
-                         name: p.full_name || p.username || '알 수 없음',
-                         age: p.birth_year ? new Date().getFullYear() - p.birth_year : 25,
+                         id: p.$id,
+                         name: p.fullName || p.username || '알 수 없음',
+                         age: p.birthYear ? new Date().getFullYear() - p.birthYear : 25,
                          gender: p.gender || 'unknown',
                          location: p.location || '강남',
                          mbti: p.mbti || 'MBTI',
                          job: p.job || '강남 주민',
                          tags: p.interests || ['#신비주의'],
-                         image: p.avatar_url || 'https://via.placeholder.com/600x800'
+                         image: p.avatarUrl || 'https://via.placeholder.com/600x800'
                     }));
                     setRealProfiles(formattedCandidates);
+               } catch (error) {
+                    console.error('로맨스 프로필 로딩 실패:', error);
                }
           };
           fetchProfiles();
@@ -211,7 +225,20 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
           if (type === 'pass') {
                setExitDirection('pass');
                if (user && typeof currentProfile.id === 'string') {
-                    await supabase.from('romance_interactions').insert({ actor_id: user.id, target_id: currentProfile.id, action_type: 'pass' });
+                    try {
+                         await databases.createDocument({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.romanceInteractions,
+                              documentId: ID.unique(),
+                              data: { actorId: user.id, targetId: currentProfile.id, actionType: 'pass' },
+                              permissions: [
+                                   Permission.read(Role.user(user.id)),
+                                   Permission.read(Role.user(currentProfile.id)),
+                              ],
+                         });
+                    } catch (err) {
+                         console.error('pass 기록 실패:', err);
+                    }
                }
                setCurrentCardIndex(prev => prev + 1);
                // Auto dismiss feedback
@@ -226,24 +253,68 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
 
           onHeartClick(-cost);
           const id = Date.now();
-          setFloatingTexts(prev => [...prev, { id, text: `-${cost} 🫘` }]);
+          setFloatingTexts(prev => [...prev, { id, text: `-${cost} 온` }]);
           setTimeout(() => setFloatingTexts(prev => prev.filter(ft => ft.id !== id)), 1000); // Cleanup floating text
 
           setExitDirection(type); // KEY: this triggers the 'exit' direction in AnimatePresence
 
           if (type === 'like' || type === 'superlike') {
                if (user && typeof currentProfile.id === 'string') {
-                    const { error } = await supabase.from('romance_interactions').insert({ actor_id: user.id, target_id: currentProfile.id, action_type: type });
-                    if (!error) {
-                         const { data: mutual } = await supabase.from('romance_interactions').select('*').eq('actor_id', currentProfile.id).eq('target_id', user.id).in('action_type', ['like', 'superlike']).single();
-                         if (mutual) {
+                    try {
+                         await databases.createDocument({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.romanceInteractions,
+                              documentId: ID.unique(),
+                              data: { actorId: user.id, targetId: currentProfile.id, actionType: type },
+                              permissions: [
+                                   Permission.read(Role.user(user.id)),
+                                   Permission.read(Role.user(currentProfile.id)),
+                              ],
+                         });
+
+                         const mutualRes = await databases.listDocuments({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.romanceInteractions,
+                              queries: [
+                                   Query.equal('actorId', currentProfile.id),
+                                   Query.equal('targetId', user.id),
+                                   Query.equal('actionType', ['like', 'superlike']),
+                                   Query.limit(1),
+                              ],
+                         });
+
+                         if (mutualRes.documents.length > 0) {
                               setIsMatch(true); // Trigger Match Modal
-                              const { data: room } = await supabase.from('chat_rooms').insert({}).select().single();
-                              if (room) {
-                                   await supabase.from('chat_participants').insert([{ room_id: room.id, user_id: user.id }, { room_id: room.id, user_id: currentProfile.id }]);
-                              }
+                              const room = await databases.createDocument({
+                                   databaseId: DATABASE_ID,
+                                   collectionId: COLLECTIONS.chatRooms,
+                                   documentId: ID.unique(),
+                                   data: { type: 'dm' },
+                                   permissions: [
+                                        Permission.read(Role.user(user.id)),
+                                        Permission.read(Role.user(currentProfile.id)),
+                                   ],
+                              });
+                              await Promise.all([
+                                   databases.createDocument({
+                                        databaseId: DATABASE_ID,
+                                        collectionId: COLLECTIONS.chatParticipants,
+                                        documentId: ID.unique(),
+                                        data: { roomId: room.$id, userId: user.id },
+                                        permissions: [Permission.read(Role.user(user.id)), Permission.read(Role.user(currentProfile.id))],
+                                   }),
+                                   databases.createDocument({
+                                        databaseId: DATABASE_ID,
+                                        collectionId: COLLECTIONS.chatParticipants,
+                                        documentId: ID.unique(),
+                                        data: { roomId: room.$id, userId: currentProfile.id },
+                                        permissions: [Permission.read(Role.user(user.id)), Permission.read(Role.user(currentProfile.id))],
+                                   }),
+                              ]);
                               return; // Don't slide card yet if matched
                          }
+                    } catch (err) {
+                         console.error('로맨스 상호작용 실패:', err);
                     }
                }
                setCurrentCardIndex(prev => prev + 1);

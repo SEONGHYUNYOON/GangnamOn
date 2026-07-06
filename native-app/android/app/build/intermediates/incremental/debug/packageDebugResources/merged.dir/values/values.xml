@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">강남온</string>
+    <style name="Theme.GangnamOn" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:colorPrimary">#1976D2</item>
+        <item name="android:colorPrimaryDark">#0D47A1</item>
+    </style>
+</resources>

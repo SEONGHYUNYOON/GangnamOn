@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { X, Megaphone, Check } from 'lucide-react';
 
+const LINK_OPTIONS = [
+     { value: '', label: '연결 안 함 (공지만)' },
+     { value: 'local_biz', label: "Owner's Note (사장님 이벤트)로 이동" },
+     { value: 'home', label: '모임 피드로 이동' },
+     { value: 'share', label: '중고장터로 이동' },
+     { value: 'romance', label: '강남 썸&쌈으로 이동' },
+];
+
 const BannerWriteModal = ({ onClose, onSubmit, userBeanCount, cost = 500 }) => {
      const [message, setMessage] = useState('');
+     const [targetTab, setTargetTab] = useState('');
 
      const handleSubmit = () => {
           if (!message.trim()) return;
-          onSubmit(message);
+          onSubmit(message, targetTab);
           onClose();
      };
 
@@ -17,8 +26,8 @@ const BannerWriteModal = ({ onClose, onSubmit, userBeanCount, cost = 500 }) => {
                     {/* Header */}
                     <div className="flex justify-between items-center mb-6">
                          <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                              <div className="bg-purple-100 p-2 rounded-full">
-                                   <Megaphone className="w-5 h-5 text-purple-600" />
+                              <div className="bg-brand-light p-2 rounded-full">
+                                   <Megaphone className="w-5 h-5 text-brand" />
                               </div>
                               플로우 배너 등록
                          </h2>
@@ -38,7 +47,7 @@ const BannerWriteModal = ({ onClose, onSubmit, userBeanCount, cost = 500 }) => {
                               <div className="mt-3 flex items-center gap-2 text-sm font-bold text-yellow-900">
                                    <span>비용:</span>
                                    <span className="bg-white px-2 py-0.5 rounded border border-yellow-200 shadow-sm flex items-center gap-1">
-                                        🫘 {cost}
+                                        ⚡ {cost} 온
                                    </span>
                               </div>
                          </div>
@@ -53,15 +62,31 @@ const BannerWriteModal = ({ onClose, onSubmit, userBeanCount, cost = 500 }) => {
                          <div className="text-right text-xs text-gray-400 mt-2">
                               {message.length}/50자
                          </div>
+
+                         {/* 목적지 연결: 클릭하면 어디로 이동할지 선택 */}
+                         <div className="mt-4">
+                              <label className="text-xs font-bold text-gray-500 mb-1.5 block">
+                                   배너를 누르면 이동할 곳 (선택)
+                              </label>
+                              <select
+                                   value={targetTab}
+                                   onChange={(e) => setTargetTab(e.target.value)}
+                                   className="w-full bg-gray-50 rounded-xl border-2 border-transparent focus:border-brand/40 focus:bg-white focus:outline-none py-2.5 px-3 text-sm font-bold text-gray-700"
+                              >
+                                   {LINK_OPTIONS.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                   ))}
+                              </select>
+                         </div>
                     </div>
 
                     {/* Footer */}
                     <button
                          onClick={handleSubmit}
                          disabled={userBeanCount < cost || !message.trim()}
-                         className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${userBeanCount < cost || !message.trim()
-                                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                   : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg hover:shadow-purple-200 hover:scale-[1.02] active:scale-[0.98]'
+                         className={`w-full py-4 mt-5 flex items-center justify-center gap-2 transition-all ${userBeanCount < cost || !message.trim()
+                                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed rounded-xl font-bold'
+                                   : 'btn-brand hover:scale-[1.01]'
                               }`}
                     >
                          {userBeanCount < cost ? '온이 부족해요 😭' : '등록하기'}

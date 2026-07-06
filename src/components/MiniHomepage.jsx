@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role } from '../lib/appwrite';
 import { X, Heart, MoreHorizontal, Send, Mail, MapPin, Sparkles } from 'lucide-react';
 
 const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) => {
@@ -19,7 +19,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           bio: ''
      });
 
-     // 🛑 Safegauard: If no user is logged in, show login prompt instead of crashing
+     // 🛑 Safeguard: If no user is logged in, show login prompt instead of crashing
      if (!user || !user.id) {
           return (
                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}>
@@ -41,20 +41,21 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
      useEffect(() => {
           const fetchProfile = async () => {
                if (!user?.id) return;
-               const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-
-               if (data) {
+               try {
+                    const data = await databases.getDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.profiles,
+                         documentId: user.id,
+                    });
                     setProfileData(data);
                     setEditForm({
                          location: data.location || '',
                          mbti: data.mbti || '',
                          job: data.job || '',
-                         bio: data.status_message || '' // mapping bio to status_message
+                         bio: data.statusMessage || '' // mapping bio to statusMessage
                     });
+               } catch (error) {
+                    console.error('프로필 로딩 실패:', error);
                }
           };
           fetchProfile();
@@ -64,30 +65,31 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
      const handleSaveProfile = async () => {
           if (!currentUser || currentUser.id !== user.id) return;
 
-          const { error } = await supabase
-               .from('profiles')
-               .update({
-                    location: editForm.location,
-                    mbti: editForm.mbti,
-                    job: editForm.job,
-                    status_message: editForm.bio
-               })
-               .eq('id', user.id);
+          try {
+               await databases.updateDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    documentId: user.id,
+                    data: {
+                         location: editForm.location,
+                         mbti: editForm.mbti,
+                         job: editForm.job,
+                         statusMessage: editForm.bio,
+                    },
+               });
 
-          if (error) {
-               console.error("Profile update failed:", error);
-               alert("프로필 저장 실패");
-          } else {
                // Update local state
                setProfileData(prev => ({
                     ...prev,
                     location: editForm.location,
                     mbti: editForm.mbti,
                     job: editForm.job,
-                    status_message: editForm.bio,
-                    bio: editForm.bio // helper for UI
+                    statusMessage: editForm.bio,
                }));
                setIsEditing(false);
+          } catch (error) {
+               console.error("Profile update failed:", error);
+               alert("프로필 저장 실패");
           }
      };
 
@@ -106,43 +108,35 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           const fetchGuestbook = async () => {
                if (!user?.id) return;
 
-               const { data, error } = await supabase
-                    .from('guestbook_entries')
-                    .select(`
-                         *,
-                         author:profiles!author_id(username, avatar_url)
-                    `)
-                    .eq('host_id', user.id) // Messages for THIS profile
-                    .order('created_at', { ascending: false });
-
-               if (data) {
-                    setGuestbookEntries(data);
+               try {
+                    const res = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.guestbookEntries,
+                         queries: [Query.equal('hostId', user.id), Query.orderDesc('$createdAt')],
+                    });
+                    setGuestbookEntries(res.documents);
+               } catch (error) {
+                    console.error('방명록 로딩 실패:', error);
                }
           };
 
           fetchGuestbook();
 
-          // Realtime Subscription
-          const channel = supabase
-               .channel('guestbook-updates')
-               .on(
-                    'postgres_changes',
-                    {
-                         event: 'INSERT',
-                         schema: 'public',
-                         table: 'guestbook_entries',
-                         filter: `host_id=eq.${user.id}`
-                    },
-                    (payload) => {
-                         // We need author details too, so simpler to re-fetch or optimistically add if we had author info in payload
-                         // For now, let's just re-fetch for simplicity
+          if (!user?.id) return;
+
+          // Realtime Subscription (Appwrite Realtime)
+          const unsubscribe = client.subscribe(
+               [`databases.${DATABASE_ID}.collections.${COLLECTIONS.guestbookEntries}.documents`],
+               (response) => {
+                    const isCreate = response.events.some(e => e.endsWith('.create'));
+                    if (isCreate && response.payload?.hostId === user.id) {
                          fetchGuestbook();
                     }
-               )
-               .subscribe();
+               }
+          );
 
           return () => {
-               supabase.removeChannel(channel);
+               unsubscribe();
           };
      }, [user?.id]);
 
@@ -153,20 +147,29 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                return;
           }
 
-          const { error } = await supabase
-               .from('guestbook_entries')
-               .insert({
-                    host_id: user.id, // Profile owner
-                    author_id: currentUser.id, // Writer
-                    content: newComment,
-                    is_secret: false
+          try {
+               await databases.createDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.guestbookEntries,
+                    documentId: ID.unique(),
+                    data: {
+                         hostId: user.id, // Profile owner
+                         authorId: currentUser.id, // Writer
+                         authorUsername: currentUser.user_metadata?.username || '방문자',
+                         authorAvatarUrl: currentUser.user_metadata?.avatar_url || '',
+                         content: newComment,
+                         isSecret: false,
+                    },
+                    permissions: [
+                         Permission.read(Role.any()),
+                         Permission.update(Role.user(currentUser.id)),
+                         Permission.delete(Role.user(currentUser.id)),
+                    ],
                });
-
-          if (error) {
+               setNewComment('');
+          } catch (error) {
                console.error("Guestbook error:", error);
                alert("방명록 작성 실패");
-          } else {
-               setNewComment('');
           }
      };
 
@@ -217,7 +220,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                              onClick={onOpenAvatarCustomizer}
                                         >
                                              <img
-                                                  src={profileData?.avatar_url || user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
+                                                  src={profileData?.avatarUrl || user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
                                                   alt="Profile"
                                                   className="w-full h-full object-cover"
                                              />
@@ -249,7 +252,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                    <div className="mt-8">
                                         <div className="flex items-center justify-between mb-2">
                                              <h2 className="text-3xl font-black flex items-center gap-2">
-                                                  {profileData?.full_name || profileData?.username || '나의 강남 라이프 🏡'}
+                                                  {profileData?.fullName || profileData?.username || '나의 강남 라이프 🏡'}
                                              </h2>
 
                                              {/* Edit Button (Only for Owner) */}
@@ -306,7 +309,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                                        {profileData?.job || '직업 미설정'}
                                                   </div>
                                                   <p className="text-base text-gray-200 leading-relaxed font-light mb-6 whitespace-pre-wrap">
-                                                       {profileData?.status_message || profileData?.bio || "자기소개가 없습니다."}
+                                                       {profileData?.statusMessage || profileData?.bio || "자기소개가 없습니다."}
                                                   </p>
                                              </>
                                         )}
@@ -379,18 +382,18 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                               {/* Comments List */}
                               <div className="space-y-4">
                                    {guestbookEntries.map((entry) => (
-                                        <div key={entry.id} className="flex gap-3 items-start group">
+                                        <div key={entry.$id} className="flex gap-3 items-start group">
                                              <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center border border-gray-100 shrink-0">
                                                   <img
-                                                       src={entry.author?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon"}
+                                                       src={entry.authorAvatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon"}
                                                        className="w-full h-full object-cover"
                                                        alt="author"
                                                   />
                                              </div>
                                              <div className="flex-1">
                                                   <div className="flex items-baseline gap-2 mb-0.5">
-                                                       <span className="font-bold text-sm text-gray-900">{entry.author?.username || '익명'}</span>
-                                                       <span className="text-[10px] text-gray-400">{new Date(entry.created_at).toLocaleDateString()}</span>
+                                                       <span className="font-bold text-sm text-gray-900">{entry.authorUsername || '익명'}</span>
+                                                       <span className="text-[10px] text-gray-400">{new Date(entry.$createdAt).toLocaleDateString()}</span>
                                                   </div>
                                                   <p className="text-sm text-gray-700 leading-relaxed">{entry.content}</p>
 

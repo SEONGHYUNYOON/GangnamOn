@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Zap, MapPin, Star, Heart, Cloud, Sparkles } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
 
-const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, updateBeanCount }) => {
+const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, updateBeanCount, user = null, onLoginSuccess, onLogout }) => {
      const [onlineCount, setOnlineCount] = useState(1204);
      const [trafficStatus, setTrafficStatus] = useState({
           jayuro: 'smooth',
@@ -21,8 +21,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           loading: true
      });
 
-     // --- Auth State ---
-     const [user, setUser] = useState(null);
+     // --- Auth State: user는 App.jsx에서 props로 내려줍니다 (단일 소스) ---
 
      // --- Edit Profile State ---
      const [isEditingName, setIsEditingName] = useState(false);
@@ -44,16 +43,6 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      ];
 
      useEffect(() => {
-          // Check active session
-          supabase.auth.getSession().then(({ data: { session } }) => {
-               setUser(session?.user ?? null);
-          }).catch(err => console.error("Session check failed", err));
-
-          // Listen for auth changes
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-               setUser(session?.user ?? null);
-          });
-
           // Fetch Weather Data (강남 역삼동)
           const fetchWeather = async () => {
                try {
@@ -113,7 +102,6 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           }, 5000);
 
           return () => {
-               subscription.unsubscribe();
                clearInterval(weatherInterval);
                clearInterval(userInterval);
                clearInterval(trafficInterval);
@@ -134,7 +122,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      }, [user]);
 
      const handleLogout = async () => {
-          await supabase.auth.signOut();
+          if (onLogout) await onLogout();
      };
 
      const handleUpdateName = async () => {
@@ -155,31 +143,28 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           // Cost Logic
           const CHANGE_COST = 1000;
           if (beanCount < CHANGE_COST) {
-               alert(`닉네임 변경에는 ${CHANGE_COST}온이 필요합니다! \n현재 보유: ${beanCount}온`);
+               alert(`닉네임 변경에는 ${CHANGE_COST.toLocaleString()} 온이 필요합니다!\n현재 보유: ${beanCount.toLocaleString()} 온`);
                return;
           }
 
-          const confirmed = window.confirm(`닉네임을 '${editName}'(으)로 변경하시겠습니까?\n비용: ${CHANGE_COST}온이 차감됩니다.`);
+          const confirmed = window.confirm(`닉네임을 '${editName}'(으)로 변경하시겠습니까?\n비용: ${CHANGE_COST.toLocaleString()} 온이 차감됩니다.`);
           if (!confirmed) return;
 
-          const { data, error } = await supabase.auth.updateUser({
-               data: {
-                    nickname: editName,
-                    display_name: editName,
-                    username: editName,
-                    full_name: editName,
-                    name: editName
-               }
-          });
+          try {
+               await databases.updateDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    documentId: user.id,
+                    data: { username: editName, fullName: editName },
+               });
 
-          if (error) {
-               alert("이름 변경 실패: " + error.message);
-          } else {
                // Deduct beans safely
                updateBeanCount(-CHANGE_COST);
-               setUser(data.user);
+               if (onLoginSuccess) await onLoginSuccess(); // 부모(App)의 user 상태 새로고침
                setIsEditingName(false);
                alert(`닉네임 변경 완료! -${CHANGE_COST}온`);
+          } catch (error) {
+               alert("이름 변경 실패: " + error.message);
           }
      };
 
@@ -227,7 +212,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
      // === LOGIN WIDGET (Replaces Minihome when logged out) ===
      const renderLoginWidget = () => (
-          <AuthWidget />
+          <AuthWidget onLoginSuccess={onLoginSuccess} />
      );
 
      // === DARK MODE RENDER (For Romance Tab) ===
@@ -380,7 +365,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    }}
                                    className="flex items-center gap-1.5 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200 mt-2 mb-4 cursor-pointer hover:bg-yellow-100 transition-colors hover:scale-110 transform"
                               >
-                                   <span className="text-sm">🫘</span>
+                                   <span className="text-sm">⚡</span>
                                    <span className="text-xs font-black text-yellow-600">{beanCount.toLocaleString()} 온</span>
                               </div>
 

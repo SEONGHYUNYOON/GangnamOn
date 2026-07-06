@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Users, Star, Calendar, ChevronRight, Heart, Share2, Loader2, Clock } from 'lucide-react';
 import MeetingDetail from './MeetingDetail';
-import { supabase } from '../lib/supabase';
 
 const EventTimer = ({ expiresAt }) => {
      const [timeLeft, setTimeLeft] = useState('');

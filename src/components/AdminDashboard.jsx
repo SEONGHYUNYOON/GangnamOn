@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
 import { Users, Activity, FileText, TrendingUp, Shield, DollarSign, X, MapPin, Calendar, MessageSquare, Heart } from 'lucide-react';
 
 const StatCard = ({ title, value, subtext, icon: Icon, color }) => (
@@ -34,32 +34,21 @@ const AdminDashboard = ({ onlineUsersCount }) => {
           try {
                setLoading(true);
 
-               // 1. Total Users
-               const { count: userCount, error: userError } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true });
-
-               // 2. Total Posts
-               const { count: postCount, error: postError } = await supabase
-                    .from('posts')
-                    .select('*', { count: 'exact', head: true });
-
-               // 3. Recent Users (Get last 5) - Select ALL fields for detail view
-               const { data: users, error: listError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(5);
-
-               if (userError || postError || listError) throw new Error("Stats fetch failed");
+               // Appwrite의 listDocuments 응답에는 조건에 맞는 전체 개수(total)가 함께 들어있어
+               // 별도의 count 전용 쿼리 없이도 총 인원/게시글 수를 구할 수 있습니다.
+               const [profilesRes, postsRes, recentRes] = await Promise.all([
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.limit(1)] }),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.posts, queries: [Query.limit(1)] }),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.orderDesc('$createdAt'), Query.limit(5)] }),
+               ]);
 
                setStats({
-                    totalUsers: userCount || 0,
-                    totalPosts: postCount || 0,
+                    totalUsers: profilesRes.total || 0,
+                    totalPosts: postsRes.total || 0,
                     totalVisits: 15420, // Mock for visual fullness
                     totalBeans: 85400,  // Mock
                });
-               setRecentUsers(users || []);
+               setRecentUsers(recentRes.documents || []);
 
           } catch (error) {
                console.error('Admin stats error:', error);
@@ -134,7 +123,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                                    >
                                         <div className="flex items-center gap-3">
                                              <img
-                                                  src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                                                  src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
                                                   alt="avatar"
                                                   className="w-10 h-10 rounded-full bg-gray-100"
                                              />
@@ -148,7 +137,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                                                   상세보기
                                              </span>
                                              <span className="text-xs font-medium text-gray-400">
-                                                  {new Date(user.created_at).toLocaleDateString()}
+                                                  {new Date(user.$createdAt).toLocaleDateString()}
                                              </span>
                                         </div>
                                    </div>
@@ -199,7 +188,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                                    </button>
                                    <div className="absolute -bottom-12 left-8">
                                         <img
-                                             src={selectedUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.username}`}
+                                             src={selectedUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.username}`}
                                              alt="profile"
                                              className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-md object-cover"
                                         />
@@ -216,7 +205,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                                                   신규 회원
                                              </span>
                                         </h2>
-                                        <p className="text-gray-500 text-sm">{selectedUser.full_name || '이름 없음'} | {selectedUser.email || 'Email 비공개'}</p>
+                                        <p className="text-gray-500 text-sm">{selectedUser.fullName || '이름 없음'}</p>
                                    </div>
 
                                    {/* Stats Row */}
@@ -227,7 +216,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                                         </div>
                                         <div className="bg-gray-50 rounded-2xl p-3 text-center border border-gray-100">
                                              <div className="text-xs text-gray-400 font-bold mb-1">방문자</div>
-                                             <div className="text-lg font-black text-gray-900">{selectedUser.visitors_total?.toLocaleString() || 0}</div>
+                                             <div className="text-lg font-black text-gray-900">{selectedUser.visitorsTotal?.toLocaleString() || 0}</div>
                                         </div>
                                         <div className="bg-gray-50 rounded-2xl p-3 text-center border border-gray-100">
                                              <div className="text-xs text-gray-400 font-bold mb-1">게시글</div>
@@ -245,7 +234,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                                              <div>
                                                   <p className="text-xs font-bold text-gray-400">상태 메시지</p>
                                                   <p className="text-gray-700 text-sm font-medium mt-0.5">
-                                                       {selectedUser.status_message || "상태 메시지가 없습니다."}
+                                                       {selectedUser.statusMessage || "상태 메시지가 없습니다."}
                                                   </p>
                                              </div>
                                         </div>
@@ -279,7 +268,7 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                                              <div>
                                                   <p className="text-xs font-bold text-gray-400">가입일</p>
                                                   <p className="text-gray-900 text-sm font-bold mt-0.5">
-                                                       {new Date(selectedUser.created_at).toLocaleDateString()}
+                                                       {new Date(selectedUser.$createdAt).toLocaleDateString()}
                                                   </p>
                                              </div>
                                         </div>

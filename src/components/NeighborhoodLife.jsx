@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Heart, User, MapPin, MoreHorizontal, ChevronDown, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
 import { normalizeForGangnamDisplay } from '../lib/displayGangnam';
 
 const NeighborhoodLife = ({ filter }) => {
@@ -14,22 +14,20 @@ const NeighborhoodLife = ({ filter }) => {
      useEffect(() => {
           const fetchPosts = async () => {
                setLoading(true);
-               // Fetch posts of type 'life' (Neighborhood Life)
-               // Join with profiles to get author name and location
-               const { data, error } = await supabase
-                    .from('posts')
-                    .select(`
-                         *,
-                         profiles:author_id (username, location)
-                    `)
-                    .in('type', ['life', 'question', 'news', 'town_story', 'gangnam_pick', 'daily_photo']) // Fetch all life/community types
-                    .order('created_at', { ascending: false });
+               try {
+                    // Fetch posts of type 'life' (Neighborhood Life) — author info is
+                    // denormalized onto each post (authorUsername) so no join is needed.
+                    const res = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.posts,
+                         queries: [
+                              Query.equal('type', ['life', 'question', 'news', 'town_story', 'gangnam_pick', 'daily_photo']),
+                              Query.orderDesc('$createdAt'),
+                         ],
+                    });
 
-               if (error) {
-                    console.error("Error fetching neighborhood posts:", error);
-               } else {
                     // Adapt DB data to UI model
-                    const mappedPosts = data.map(p => {
+                    const mappedPosts = res.documents.map(p => {
                          let badge = '소식';
                          if (p.type === 'question') badge = '질문';
                          else if (p.type === 'news') badge = '소식';
@@ -38,26 +36,28 @@ const NeighborhoodLife = ({ filter }) => {
                          else if (p.type === 'daily_photo') badge = '포토';
                          else if (p.title.includes('?')) badge = '질문'; // Fallback
 
-                         const locationRaw = p.profiles?.location || '강남';
+                         const locationRaw = p.locationName || '강남';
                          const regionRaw = locationRaw ? locationRaw.split(' ')[0] : '강남';
                          return {
-                              id: p.id,
+                              id: p.$id,
                               type: p.type === 'life' ? 'news' : p.type,
                               rawType: p.type,
                               badge: badge,
-                              author: normalizeForGangnamDisplay(p.profiles?.username || '강남이웃'),
+                              author: normalizeForGangnamDisplay(p.authorUsername || '강남이웃'),
                               title: p.title,
                               content: p.content,
                               location: normalizeForGangnamDisplay(locationRaw),
                               region: normalizeForGangnamDisplay(regionRaw),
                               views: p.views || 0,
-                              likes: p.likes_count || 0,
+                              likes: p.likesCount || 0,
                               comments: 0,
-                              time: new Date(p.created_at).toLocaleDateString(),
-                              image: p.image_urls?.[0] || null
+                              time: new Date(p.$createdAt).toLocaleDateString(),
+                              image: p.imageUrls?.[0] || null
                          };
                     });
                     setPosts(mappedPosts);
+               } catch (error) {
+                    console.error("Error fetching neighborhood posts:", error);
                }
                setLoading(false);
           };

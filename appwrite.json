@@ -1,0 +1,433 @@
+{
+    "projectId": "6a4be56a00369cf49a31",
+    "projectName": "GangnamOn",
+    "databases": [
+        {
+            "$id": "main",
+            "name": "GangnamOn DB",
+            "enabled": true
+        }
+    ],
+    "collections": [
+        {
+            "$id": "profiles",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "profiles",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "username",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "fullName",
+                    "type": "string",
+                    "size": 64,
+                    "required": false
+                },
+                {
+                    "key": "avatarUrl",
+                    "type": "string",
+                    "size": 512,
+                    "required": false
+                },
+                {
+                    "key": "beans",
+                    "type": "integer",
+                    "required": false,
+                    "default": 1250
+                },
+                {
+                    "key": "location",
+                    "type": "string",
+                    "size": 64,
+                    "required": false,
+                    "default": "강남 역삼"
+                },
+                {
+                    "key": "bio",
+                    "type": "string",
+                    "size": 500,
+                    "required": false
+                },
+                {
+                    "key": "gender",
+                    "type": "string",
+                    "size": 16,
+                    "required": false
+                },
+                {
+                    "key": "birthYear",
+                    "type": "integer",
+                    "required": false
+                },
+                {
+                    "key": "mbti",
+                    "type": "string",
+                    "size": 8,
+                    "required": false
+                },
+                {
+                    "key": "interests",
+                    "type": "string",
+                    "size": 32,
+                    "required": false,
+                    "array": true
+                },
+                {
+                    "key": "mannerTemp",
+                    "type": "double",
+                    "required": false,
+                    "default": 36.5
+                },
+                {
+                    "key": "visitorsToday",
+                    "type": "integer",
+                    "required": false,
+                    "default": 0
+                },
+                {
+                    "key": "visitorsTotal",
+                    "type": "integer",
+                    "required": false,
+                    "default": 0
+                },
+                {
+                    "key": "unlockedStyles",
+                    "type": "string",
+                    "size": 32,
+                    "required": false,
+                    "array": true
+                },
+                {
+                    "key": "job",
+                    "type": "string",
+                    "size": 100,
+                    "required": false
+                },
+                {
+                    "key": "statusMessage",
+                    "type": "string",
+                    "size": 500,
+                    "required": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "username_idx",
+                    "type": "unique",
+                    "attributes": [
+                        "username"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "posts",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "posts",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "authorId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "authorUsername",
+                    "type": "string",
+                    "size": 64,
+                    "required": false
+                },
+                {
+                    "key": "authorAvatarUrl",
+                    "type": "string",
+                    "size": 512,
+                    "required": false
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "size": 32,
+                    "required": true
+                },
+                {
+                    "key": "title",
+                    "type": "string",
+                    "size": 200,
+                    "required": false
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "size": 5000,
+                    "required": false
+                },
+                {
+                    "key": "price",
+                    "type": "integer",
+                    "required": false,
+                    "default": 0
+                },
+                {
+                    "key": "locationName",
+                    "type": "string",
+                    "size": 128,
+                    "required": false
+                },
+                {
+                    "key": "maxParticipants",
+                    "type": "integer",
+                    "required": false
+                },
+                {
+                    "key": "currentParticipants",
+                    "type": "integer",
+                    "required": false,
+                    "default": 1
+                },
+                {
+                    "key": "expiresAt",
+                    "type": "datetime",
+                    "required": false
+                },
+                {
+                    "key": "featuredUntil",
+                    "type": "datetime",
+                    "required": false
+                },
+                {
+                    "key": "imageUrls",
+                    "type": "string",
+                    "size": 512,
+                    "required": false,
+                    "array": true
+                },
+                {
+                    "key": "likesCount",
+                    "type": "integer",
+                    "required": false,
+                    "default": 0
+                },
+                {
+                    "key": "commentsCount",
+                    "type": "integer",
+                    "required": false,
+                    "default": 0
+                },
+                {
+                    "key": "views",
+                    "type": "integer",
+                    "required": false,
+                    "default": 0
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "type_idx",
+                    "type": "key",
+                    "attributes": [
+                        "type"
+                    ]
+                },
+                {
+                    "key": "author_idx",
+                    "type": "key",
+                    "attributes": [
+                        "authorId"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "romance_interactions",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "romance_interactions",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "actorId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "targetId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "actionType",
+                    "type": "string",
+                    "size": 16,
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "actor_target_idx",
+                    "type": "unique",
+                    "attributes": [
+                        "actorId",
+                        "targetId"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "chat_rooms",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "chat_rooms",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "type",
+                    "type": "string",
+                    "size": 16,
+                    "required": false,
+                    "default": "dm"
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "chat_participants",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "chat_participants",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "roomId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "room_user_idx",
+                    "type": "unique",
+                    "attributes": [
+                        "roomId",
+                        "userId"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "guestbook_entries",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "guestbook_entries",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "hostId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "authorId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "authorUsername",
+                    "type": "string",
+                    "size": 64,
+                    "required": false
+                },
+                {
+                    "key": "authorAvatarUrl",
+                    "type": "string",
+                    "size": 512,
+                    "required": false
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "size": 500,
+                    "required": true
+                },
+                {
+                    "key": "isSecret",
+                    "type": "boolean",
+                    "required": false,
+                    "default": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "host_idx",
+                    "type": "key",
+                    "attributes": [
+                        "hostId"
+                    ]
+                }
+            ]
+        }
+    ],
+    "buckets": [
+        {
+            "$id": "post-images",
+            "name": "post-images",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "fileSecurity": false,
+            "enabled": true,
+            "maximumFileSize": 5000000,
+            "allowedFileExtensions": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            ],
+            "compression": "gzip",
+            "encryption": true,
+            "antivirus": true
+        }
+    ]
+}

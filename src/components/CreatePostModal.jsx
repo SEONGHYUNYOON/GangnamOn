@@ -1,14 +1,21 @@
 import React, { useState, useRef } from 'react';
-import { X, Image as ImageIcon, MapPin, Calendar, Users, DollarSign, Tag, ArrowLeft, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { X, Image as ImageIcon, MapPin, Calendar, Users, DollarSign, Tag, ArrowLeft, Loader2, Megaphone, Clock } from 'lucide-react';
+import { databases, storage, DATABASE_ID, COLLECTIONS, BUCKET_ID, ID, Permission, Role, getFileUrl } from '../lib/appwrite';
 
-const CreatePostModal = ({ onClose, onShare, user }) => {
-     const [selectedCategory, setSelectedCategory] = useState('gathering');
+const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering' }) => {
+     const [selectedCategory, setSelectedCategory] = useState(initialCategory);
      // Start with null, show preview when selected
      const [previewImage, setPreviewImage] = useState(null);
      const [selectedFile, setSelectedFile] = useState(null);
      const [isSubmitting, setIsSubmitting] = useState(false);
      const fileInputRef = useRef(null);
+
+     // 이벤트 마감 시간 기본값: 지금부터 24시간 뒤 (datetime-local 입력용 문자열)
+     const defaultEventDeadline = (() => {
+          const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
+          d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+          return d.toISOString().slice(0, 16);
+     })();
 
      const [formData, setFormData] = useState({
           title: '',
@@ -17,10 +24,12 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
           date: new Date().toISOString().slice(0, 10),
           time: '19:00',
           maxMembers: 4,
-          description: ''
+          description: '',
+          eventDeadline: defaultEventDeadline
      });
 
      const categories = [
+          { id: 'event', label: '🎉 이벤트 홍보(사장님)', icon: Megaphone },
           { id: 'startup_freelance', label: '⚡ 스타트업/프리랜서', icon: Users }, // Zap changed to Users for better generic fit or import Zap if needed (it is imported)
           { id: 'lunch_networking', label: '☕ 점심 네트워킹', icon: Calendar }, // Coffee changed to Calendar or keep Coffee if imported
           { id: 'recruit_proposal', label: '👥 구인/협업', icon: Tag },
@@ -53,28 +62,16 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
 
      const uploadImage = async (file) => {
           try {
-               const fileExt = file.name.split('.').pop();
-               const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+               const uploaded = await storage.createFile({
+                    bucketId: BUCKET_ID,
+                    fileId: ID.unique(),
+                    file,
+                    permissions: [Permission.read(Role.any())],
+               });
 
-               const { data, error } = await supabase.storage
-                    .from('post-images')
-                    .upload(fileName, file, {
-                         cacheControl: '3600',
-                         upsert: false
-                    });
-
-               if (error) throw error;
-
-
-
-               const { data: urlData } = supabase.storage
-                    .from('post-images')
-                    .getPublicUrl(fileName);
-
-               return urlData.publicUrl;
+               return getFileUrl(uploaded.$id);
           } catch (error) {
                console.error("Image upload failed:", error);
-               // Handle missing bucket error specifically if possible, OR just generic
                if (error.message && error.message.includes('bucket')) {
                     throw new Error("이미지 저장소(post-images)가 존재하지 않습니다. 관리자에게 문의하세요.");
                }
@@ -106,34 +103,48 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
                }
 
                const payload = {
-                    author_id: user.id,
+                    authorId: user.id,
+                    authorUsername: user.user_metadata?.username || user.user_metadata?.full_name || '강남주민',
+                    authorAvatarUrl: user.user_metadata?.avatar_url || '',
                     type: selectedCategory,
                     title: formData.title,
-                    location: formData.location,
-                    // Handle numeric fields
-                    price: selectedCategory === 'market' ? parseInt(formData.price.replace(/[^0-9]/g, '') || 0) : null,
-                    max_participants: selectedCategory === 'gathering' ? parseInt(formData.maxMembers) : null,
+                    locationName: formData.location,
                     // Append detail info to content as we don't have columns in basic schema
                     content: selectedCategory === 'gathering'
                          ? `[일시: ${formData.date} ${formData.time}]\n\n${formData.description}`
                          : formData.description,
-
-                    image_urls: finalImageUrl ? [finalImageUrl] : [],
-                    likes_count: 0
+                    imageUrls: finalImageUrl ? [finalImageUrl] : [],
+                    likesCount: 0,
                };
 
-               const { error } = await supabase
-                    .from('posts')
-                    .insert([payload]);
-
-               if (error) {
-                    throw error;
+               if (selectedCategory === 'market') {
+                    payload.price = parseInt(formData.price.replace(/[^0-9]/g, '') || 0);
+               }
+               if (selectedCategory === 'gathering') {
+                    payload.maxParticipants = parseInt(formData.maxMembers);
+                    payload.currentParticipants = 1;
+               }
+               if (selectedCategory === 'event') {
+                    // 이벤트 홍보 글은 마감 시간을 함께 저장 (Owner's Note의 마감 타이머와 연결됨)
+                    payload.expiresAt = new Date(formData.eventDeadline).toISOString();
                }
 
-               // Success
+               const savedPost = await databases.createDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.posts,
+                    documentId: ID.unique(),
+                    data: payload,
+                    permissions: [
+                         Permission.read(Role.any()),
+                         Permission.update(Role.user(user.id)),
+                         Permission.delete(Role.user(user.id)),
+                    ],
+               });
+
+               // Success — 부모 컴포넌트에는 저장된 실제 문서를 그대로 전달해서
+               // App.jsx가 다시 insert하지 않고 화면 상태만 갱신하도록 함
                if (onShare) {
-                    // Pass the final URL to the parent to update UI optimistically or reload
-                    onShare(selectedCategory, formData, finalImageUrl);
+                    onShare(selectedCategory, savedPost);
                } else {
                     window.location.reload();
                }
@@ -274,6 +285,40 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
 
                               {/* === Dynamic Fields === */}
 
+                              {/* Case: 이벤트 홍보 (Owner's Note에 노출, 마감 타이머 자동 적용) */}
+                              {selectedCategory === 'event' && (
+                                   <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                        <div className="bg-brand-light border border-brand/10 rounded-xl p-3 text-xs text-brand font-bold flex items-start gap-2">
+                                             <Megaphone className="w-4 h-4 shrink-0 mt-0.5" />
+                                             <span>등록하면 Owner's Note 피드에 바로 노출됩니다. 마감 시간이 지나면 자동으로 "종료된 이벤트"로 표시돼요.</span>
+                                        </div>
+                                        <div>
+                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                                                  <Clock className="w-3.5 h-3.5" /> 이벤트 마감 시간
+                                             </label>
+                                             <input
+                                                  type="datetime-local"
+                                                  value={formData.eventDeadline}
+                                                  onChange={(e) => setFormData({ ...formData, eventDeadline: e.target.value })}
+                                                  className="w-full py-3 px-4 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:border-brand/30 focus:ring-0 transition-all font-bold text-sm"
+                                             />
+                                        </div>
+                                        <div>
+                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">매장 위치</label>
+                                             <div className="flex items-center bg-gray-50 px-3 py-3 rounded-xl">
+                                                  <MapPin className="w-4 h-4 text-gray-400 mr-2" />
+                                                  <input
+                                                       type="text"
+                                                       value={formData.location}
+                                                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                       className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold w-full placeholder-gray-400 text-gray-700"
+                                                       placeholder="예) 강남역 3번 출구 앞"
+                                                  />
+                                             </div>
+                                        </div>
+                                   </div>
+                              )}
+
                               {/* Case A: Market (Price) */}
                               {selectedCategory === 'market' && (
                                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
@@ -393,7 +438,7 @@ const CreatePostModal = ({ onClose, onShare, user }) => {
                               <button
                                    onClick={handleSubmit}
                                    disabled={isSubmitting}
-                                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3.5 px-10 rounded-xl shadow-lg shadow-purple-200 transition-all active:scale-95 text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                   className="btn-brand py-3.5 px-10 text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                    {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                                    {isSubmitting ? '업로드 중...' : '공유하기'}

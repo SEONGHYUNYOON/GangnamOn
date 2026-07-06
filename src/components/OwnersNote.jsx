@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Download, ChevronRight, Send, User } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Download, ChevronRight, Send, User, Rocket, Megaphone } from 'lucide-react';
 import KakaoMap from './KakaoMap';
-import { supabase } from '../lib/supabase';
+import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
 import EventTimer from './EventTimer';
 import { normalizeForGangnamDisplay } from '../lib/displayGangnam';
 
-const NoteCard = ({ note, onOpenMinihome }) => {
+const BOOST_COST = 300;
+const BOOST_HOURS = 24;
+
+const NoteCard = ({ note, onOpenMinihome, currentUserId, beanCount, onBoost }) => {
      const [isLiked, setIsLiked] = useState(false);
      const [likeCount, setLikeCount] = useState(note.likes || Math.floor(Math.random() * 50) + 10);
      const [showComments, setShowComments] = useState(false);
@@ -85,6 +88,13 @@ const NoteCard = ({ note, onOpenMinihome }) => {
                          alt="Post"
                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
+
+                    {/* PICK 뱃지: 사장님이 온(재화)으로 상단 고정 노출을 구매한 이벤트 */}
+                    {note.isFeatured && (
+                         <div className="absolute top-4 left-4 badge-pick flex items-center gap-1">
+                              <Rocket className="w-3 h-3" /> PICK
+                         </div>
+                    )}
 
                     {/* Visual Label */}
                     {note.eventLabel && (
@@ -205,6 +215,26 @@ const NoteCard = ({ note, onOpenMinihome }) => {
                          </button>
                     </div>
 
+                    {/* 내가 등록한 이벤트일 때만: 온으로 상단 고정 노출(부스트) 구매 */}
+                    {currentUserId && note.authorId === currentUserId && (
+                         note.isFeatured ? (
+                              <div className="mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-50 border border-amber-100 text-amber-700 text-xs font-bold">
+                                   <Rocket className="w-3.5 h-3.5" /> 지금 상단 고정 노출 중이에요
+                              </div>
+                         ) : (
+                              <button
+                                   onClick={() => onBoost && onBoost(note)}
+                                   disabled={(beanCount ?? 0) < BOOST_COST}
+                                   className={`mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${(beanCount ?? 0) < BOOST_COST
+                                        ? 'bg-gray-50 text-gray-300 cursor-not-allowed border border-gray-100'
+                                        : 'bg-amber-400 text-amber-950 hover:bg-amber-300 active:scale-[0.98] shadow-soft'
+                                        }`}
+                              >
+                                   <Rocket className="w-3.5 h-3.5" /> 상단 고정 노출 부스트 ({BOOST_COST}온 · {BOOST_HOURS}시간)
+                              </button>
+                         )
+                    )}
+
                     {showMap && (
                          <div className="mt-4 animate-in fade-in slide-in-from-top-2">
                               {/* Using random slight variation for demo, in real app use actual lat/lng */}
@@ -225,47 +255,89 @@ const NoteCard = ({ note, onOpenMinihome }) => {
      );
 };
 
-const OwnersNote = ({ onOpenMinihome }) => {
+const OwnersNote = ({ onOpenMinihome, user, beanCount, updateBeanCount, refreshKey, onRequestCreate }) => {
      const [notes, setNotes] = useState([]);
      const [loading, setLoading] = useState(true);
 
-     useEffect(() => {
-          const fetchNotes = async () => {
-               setLoading(true);
+     const fetchNotes = async () => {
+          setLoading(true);
+          try {
                // Fetch only 'event' type posts for Owner's Note
-               const { data, error } = await supabase
-                    .from('posts')
-                    .select(`
-                         *,
-                         profiles:author_id (username, avatar_url, location)
-                    `)
-                    .eq('type', 'event')
-                    .order('created_at', { ascending: false });
+               const res = await databases.listDocuments({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.posts,
+                    queries: [Query.equal('type', 'event'), Query.orderDesc('$createdAt')],
+               });
 
-               if (error) {
-                    console.error('Error fetching owner notes:', error);
-               } else {
-                    const mappedNotes = data.map(post => ({
-                         id: post.id,
-                         storeName: normalizeForGangnamDisplay(post.profiles?.username || '강남 사장님'),
-                         ownerAvatar: post.profiles?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gangnam',
+               const now = new Date();
+               const mappedNotes = res.documents.map(post => {
+                    const featuredUntil = post.featuredUntil ? new Date(post.featuredUntil) : null;
+                    return {
+                         id: post.$id,
+                         authorId: post.authorId,
+                         storeName: normalizeForGangnamDisplay(post.authorUsername || '강남 사장님'),
+                         ownerAvatar: post.authorAvatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gangnam',
                          time: '방금 전',
-                         createdAt: post.created_at,
-                         image: post.image_urls?.[0] || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=600',
+                         createdAt: post.$createdAt,
+                         image: post.imageUrls?.[0] || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=600',
                          eventLabel: post.title,
                          note: post.content,
                          hasCoupon: true,
-                         expiresAt: post.expires_at,
-                         location: normalizeForGangnamDisplay(post.location_name || post.profiles?.location || '강남'),
-                         likes: post.likes_count
-                    }));
-                    setNotes(mappedNotes);
-               }
-               setLoading(false);
-          };
+                         expiresAt: post.expiresAt,
+                         location: normalizeForGangnamDisplay(post.locationName || '강남'),
+                         likes: post.likesCount,
+                         isFeatured: !!(featuredUntil && featuredUntil > now),
+                         featuredUntil: post.featuredUntil,
+                    };
+               });
 
+               // 상단 고정(부스트) 중인 이벤트를 맨 위로, 그 다음은 최신순
+               mappedNotes.sort((a, b) => {
+                    if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+               });
+
+               setNotes(mappedNotes);
+          } catch (error) {
+               console.error('Error fetching owner notes:', error);
+          }
+          setLoading(false);
+     };
+
+     useEffect(() => {
           fetchNotes();
-     }, []);
+     }, [refreshKey]);
+
+     // 온(재화)으로 24시간 상단 고정 노출 구매
+     // (보안/인증 처리는 추후 별도 작업 예정이라 클라이언트에서 직접 처리하는 현재 앱의 방식과 동일하게 구현)
+     const handleBoost = async (note) => {
+          if (!user) {
+               alert('로그인이 필요합니다!');
+               return;
+          }
+          if ((beanCount ?? 0) < BOOST_COST) {
+               alert(`부스트에는 ${BOOST_COST}온이 필요합니다. 현재 보유: ${beanCount ?? 0}온`);
+               return;
+          }
+          const confirmed = window.confirm(`${BOOST_COST}온을 사용해서 이 이벤트를 ${BOOST_HOURS}시간 동안 상단 고정 노출할까요?`);
+          if (!confirmed) return;
+
+          const featuredUntil = new Date(Date.now() + BOOST_HOURS * 60 * 60 * 1000).toISOString();
+          try {
+               await databases.updateDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.posts,
+                    documentId: note.id,
+                    data: { featuredUntil },
+               });
+          } catch (error) {
+               alert('부스트 적용 실패: ' + error.message);
+               return;
+          }
+
+          updateBeanCount(-BOOST_COST);
+          await fetchNotes();
+     };
 
      if (loading) {
           return <div className="text-center py-20 text-gray-500">로딩중...</div>;
@@ -278,16 +350,29 @@ const OwnersNote = ({ onOpenMinihome }) => {
                     <h1 className="text-3xl font-serif text-gray-900 tracking-wide mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
                          Owner's Note
                     </h1>
-                    <p className="text-sm text-gray-500 font-medium tracking-tight">
+                    <p className="text-sm text-gray-500 font-medium tracking-tight mb-4">
                          오늘의 소식 & 깜짝 이벤트 혜택 🎁
                     </p>
+                    <button
+                         onClick={() => onRequestCreate ? onRequestCreate() : (!user ? alert('로그인이 필요합니다!') : null)}
+                         className="btn-brand inline-flex items-center gap-2 px-5 py-2.5 text-sm"
+                    >
+                         <Megaphone className="w-4 h-4" /> 우리 가게 이벤트 홍보하기
+                    </button>
                </div>
 
                {/* 2. Feed List */}
                <div className="space-y-12 px-4 md:px-0">
                     {notes.length > 0 ? (
                          notes.map((note) => (
-                              <NoteCard key={note.id} note={note} onOpenMinihome={onOpenMinihome} />
+                              <NoteCard
+                                   key={note.id}
+                                   note={note}
+                                   onOpenMinihome={onOpenMinihome}
+                                   currentUserId={user?.id}
+                                   beanCount={beanCount}
+                                   onBoost={handleBoost}
+                              />
                          ))
                     ) : (
                          <div className="text-center py-10">

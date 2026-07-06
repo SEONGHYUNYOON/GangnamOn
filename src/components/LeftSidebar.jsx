@@ -1,25 +1,16 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame } from 'lucide-react';
 import logo from '../assets/gangnam_on_logo.png';
 
 const LeftSidebar = ({ activeTab, setActiveTab }) => {
-     // State to manage expanded sections
-     const [expandedSections, setExpandedSections] = useState({
-          'lounge': true,
-          'gathering': true,
-          'biz': true,
-          'community': true,
-          'culture': true,
-          'life': true,
-          'school': true,
-          'my': true,
-          'project': true
-     });
+     // 그룹별 펼침 상태를 사용자가 직접 건드리기 전에는 저장하지 않습니다.
+     // (undefined = 아직 수동으로 토글한 적 없음 → 현재 탭이 속한 그룹만 자동으로 펼쳐짐)
+     const [expandedOverrides, setExpandedOverrides] = useState({});
 
-     const toggleSection = (id) => {
-          setExpandedSections(prev => ({
+     const toggleSection = (id, isExpandedNow) => {
+          setExpandedOverrides(prev => ({
                ...prev,
-               [id]: !prev[id]
+               [id]: !isExpandedNow
           }));
      };
 
@@ -111,7 +102,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                               }`}
                     >
                          <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${activeTab === 'romance' ? 'bg-rose-500/20' : 'bg-rose-50'}`}>
-                              <span className="text-base leading-none">🔥</span>
+                              <Flame className={`w-4 h-4 ${activeTab === 'romance' ? 'text-rose-400 fill-rose-400' : 'text-rose-500'}`} />
                          </div>
                          <div className="text-left min-w-0">
                               <div className={`text-sm font-bold truncate ${activeTab === 'romance' ? 'text-rose-300' : 'text-rose-700'}`}>
@@ -147,6 +138,9 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                <nav className="space-y-6">
                     {navGroups.map((group) => {
 
+                         // 자동 펼침: 아직 수동으로 토글한 적 없다면, 현재 탭이 속한 그룹만 펼쳐진 상태로 시작
+                         const containsActiveTab = group.items.some(item => item.id === activeTab);
+                         const isExpanded = expandedOverrides[group.id] ?? containsActiveTab;
 
                          // Standard Accordion Group Rendering
                          return (
@@ -154,15 +148,15 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
 
                                    {/* Group Header */}
                                    <button
-                                        onClick={() => toggleSection(group.id)}
+                                        onClick={() => toggleSection(group.id, isExpanded)}
                                         className="w-full flex items-center justify-between text-[9px] font-semibold text-gray-300 uppercase tracking-[0.18em] hover:text-gray-400 px-2 py-1 transition-colors"
                                    >
                                         <span>{group.title}</span>
-                                        {expandedSections[group.id] ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                                        {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                                    </button>
 
                                    {/* Group Items */}
-                                   {expandedSections[group.id] && (
+                                   {isExpanded && (
                                         <div className="space-y-1">
                                              {group.items.map((item) => {
                                                   const Icon = item.icon;
