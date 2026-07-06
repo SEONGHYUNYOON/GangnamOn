@@ -494,7 +494,7 @@ function App() {
 
      return (
           // Body Background
-          <div className={`min-h-screen font-sans flex justify-center transition-colors duration-500 ${activeTab === 'romance' ? 'bg-[#0F172A]' : 'bg-[#FAFAFA]'}`}>
+          <div className={`min-h-screen font-sans flex justify-center transition-colors duration-500 ${activeTab === 'romance' ? 'bg-[#0F172A]' : activeTab === 'gangnam_lounge' ? 'bg-[#08090f]' : 'bg-transparent'}`}>
 
                {/* Toast Notification */}
                {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
@@ -514,10 +514,11 @@ function App() {
                          {/* Top Marquee Banner */}
                          <div className="relative group">
                               <div
-                                   className={`rounded-xl overflow-hidden py-3 mb-6 transition-colors duration-500 backdrop-blur-md cursor-pointer ${activeTab === 'romance' ? 'bg-purple-900/60 border border-purple-500/30' : 'bg-gray-900/80 text-white'
+                                   className={`rounded-2xl overflow-hidden py-3 mb-6 transition-colors duration-500 backdrop-blur-md cursor-pointer border ${activeTab === 'romance' ? 'bg-purple-900/60 border-purple-500/30' : 'bg-slate-900/90 border-slate-700/50 text-white shadow-soft'
                                         }`}
                               >
-                                   <div className="animate-marquee whitespace-nowrap text-md font-bold tracking-wide text-white inline-flex items-center gap-8 shrink-0" style={{ width: "max-content" }}>
+                                   <div className="h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
+                                   <div className="animate-marquee whitespace-nowrap text-sm font-semibold tracking-wide text-white/95 inline-flex items-center gap-8 shrink-0 px-1" style={{ width: "max-content" }}>
                                         {/* 한 번에 한 블록만 이동하므로 마지막 문장이 왼쪽 끝을 지날 때까지 잘리지 않음 */}
                                         {[...bannerMessages, ...bannerMessages].map((item, i) => (
                                              <span
@@ -535,7 +536,7 @@ function App() {
                               {/* Add Banner Button (Visible on Hover/Always for accessibility) */}
                               <button
                                    onClick={() => setIsBannerModalOpen(true)}
-                                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-white text-purple-600 p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-95 z-10"
+                                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-amber-500 text-slate-900 p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-95 z-10"
                                    title="배너 등록하기 (500온)"
                               >
                                    <Megaphone className="w-4 h-4" />
@@ -559,7 +560,7 @@ function App() {
                          <ErrorBoundary>
                               <Suspense fallback={
                                    <div className="flex flex-col items-center justify-center p-20">
-                                        <Loader2 className="w-10 h-10 text-purple-600 animate-spin mb-4" />
+                                        <Loader2 className="w-10 h-10 text-amber-600 animate-spin mb-4" />
                                         <p className="text-gray-400 font-bold">로딩중입니다...</p>
                                    </div>
                               }>
@@ -581,16 +582,16 @@ function App() {
                                                   {/* Host Banner */}
                                                   <div
                                                        onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
-                                                       className="bg-white rounded-3xl p-5 border border-purple-100 shadow-sm flex items-center justify-between hover:border-purple-300 transition-colors cursor-pointer group"
+                                                       className="bg-white rounded-2xl p-5 border border-surface-border shadow-soft flex items-center justify-between hover:border-amber-200/80 hover:shadow-soft-lg transition-all cursor-pointer group"
                                                   >
                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">✨</div>
+                                                            <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center text-xl text-amber-400 group-hover:scale-105 transition-transform">✨</div>
                                                             <div>
-                                                                 <h3 className="font-bold text-gray-900">나만의 소모임 만들기</h3>
-                                                                 <p className="text-xs text-gray-500">강남 리더 뱃지를 획득해보세요!</p>
+                                                                 <h3 className="font-bold text-slate-900">나만의 소모임 만들기</h3>
+                                                                 <p className="text-xs text-slate-500">강남 리더 뱃지를 획득해보세요</p>
                                                             </div>
                                                        </div>
-                                                       <button className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-purple-200 transition-all transform group-hover:translate-x-1">
+                                                       <button className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all transform group-hover:translate-x-0.5">
                                                             모임 개설하기
                                                        </button>
                                                   </div>
@@ -623,7 +624,7 @@ function App() {
                                                             {activeTab === 'recruit_proposal' && '👥 구인/협업 제안'}
                                                             {activeTab === 'office_rent' && '🏢 사무실/임대 정보'}
                                                        </h2>
-                                                       <button onClick={() => { setCreateModalCategory(activeTab); setIsCreateModalOpen(true); }} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
+                                                       <button onClick={() => { setCreateModalCategory(activeTab); setIsCreateModalOpen(true); }} className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-colors">
                                                             + 글쓰기
                                                        </button>
                                                   </div>
@@ -641,7 +642,7 @@ function App() {
                                                             {activeTab === 'pet' && '🐶 멍냥회관'}
                                                             {activeTab === 'wine' && '🍷 밤의 미식회'}
                                                        </h2>
-                                                       <button onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }} className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100">
+                                                       <button onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }} className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-colors">
                                                             + 모임 만들기
                                                        </button>
                                                   </div>
@@ -710,7 +711,7 @@ function App() {
                                                             현재 <strong>'강남 새싹 🌱'</strong> 등급입니다.<br />
                                                             활동을 통해 레벨업 해보세요!
                                                        </p>
-                                                       <button onClick={() => setIsMiniHomeOpen(true)} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                                                       <button onClick={() => setIsMiniHomeOpen(true)} className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all">
                                                             🏠 내 미니홈피 열기
                                                        </button>
                                                   </div>
@@ -745,7 +746,7 @@ function App() {
                               <Menu className="w-6 h-6" />
                          </button>
                          <div className="flex items-center gap-1" onClick={() => handleTabChange('home')}>
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs">G</div>
+                              <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-amber-400 font-black text-xs">G</div>
                               <span className="font-bold text-gray-900 text-lg">Gangnam On</span>
                          </div>
                     </div>
@@ -759,8 +760,8 @@ function App() {
                               }
                          }}
                          className={`px-4 py-2 rounded-full font-bold text-sm shadow-md transition-all flex items-center gap-2 ${user
-                              ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
-                              : 'bg-gray-900 text-white hover:bg-gray-800'}`}
+                              ? 'bg-slate-900 text-white hover:bg-slate-800'
+                              : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                     >
                          {user ? (
                               <>

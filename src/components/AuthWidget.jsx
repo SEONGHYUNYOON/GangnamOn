@@ -111,7 +111,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                     <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider">
                          {isSignUpMode ? 'Join Gangnam On' : 'Welcome Back'}
                     </h3>
-                    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
                </div>
 
                <div className="flex flex-col relative z-10">
@@ -137,7 +137,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                              placeholder="닉네임 (활동명)"
                                              value={username}
                                              onChange={(e) => setUsername(e.target.value)}
-                                             className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all"
+                                             className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
                                              required
                                         />
                                    </div>
@@ -174,7 +174,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         <select
                                              value={region}
                                              onChange={(e) => setRegion(e.target.value)}
-                                             className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all appearance-none cursor-pointer text-gray-700 font-medium"
+                                             className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all appearance-none cursor-pointer text-gray-700 font-medium"
                                         >
                                              {gangnamRegions.map((r) => (
                                                   <option key={r} value={r}>{r}</option>
@@ -192,7 +192,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    placeholder="이메일 주소"
                                    value={email}
                                    onChange={(e) => setEmail(e.target.value)}
-                                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all"
+                                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
                                    required
                               />
                          </div>
@@ -203,7 +203,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    placeholder="비밀번호"
                                    value={password}
                                    onChange={(e) => setPassword(e.target.value)}
-                                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all"
+                                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
                                    required
                               />
                          </div>
@@ -217,7 +217,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                          <button
                               type="submit"
                               disabled={authLoading}
-                              className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-gray-200 hover:bg-purple-600 hover:shadow-purple-200 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group/btn"
+                              className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-slate-200 hover:bg-slate-800 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group/btn"
                          >
                               {authLoading ? '처리중...' : (isSignUpMode ? '가입하고 시작하기' : '로그인')}
                               {!authLoading && <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />}
@@ -235,10 +235,10 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         setPassword('');
                                         setUsername('');
                                    }}
-                                   className="font-bold text-purple-600 hover:underline"
+                                   className="font-bold text-amber-700 hover:underline"
                               >
                                    {isSignUpMode ? '로그인' : '회원가입'}
-                                   {!isSignUpMode && <span className="text-[10px] bg-purple-100 text-purple-600 px-1 py-0.5 rounded ml-1">3초컷</span>}
+                                   {!isSignUpMode && <span className="text-[10px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded ml-1">3초컷</span>}
                               </button>
                          </p>
                     </div>

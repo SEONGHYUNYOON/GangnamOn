@@ -11,9 +11,16 @@ export default {
                },
                colors: {
                     brand: {
-                         DEFAULT: '#7c3aed',
-                         dark: '#6d28d9',
-                         light: '#f5f3ff',
+                         DEFAULT: '#1e293b',
+                         dark: '#0f172a',
+                         light: '#f8fafc',
+                         accent: '#d97706',
+                         gold: '#c9a962',
+                    },
+                    surface: {
+                         DEFAULT: '#ffffff',
+                         muted: '#f4f5f7',
+                         border: '#e8eaed',
                     },
                },
                boxShadow: {

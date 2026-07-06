@@ -7,6 +7,12 @@
           font-family: 'Pretendard', sans-serif;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
+          background-color: #f4f5f7;
+     }
+
+     body {
+          background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 45%, #fafaf9 100%);
+          min-height: 100vh;
      }
 
      /* 스크롤바 숨기기 유틸리티 */

@@ -81,7 +81,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
      ];
 
      return (
-          <div className="flex flex-col w-full h-full p-6 border-r border-gray-100 bg-white sticky top-0 overflow-y-auto scrollbar-hide">
+          <div className="flex flex-col w-full h-full p-6 border-r border-surface-border bg-white/80 backdrop-blur-sm sticky top-0 overflow-y-auto scrollbar-hide">
                {/* Logo */}
                <div className="mb-8 px-2 flex items-center justify-center">
                     <img
@@ -190,7 +190,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
 
 
                <div className="mt-auto pt-4 border-t border-gray-100/60 flex items-center justify-between">
-                    <span className="text-[10px] text-gray-300 font-mono">v1.3.0</span>
+                    <span className="text-[10px] text-gray-300 font-mono">v1.4.0</span>
                     <span className="text-[10px] text-gray-300">강남온 © 2026</span>
                </div>
                <div className="h-4"></div>

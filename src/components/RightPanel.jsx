@@ -288,11 +288,11 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                {user ? (
                     <div
                          onClick={onOpenMinihome}
-                         className="bg-white rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-gray-100 mb-6 cursor-pointer hover:border-pink-200 hover:shadow-lg transition-all transform hover:-translate-y-1 group relative overflow-hidden"
+                         className="bg-white rounded-2xl p-6 shadow-soft border border-surface-border mb-6 cursor-pointer hover:border-amber-200/60 hover:shadow-soft-lg transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
                     >
                          <div className="flex justify-between items-center mb-6 relative z-10">
                               <div className="flex items-center gap-2">
-                                   <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider group-hover:text-pink-500 transition-colors">내 미니홈피</h3>
+                                   <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider group-hover:text-amber-700 transition-colors">내 미니홈피</h3>
                                    <span className="bg-green-100 text-green-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ONLINE</span>
                               </div>
 
@@ -314,7 +314,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                         e.stopPropagation();
                                         onOpenAvatarCustomizer();
                                    }}
-                                   className="w-20 h-20 rounded-full bg-gradient-to-tr from-pink-400 to-purple-500 p-[2px] mb-3 group-hover:scale-105 transition-transform duration-300 relative cursor-pointer"
+                                   className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-slate-700 p-[2px] mb-3 group-hover:scale-105 transition-transform duration-300 relative cursor-pointer"
                               >
                                    <div className="w-full h-full rounded-full bg-white p-[2px]">
                                         <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-400 overflow-hidden">
