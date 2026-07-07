@@ -209,6 +209,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
      const weatherInfo = getWeatherInfo(weather.code);
      const dustInfo = getDustInfo(weather.pm10);
+     const isRainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(weather.code);
 
      // === LOGIN WIDGET (Replaces Minihome when logged out) ===
      const renderLoginWidget = () => (
@@ -398,8 +399,23 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                          href="https://search.naver.com/search.naver?query=서울+강남구+역삼동+날씨"
                          target="_blank"
                          rel="noreferrer"
-                         className="mb-3 w-full rounded-xl border border-surface-border bg-surface-muted p-4 text-left transition-all hover:bg-white"
+                         className="relative mb-3 block w-full overflow-hidden rounded-xl border border-surface-border bg-surface-muted p-4 text-left transition-all hover:bg-white"
                     >
+                         {isRainy && (
+                              <div className="pointer-events-none absolute inset-0 opacity-70">
+                                   {Array.from({ length: 18 }).map((_, index) => (
+                                        <span
+                                             key={index}
+                                             className="rain-drop"
+                                             style={{
+                                                  left: `${(index * 13) % 100}%`,
+                                                  animationDelay: `${(index % 6) * 0.18}s`,
+                                                  animationDuration: `${0.8 + (index % 5) * 0.08}s`,
+                                             }}
+                                        />
+                                   ))}
+                              </div>
+                         )}
                          {/* Weather Section */}
                          <div className="flex items-center justify-between relative z-10 min-h-12">
                          {weather.loading ? (

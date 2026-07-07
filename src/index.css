@@ -103,6 +103,34 @@
      animation: blob 7s infinite;
 }
 
+@keyframes rainFall {
+     0% {
+          transform: translate3d(0, -18px, 0) rotate(12deg);
+          opacity: 0;
+     }
+
+     18% {
+          opacity: 0.75;
+     }
+
+     100% {
+          transform: translate3d(-12px, 120px, 0) rotate(12deg);
+          opacity: 0;
+     }
+}
+
+.rain-drop {
+     position: absolute;
+     top: -18px;
+     width: 1.5px;
+     height: 18px;
+     border-radius: 999px;
+     background: linear-gradient(180deg, rgba(96, 165, 250, 0), rgba(37, 99, 235, 0.7));
+     animation-name: rainFall;
+     animation-timing-function: linear;
+     animation-iteration-count: infinite;
+}
+
 .animation-delay-2000 {
      animation-delay: 2s;
 }

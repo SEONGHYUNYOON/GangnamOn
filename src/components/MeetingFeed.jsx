@@ -81,24 +81,24 @@ const MeetingFeed = ({ items }) => {
 
      return (
           <>
-               <div className="space-y-6">
+               <div className="space-y-4">
                     <div className="flex justify-between items-end px-1">
-                         <h2 className="text-xl font-black text-gray-900">지금 핫한 강남 모임</h2>
-                         <button className="text-sm text-brand-accent font-bold hover:underline underline-offset-4 flex items-center">
+                         <h2 className="text-lg font-black text-gray-900">지금 핫한 강남 모임</h2>
+                         <button className="text-xs text-brand-accent font-bold hover:underline underline-offset-4 flex items-center">
                               전체 모임 일정 보기 <ChevronRight className="w-4 h-4 ml-1" />
                          </button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6">
+                    <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
                          {items.length > 0 ? items.map((item) => (
                               <div
                                    key={item.id}
                                    onClick={() => setSelectedMeeting(item)}
-                                   className={`bg-white rounded-card p-4 md:p-5 border shadow-soft hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group relative overflow-hidden ${item.isEvent ? 'border-brand-gold/30 ring-1 ring-brand-gold/10' : 'border-surface-border'}`}
+                                   className={`bg-white rounded-card p-3 border shadow-soft hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group relative overflow-hidden ${item.isEvent ? 'border-brand-gold/30 ring-1 ring-brand-gold/10' : 'border-surface-border'}`}
                               >
-                                   <div className="flex gap-5">
+                                   <div className="flex gap-3">
                                         {/* Left: Thumbnail Image */}
-                                        <div className="w-28 h-28 md:w-36 md:h-36 flex-shrink-0 rounded-xl overflow-hidden relative">
+                                        <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden relative">
                                              <img
                                                   src={item.image}
                                                   alt={item.title}
@@ -127,72 +127,72 @@ const MeetingFeed = ({ items }) => {
                                         </div>
 
                                         {/* Right: Content */}
-                                        <div className="flex-1 flex flex-col justify-between py-1 relative">
+                                        <div className="min-w-0 flex-1 flex flex-col justify-between relative">
 
                                              {/* Top Icons Layer */}
-                                             <div className="absolute top-0 right-0 flex gap-2">
+                                             <div className="absolute top-0 right-0 flex gap-1">
                                                   <button
                                                        onClick={(e) => handleShare(e, item.title)}
-                                                       className="p-2 rounded-full text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-colors"
+                                                       className="p-1.5 rounded-full text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-colors"
                                                   >
-                                                       <Share2 className="w-4 h-4" />
+                                                       <Share2 className="w-3.5 h-3.5" />
                                                   </button>
                                                   <button
                                                        onClick={(e) => toggleLike(e, item.id)}
-                                                       className={`p-2 rounded-full hover:bg-pink-50 transition-colors ${animatingHearts.has(item.id) ? 'animate-heart-burst' : ''}`}
+                                                       className={`p-1.5 rounded-full hover:bg-pink-50 transition-colors ${animatingHearts.has(item.id) ? 'animate-heart-burst' : ''}`}
                                                   >
-                                                       <Heart className={`w-4 h-4 transition-colors ${likedItems.has(item.id) ? 'fill-pink-500 text-pink-500' : 'text-gray-300'}`} />
+                                                       <Heart className={`w-3.5 h-3.5 transition-colors ${likedItems.has(item.id) ? 'fill-pink-500 text-pink-500' : 'text-gray-300'}`} />
                                                   </button>
                                              </div>
 
                                              <div>
                                                   {/* Category Badge */}
-                                                  <div className="flex items-center gap-2 mb-2">
-                                                       <span className={`text-xs font-bold px-2 py-1 rounded-lg border ${item.isEvent ? 'text-white bg-brand border-transparent' : 'text-brand-accent bg-brand-light border-brand-gold/20'}`}>
+                                                  <div className="flex items-center gap-2 mb-1.5">
+                                                       <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${item.isEvent ? 'text-white bg-brand border-transparent' : 'text-brand-accent bg-brand-light border-brand-gold/20'}`}>
                                                             {item.category}
                                                        </span>
                                                   </div>
 
                                                   {/* Title */}
-                                                  <h3 className="text-lg md:text-xl font-bold text-gray-900 leading-snug mb-2 pr-16 group-hover:text-brand-accent transition-colors line-clamp-2">
+                                                  <h3 className="text-base font-black text-gray-900 leading-snug mb-1.5 pr-12 group-hover:text-brand-accent transition-colors line-clamp-2">
                                                        {item.title}
                                                   </h3>
 
                                                   {/* Location Tags */}
-                                                  <div className="flex items-center gap-1 text-gray-500 text-sm mb-3 font-medium">
-                                                       <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                                                       <span>{item.location}</span>
+                                                  <div className="flex items-center gap-1 text-gray-500 text-xs mb-2 font-medium">
+                                                       <MapPin className="w-3 h-3 text-gray-400" />
+                                                       <span className="truncate">{item.location}</span>
                                                   </div>
                                              </div>
 
                                              {/* Footer Info: Host, Date, Participants */}
-                                             <div className="flex justify-between items-end border-t border-gray-50 pt-3">
-                                                  <div className="flex items-center gap-3">
+                                             <div className="flex justify-between items-center border-t border-gray-50 pt-2">
+                                                  <div className="min-w-0 flex items-center gap-2">
                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-5 h-5 rounded-full bg-yellow-100 flex items-center justify-center">
-                                                                 <Star className="w-3 h-3 text-yellow-600 fill-yellow-600" />
+                                                            <div className="w-4 h-4 rounded-full bg-yellow-100 flex items-center justify-center">
+                                                                 <Star className="w-2.5 h-2.5 text-yellow-600 fill-yellow-600" />
                                                             </div>
-                                                            <span className="text-xs font-bold text-gray-700">{item.host}</span>
+                                                            <span className="truncate text-[11px] font-bold text-gray-700">{item.host}</span>
                                                        </div>
-                                                       <div className="h-3 w-[1px] bg-gray-200"></div>
+                                                       <div className="h-3 w-[1px] bg-gray-200 shrink-0"></div>
 
                                                        {/* Show Timer for Events, Date for others */}
                                                        {item.isEvent && item.expiresAt ? (
                                                             <EventTimer expiresAt={item.expiresAt} />
                                                        ) : (
-                                                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                                                                 <Calendar className="w-3.5 h-3.5" />
-                                                                 <span>{item.date}</span>
+                                                            <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                                                                 <Calendar className="w-3 h-3" />
+                                                                 <span className="truncate">{item.date}</span>
                                                             </div>
                                                        )}
                                                   </div>
 
                                                   {/* Participant Status */}
-                                                  <div className="flex items-center gap-1.5 bg-surface-muted px-3 py-1.5 rounded-full border border-surface-border group-hover:bg-brand-light group-hover:border-brand-gold/20 transition-colors">
-                                                       <Users className="w-3.5 h-3.5 text-gray-400 group-hover:text-brand-accent" />
-                                                       <span className={`text-xs font-bold ${item.participants >= item.maxParticipants ? 'text-red-500' : 'text-gray-900'
+                                                  <div className="shrink-0 flex items-center gap-1 bg-surface-muted px-2 py-1 rounded-full border border-surface-border group-hover:bg-brand-light group-hover:border-brand-gold/20 transition-colors">
+                                                       <Users className="w-3 h-3 text-gray-400 group-hover:text-brand-accent" />
+                                                       <span className={`text-[11px] font-bold ${item.participants >= item.maxParticipants ? 'text-red-500' : 'text-gray-900'
                                                             }`}>
-                                                            {item.participants}/{item.maxParticipants}명
+                                                            {item.participants}/{item.maxParticipants}
                                                        </span>
                                                   </div>
                                              </div>
