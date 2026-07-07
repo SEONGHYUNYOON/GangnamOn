@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role } from '../lib/appwrite';
-import { Heart, X, MessageCircle, MapPin, Zap, Star, Lock, Send, Sparkles } from 'lucide-react';
+import { Heart, X, MessageCircle, MapPin, Zap, Star, Lock, Send, Sparkles, Plus, Users } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import LightningMeetupModal from './LightningMeetupModal';
+
+// 실제 유저 풀이 이 인원수보다 적을 때만, 부족한 만큼 샘플 프로필로 채웁니다.
+// 샘플 프로필은 실제 매칭이 되지 않고 좋아요/슈퍼라이크도 온이 차감되지 않습니다.
+const MIN_ROMANCE_POOL_SIZE = 6;
 
 // --- Sub Component: Individual Card ---
 const SwipeableCard = React.forwardRef(({ profile, onAction, dragConstraints = { left: 0, right: 0 } }, ref) => {
@@ -45,6 +50,12 @@ const SwipeableCard = React.forwardRef(({ profile, onAction, dragConstraints = {
                          />
                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
+                         {profile.isSample && (
+                              <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[11px] font-bold text-gray-200 border border-white/20">
+                                   샘플 프로필 · 실제 매칭 없음
+                              </div>
+                         )}
+
                          {/* Profile Info Overlay */}
                          <div className="absolute bottom-0 left-0 w-full p-6 text-white">
                               <div className="flex items-end gap-2 mb-2">
@@ -77,7 +88,9 @@ const SwipeableCard = React.forwardRef(({ profile, onAction, dragConstraints = {
                          </button>
                          <button onClick={() => onAction('like')} className="p-4 rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/30 hover:scale-110 transition-transform relative">
                               <Heart className="w-7 h-7 fill-white" />
-                              <span className="absolute -top-2 -right-2 bg-white text-rose-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-rose-100 shadow-sm">-5온</span>
+                              <span className="absolute -top-2 -right-2 bg-white text-rose-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-rose-100 shadow-sm">
+                                   {profile.isSample ? '무료' : '-5온'}
+                              </span>
                          </button>
                          <button className="p-3 rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors">
                               <Send className="w-6 h-6" />
@@ -98,6 +111,9 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
      const [showLowBeanModal, setShowLowBeanModal] = useState(false);
      const [isMatch, setIsMatch] = useState(false);
      const [realProfiles, setRealProfiles] = useState([]);
+     const [lightningPosts, setLightningPosts] = useState([]);
+     const [isLightningModalOpen, setIsLightningModalOpen] = useState(false);
+     const [joiningLightningId, setJoiningLightningId] = useState(null);
 
      // Refs for cleanup
      const cleanupRef = React.useRef(null);
@@ -197,25 +213,86 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
           fetchProfiles();
      }, [user]);
 
-     // Merge Mocks + Real
-     const displayPool = [...realProfiles, ...mockProfiles];
+     // 실제 유저 풀이 충분하면 샘플 프로필은 아예 섞지 않습니다.
+     // 부족할 때만, 모자란 만큼만 샘플로 채우고 isSample 플래그를 붙여
+     // (1) UI에 "샘플" 배지를 보여주고 (2) 좋아요해도 온이 차감되지 않게 합니다.
+     // mockProfiles는 앞 6개가 전부 여성, 뒤 6개가 전부 남성이라 단순히 앞에서부터
+     // 자르면 한쪽 성별만 샘플로 채워질 수 있습니다. 성별 균형을 맞춰서 채웁니다.
+     const samplesNeeded = Math.max(0, MIN_ROMANCE_POOL_SIZE - realProfiles.length);
+     const perGenderNeeded = Math.ceil(samplesNeeded / 2);
+     const sampleProfiles = [
+          ...mockProfiles.filter(p => p.gender === 'female').slice(0, perGenderNeeded),
+          ...mockProfiles.filter(p => p.gender === 'male').slice(0, perGenderNeeded),
+     ].map(p => ({ ...p, isSample: true }));
+
+     // Merge Real + Samples
+     const displayPool = [...realProfiles, ...sampleProfiles];
      const myGender = user?.user_metadata?.gender;
      const targetGender = myGender === 'female' ? 'male' : 'female';
      const filteredDisplay = displayPool.filter(p => {
           if (typeof p.id === 'string') return true;
           return p.gender === targetGender;
      });
-     const safeDisplayProfiles = filteredDisplay.length > 0 ? filteredDisplay : mockProfiles;
+     const safeDisplayProfiles = filteredDisplay.length > 0
+          ? filteredDisplay
+          : mockProfiles.map(p => ({ ...p, isSample: true }));
 
      // Current Logic
      const currentProfile = safeDisplayProfiles[currentCardIndex % safeDisplayProfiles.length];
      const nextProfile = safeDisplayProfiles[(currentCardIndex + 1) % safeDisplayProfiles.length];
 
-     const lightnings = [
-          { id: 1, title: '2:2 락볼링장 가실 분! 🎳', location: '강남역', status: '여2 대기중', time: '지금 바로', icon: Zap },
-          { id: 2, title: '간단하게 치맥 하실 분 🍗', location: '역삼 로터리', status: '남1 여1', time: '8시', icon: Zap },
-          { id: 3, title: '심야 영화 보러가요 🍿', location: '코엑스', status: '누구나', time: '10:30', icon: Star }
-     ];
+     // 즉석 모임 ("지금 바로 만나요") — posts 컬렉션을 type: 'gangnam_lightning'으로 재사용합니다.
+     const fetchLightningPosts = async () => {
+          try {
+               const res = await databases.listDocuments({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.posts,
+                    queries: [
+                         Query.equal('type', 'gangnam_lightning'),
+                         Query.orderDesc('$createdAt'),
+                         Query.limit(8),
+                    ],
+               });
+               const now = Date.now();
+               const active = res.documents.filter(d => !d.expiresAt || new Date(d.expiresAt).getTime() > now);
+               setLightningPosts(active);
+          } catch (err) {
+               console.error('즉석모임 로딩 실패:', err);
+          }
+     };
+
+     useEffect(() => {
+          fetchLightningPosts();
+     }, []);
+
+     const handleJoinLightning = async (item) => {
+          if (!user || joiningLightningId) return;
+          if ((item.currentParticipants ?? 0) >= (item.maxParticipants ?? 4)) return;
+
+          setJoiningLightningId(item.$id);
+          try {
+               const updated = await databases.updateDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.posts,
+                    documentId: item.$id,
+                    data: { currentParticipants: (item.currentParticipants ?? 0) + 1 },
+               });
+               setLightningPosts(prev => prev.map(p => (p.$id === item.$id ? updated : p)));
+          } catch (err) {
+               console.error('즉석모임 참여 실패:', err);
+          } finally {
+               setJoiningLightningId(null);
+          }
+     };
+
+     const formatTimeLeft = (expiresAt) => {
+          if (!expiresAt) return '';
+          const diffMs = new Date(expiresAt).getTime() - Date.now();
+          if (diffMs <= 0) return '마감';
+          const hours = Math.floor(diffMs / (1000 * 60 * 60));
+          const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+          return hours > 0 ? `${hours}시간 ${mins}분 남음` : `${mins}분 남음`;
+     };
 
      // 좋아요/슈퍼라이크 비용 (실제 차감/잔액 검증은 서버 economy Function에서 수행됩니다.
      // 여기 값은 클릭 전에 "온이 부족한지" 미리 안내하는 화면 표시용입니다.)
@@ -251,20 +328,26 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
                return;
           }
 
-          if (beanCount < cost) {
-               setShowLowBeanModal(true);
-               return;
-          }
+          const isSample = !!currentProfile.isSample;
 
-          // 서버(economy Function)가 실제 차감과 잔액을 검증합니다.
-          const spendResult = await onHeartClick(type === 'superlike' ? 'romance_superlike' : 'romance_like');
-          if (!spendResult?.success) {
-               setShowLowBeanModal(true);
-               return;
+          if (!isSample) {
+               if (beanCount < cost) {
+                    setShowLowBeanModal(true);
+                    return;
+               }
+
+               // 서버(economy Function)가 실제 차감과 잔액을 검증합니다.
+               const spendResult = await onHeartClick(type === 'superlike' ? 'romance_superlike' : 'romance_like');
+               if (!spendResult?.success) {
+                    setShowLowBeanModal(true);
+                    return;
+               }
           }
+          // 샘플 프로필(실제 유저가 부족할 때 채워지는 목업)은 실제 매칭이 될 수 없으므로
+          // 온을 차감하지 않습니다. 사용자가 헛돈을 쓰는 일이 없도록 하는 안전장치입니다.
 
           const id = Date.now();
-          setFloatingTexts(prev => [...prev, { id, text: `-${cost} 온` }]);
+          setFloatingTexts(prev => [...prev, { id, text: isSample ? '샘플 (무료)' : `-${cost} 온` }]);
           setTimeout(() => setFloatingTexts(prev => prev.filter(ft => ft.id !== id)), 1000); // Cleanup floating text
 
           setExitDirection(type); // KEY: this triggers the 'exit' direction in AnimatePresence
@@ -453,23 +536,63 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
                          <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
                               <div className="flex items-center justify-between mb-2 px-2">
                                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><Zap className="w-6 h-6 text-yellow-400 fill-yellow-400 animate-pulse" />지금 바로 만나요</h3>
-                                   <span className="text-sm text-gray-400 cursor-pointer hover:text-white">더보기 &gt;</span>
+                                   <button
+                                        onClick={() => setIsLightningModalOpen(true)}
+                                        className="text-sm text-gray-300 hover:text-white flex items-center gap-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-full border border-white/10"
+                                   >
+                                        <Plus className="w-3.5 h-3.5" /> 모임 만들기
+                                   </button>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                   {lightnings.map(item => {
-                                        const Icon = item.icon; return (
-                                             <div key={item.id} className="bg-gray-800/80 rounded-2xl p-4 hover:bg-gray-700 transition-all cursor-pointer flex items-center justify-between group border border-white/5 hover:border-purple-500/30">
-                                                  <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center border border-white/5"><Icon className="w-6 h-6 text-gray-400 group-hover:text-yellow-400 transition-colors" /></div><div><h4 className="font-bold text-gray-100 text-sm mb-0.5">{item.title}</h4><div className="flex gap-2 text-xs text-gray-500"><span className="text-pink-400 font-medium">{item.location}</span><span>|</span><span>{item.status}</span></div></div></div>
-                                             </div>
-                                        )
-                                   })}
-                              </div>
+                              {lightningPosts.length === 0 ? (
+                                   <div className="bg-gray-800/50 rounded-2xl p-6 text-center border border-white/5">
+                                        <p className="text-sm text-gray-400">아직 등록된 즉석 모임이 없어요.</p>
+                                        <p className="text-xs text-gray-500 mt-1">가장 먼저 모임을 만들어보세요!</p>
+                                   </div>
+                              ) : (
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {lightningPosts.map(item => {
+                                             const isFull = (item.currentParticipants ?? 0) >= (item.maxParticipants ?? 4);
+                                             return (
+                                                  <div key={item.$id} className="bg-gray-800/80 rounded-2xl p-4 hover:bg-gray-700 transition-all flex items-center justify-between group border border-white/5 hover:border-purple-500/30">
+                                                       <div className="flex items-center gap-4 min-w-0">
+                                                            <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center border border-white/5 shrink-0"><Zap className="w-6 h-6 text-gray-400 group-hover:text-yellow-400 transition-colors" /></div>
+                                                            <div className="min-w-0">
+                                                                 <h4 className="font-bold text-gray-100 text-sm mb-0.5 truncate">{item.title}</h4>
+                                                                 <div className="flex gap-2 text-xs text-gray-500 flex-wrap">
+                                                                      <span className="text-pink-400 font-medium">{item.locationName}</span><span>|</span><span>{item.content}</span>
+                                                                 </div>
+                                                                 <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-1">
+                                                                      <Users className="w-3 h-3" /> {item.currentParticipants ?? 0}/{item.maxParticipants ?? 4}명
+                                                                      <span>·</span> {formatTimeLeft(item.expiresAt)}
+                                                                 </div>
+                                                            </div>
+                                                       </div>
+                                                       <button
+                                                            onClick={() => handleJoinLightning(item)}
+                                                            disabled={isFull || joiningLightningId === item.$id}
+                                                            className="shrink-0 text-xs font-bold px-3 py-2 rounded-xl bg-pink-500 text-white hover:bg-pink-400 disabled:bg-gray-700 disabled:text-gray-500 transition-colors"
+                                                       >
+                                                            {isFull ? '마감' : joiningLightningId === item.$id ? '참여 중...' : '참여하기'}
+                                                       </button>
+                                                  </div>
+                                             );
+                                        })}
+                                   </div>
+                              )}
                               <div className="mt-4 bg-gradient-to-r from-pink-900/50 to-purple-900/50 rounded-2xl p-6 border border-white/10 relative overflow-hidden flex items-center justify-between cursor-pointer hover:scale-[1.01] transition-transform" onClick={onOpenRewardCenter}>
                                    <div className="relative z-10"><h4 className="font-bold text-white text-lg mb-1">⚡ 온 충전하고 로맨스 시작!</h4><p className="text-sm text-pink-200">매일 무료 충전 혜택 받기 &gt;</p></div><div className="relative z-10 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">⚡</div>
                               </div>
                          </div>
                     </div>
                </div>
+
+               {isLightningModalOpen && (
+                    <LightningMeetupModal
+                         user={user}
+                         onClose={() => setIsLightningModalOpen(false)}
+                         onCreated={(doc) => setLightningPosts(prev => [doc, ...prev])}
+                    />
+               )}
           </div>
      );
 };
