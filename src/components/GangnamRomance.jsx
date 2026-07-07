@@ -217,8 +217,13 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
           { id: 3, title: '심야 영화 보러가요 🍿', location: '코엑스', status: '누구나', time: '10:30', icon: Star }
      ];
 
+     // 좋아요/슈퍼라이크 비용 (실제 차감/잔액 검증은 서버 economy Function에서 수행됩니다.
+     // 여기 값은 클릭 전에 "온이 부족한지" 미리 안내하는 화면 표시용입니다.)
+     const ROMANCE_COSTS = { like: 5, superlike: 10, pass: 0 };
+
      // Main Action Handler
-     const handleAction = async (type, cost) => {
+     const handleAction = async (type) => {
+          const cost = ROMANCE_COSTS[type] ?? 0;
           // Clear any existing cleanup timer to prevent premature dismissal
           if (cleanupRef.current) clearTimeout(cleanupRef.current);
 
@@ -251,7 +256,13 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
                return;
           }
 
-          onHeartClick(-cost);
+          // 서버(economy Function)가 실제 차감과 잔액을 검증합니다.
+          const spendResult = await onHeartClick(type === 'superlike' ? 'romance_superlike' : 'romance_like');
+          if (!spendResult?.success) {
+               setShowLowBeanModal(true);
+               return;
+          }
+
           const id = Date.now();
           setFloatingTexts(prev => [...prev, { id, text: `-${cost} 온` }]);
           setTimeout(() => setFloatingTexts(prev => prev.filter(ft => ft.id !== id)), 1000); // Cleanup floating text

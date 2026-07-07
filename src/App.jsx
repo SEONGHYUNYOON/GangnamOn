@@ -1,12 +1,12 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
-import { account, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, getCurrentUser } from './lib/appwrite'
+import { account, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, getCurrentUser, callEconomy } from './lib/appwrite'
 import { normalizeForGangnamDisplay } from './lib/displayGangnam'
 import LeftSidebar from './components/LeftSidebar'
 import RightPanel from './components/RightPanel'
 import ChatWidget from './components/ChatWidget'
 import Toast from './components/Toast'
 import './index.css'
-import { User, LogIn, Menu, X, Megaphone, Loader2 } from 'lucide-react'
+import { User, LogIn, Menu, X, Megaphone, Loader2, Lock } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy Load Heavy Components
@@ -93,6 +93,10 @@ function App() {
      const [isMobileLoginOpen, setIsMobileLoginOpen] = useState(false);
      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+     // 관리자 대시보드에 접근 가능한 이메일 (운영진 전용 — 다른 사용자에게는 메뉴 자체가 보이지 않음)
+     const ADMIN_EMAILS = ['a23642514@gmail.com'];
+     const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email);
+
      // --- 1. Data State ---
      const [marketItems, setMarketItems] = useState([]);
      const [meetingItems, setMeetingItems] = useState([]);
@@ -148,6 +152,7 @@ function App() {
                id: rawUser.$id,
                $id: rawUser.$id,
                email: rawUser.email,
+               emailVerification: rawUser.emailVerification,
                user_metadata: {
                     username: profile?.username || rawUser.name,
                     full_name: profile?.fullName || rawUser.name,
@@ -167,7 +172,39 @@ function App() {
           setUser(null);
      };
 
+     // 인증 메일의 "이메일 인증하기" 링크를 클릭하면 ?userId=...&secret=... 파라미터와 함께
+     // 이 페이지로 돌아오는데, 그걸 감지해서 실제 인증 완료 처리를 해줍니다.
+     const handleEmailVerificationCallback = async () => {
+          const params = new URLSearchParams(window.location.search);
+          const userId = params.get('userId');
+          const secret = params.get('secret');
+          if (!userId || !secret) return;
+
+          try {
+               await account.updateVerification(userId, secret);
+               setToastMessage('이메일 인증이 완료됐어요! ✅');
+               await refreshUser();
+          } catch (error) {
+               console.error('이메일 인증 처리 실패:', error);
+               setToastMessage('인증 링크가 만료됐거나 이미 사용됐어요.');
+          } finally {
+               // 새로고침해도 다시 처리되지 않도록 주소창 파라미터 정리
+               window.history.replaceState({}, '', window.location.pathname);
+          }
+     };
+
+     const handleResendVerification = async () => {
+          try {
+               await account.createVerification(window.location.origin + window.location.pathname);
+               setToastMessage('인증 메일을 다시 보냈어요! 메일함을 확인해주세요 📧');
+          } catch (error) {
+               console.error('인증 메일 재전송 실패:', error);
+               setToastMessage('인증 메일 재전송에 실패했어요.');
+          }
+     };
+
      useEffect(() => {
+          handleEmailVerificationCallback();
           refreshUser();
 
           // Appwrite에는 Supabase 같은 실시간 presence(접속자 추적) 기능이 기본 제공되지 않습니다.
@@ -347,7 +384,12 @@ function App() {
                return;
           }
 
-          updateBeanCount(10); // Reward
+          // 글 작성 보상(+10온)은 서버(economy Function)에서 지급합니다.
+          // 실패해도 글 자체는 이미 등록됐으므로 화면은 그대로 진행시키고
+          // 보상만 성공 시 잔액에 반영합니다.
+          callEconomy({ action: 'earn', type: 'post_created' }).then(result => {
+               if (result.success) setBeanCount(result.beans);
+          });
 
           if (category === 'market') {
                const newItem = {
@@ -388,8 +430,16 @@ function App() {
           setIsCreateModalOpen(false);
      };
 
-     const handleHeartClick = (cost) => {
-          updateBeanCount(cost);
+     // GangnamRomance에서 'romance_like' / 'romance_superlike'를 전달합니다.
+     // 실제 차감 금액과 잔액 확인은 서버(economy Function)에서만 결정됩니다.
+     const handleHeartClick = async (spendType) => {
+          const result = await callEconomy({ action: 'spend', type: spendType });
+          if (result.success) {
+               setBeanCount(result.beans);
+          } else if (result.message) {
+               setToastMessage(result.message);
+          }
+          return result;
      };
 
      const handleRewardClaim = (amount) => {
@@ -417,9 +467,10 @@ function App() {
           }
      };
 
-     // 구매 처리: Supabase RPC(서버 트랜잭션) 대신, 이 앱의 다른 재화 처리(온 차감 등)와
-     // 동일하게 클라이언트에서 직접 처리합니다. (보안/인증 강화는 추후 별도 작업 예정)
-     const handlePurchaseStyle = async (styleId, price) => {
+     // 구매 처리: 가격 확인/잔액 차감/스타일 잠금 해제를 전부 서버(economy Function)에서
+     // 검증합니다. 클라이언트가 보내는 price는 화면 표시용일 뿐, 실제 차감 금액은
+     // 서버의 고정 가격표를 따릅니다.
+     const handlePurchaseStyle = async (styleId) => {
           if (!user) {
                setToastMessage("로그인이 필요합니다!");
                return false;
@@ -430,40 +481,34 @@ function App() {
                return false;
           }
 
-          if (beanCount < price) {
-               setToastMessage("온이 부족해요! 열심히 활동해서 모아보세요 ⚡");
+          const result = await callEconomy({ action: 'purchase_style', styleId });
+
+          if (!result.success) {
+               setToastMessage(result.message || "구매 중 오류가 발생했습니다.");
                return false;
           }
 
-          try {
-               const newBeanCount = beanCount - price;
-               const newStyles = [...unlockedStyles, styleId];
-
-               await databases.updateDocument({
-                    databaseId: DATABASE_ID,
-                    collectionId: COLLECTIONS.profiles,
-                    documentId: user.id,
-                    data: { beans: newBeanCount, unlockedStyles: newStyles },
-               });
-
-               setBeanCount(newBeanCount);
-               setUnlockedStyles(newStyles);
-               setToastMessage("새로운 스타일 구매 완료! ✨");
-               return true;
-          } catch (error) {
-               console.error("Purchase error:", error);
-               setToastMessage("구매 중 오류가 발생했습니다.");
-               return false;
-          }
+          setBeanCount(result.beans);
+          setUnlockedStyles(result.unlockedStyles);
+          setToastMessage("새로운 스타일 구매 완료! ✨");
+          return true;
      };
 
-     const handleBannerSubmit = (message, targetTab) => {
-          const cost = 500;
-          if (beanCount < cost) return;
+     const handleBannerSubmit = async (message, targetTab) => {
+          if (beanCount < 500) {
+               setToastMessage("온이 부족합니다.");
+               return;
+          }
 
-          updateBeanCount(-cost);
+          const result = await callEconomy({ action: 'spend', type: 'banner' });
+          if (!result.success) {
+               setToastMessage(result.message || "배너 등록에 실패했습니다.");
+               return;
+          }
+
+          setBeanCount(result.beans);
           setBannerMessages(prev => [{ id: `user-${Date.now()}`, message, targetTab: targetTab || null }, ...prev]);
-          setToastMessage(`배너 등록 완료! -${cost} 온 💸`);
+          setToastMessage(`배너 등록 완료! -${result.spent} 온 💸`);
      };
 
      // 배너 클릭 시 연결된 메뉴로 이동 (연결 대상이 없으면 그냥 공지이므로 아무 동작 안 함)
@@ -504,12 +549,25 @@ function App() {
                <div className="w-full max-w-[1920px] flex min-h-screen relative pt-20 lg:pt-0 pb-8 px-2 lg:px-4 gap-4 xl:gap-8">
 
                     {/* === Left Column (Fixed Width) === */}
-                    <div className="w-[220px] xl:w-[260px] h-screen sticky top-0 hidden md:block overflow-y-auto no-scrollbar shrink-0 pt-4">
-                         <LeftSidebar activeTab={activeTab} setActiveTab={handleTabChange} />
+                    <div className="w-[240px] xl:w-[280px] h-screen sticky top-0 hidden md:block overflow-y-auto no-scrollbar shrink-0 pt-4">
+                         <LeftSidebar activeTab={activeTab} setActiveTab={handleTabChange} isAdmin={isAdmin} />
                     </div>
 
                     {/* === Center Column (Flexible) === */}
                     <main className="flex-1 min-w-0 py-4 lg:py-8 h-full flex flex-col gap-6">
+
+                         {/* 이메일 미인증 안내 배너 */}
+                         {user && user.emailVerification === false && (
+                              <div className="flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm font-bold rounded-xl px-4 py-3">
+                                   <span>📧 이메일 인증이 아직 안 됐어요. 받은 메일함을 확인해주세요.</span>
+                                   <button
+                                        onClick={handleResendVerification}
+                                        className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                                   >
+                                        인증 메일 재전송
+                                   </button>
+                              </div>
+                         )}
 
                          {/* Top Marquee Banner */}
                          <div className="relative group">
@@ -608,7 +666,7 @@ function App() {
                                                   onOpenMinihome={handleOpenMinihome}
                                                   user={user}
                                                   beanCount={beanCount}
-                                                  updateBeanCount={updateBeanCount}
+                                                  setBeanCount={setBeanCount}
                                                   refreshKey={ownersNoteRefreshKey}
                                                   onRequestCreate={() => { setCreateModalCategory('event'); setIsCreateModalOpen(true); }}
                                              />
@@ -681,9 +739,16 @@ function App() {
                                              <CultureClass />
                                         )}
 
-                                        {/* ADMIN TAB */}
+                                        {/* ADMIN TAB — 관리자 계정이 아니면 데이터가 아예 렌더되지 않음 */}
                                         {activeTab === 'admin' && (
-                                             <AdminDashboard onlineUsersCount={onlineUsersCount} />
+                                             isAdmin ? (
+                                                  <AdminDashboard onlineUsersCount={onlineUsersCount} />
+                                             ) : (
+                                                  <div className="flex flex-col items-center justify-center h-[50vh] text-gray-400">
+                                                       <Lock className="w-10 h-10 mb-3 text-gray-300" />
+                                                       <p className="font-bold">관리자만 접근할 수 있는 페이지예요.</p>
+                                                  </div>
+                                             )
                                         )}
 
                                         {/* 6. GANGNAM ROMANCE (NEW) */}
@@ -731,7 +796,7 @@ function App() {
                               onOpenAvatarCustomizer={() => setIsAvatarModalOpen(true)}
                               isDark={activeTab === 'romance'}
                               beanCount={beanCount}
-                              updateBeanCount={updateBeanCount}
+                              setBeanCount={setBeanCount}
                               user={user}
                               onLoginSuccess={refreshUser}
                               onLogout={handleLogout}
@@ -820,6 +885,7 @@ function App() {
                                                   handleTabChange(tab);
                                                   setIsMobileMenuOpen(false);
                                              }}
+                                             isAdmin={isAdmin}
                                         />
                                    </div>
                               </div>

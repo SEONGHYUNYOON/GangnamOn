@@ -1,33 +1,54 @@
 @echo off
+setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
+REM Use ASCII-only text to avoid CMD encoding errors on Korean Windows.
 echo ============================================
-echo  1/3  Appwrite CLI 설치 확인
+echo  GangnamOn - Appwrite DB setup (API key)
 echo ============================================
-call npm install -g appwrite-cli
+echo.
+echo Create an API key in Appwrite Console (all scopes) and paste it below.
+echo The key is NOT saved to this file.
+echo.
+
+set /p APIKEY=Paste API Key Secret: 
+if "%APIKEY%"=="" (
+  echo No key entered. Aborting.
+  goto :fail
+)
+
+echo.
+echo [1/3] Configure Appwrite CLI client with API key...
+call npx appwrite client --endpoint "https://fra.cloud.appwrite.io/v1" --project-id "6a4be56a00369cf49a31" --key "%APIKEY%"
+if errorlevel 1 goto :fail
+
+echo.
+echo [2/3] Push schema from appwrite.json (DB + collections + buckets)...
+call npx appwrite push all
+if errorlevel 1 goto :fail
+
+echo.
+echo [3/3] Verify (optional test script)...
+if exist "scripts\test-appwrite.mjs" (
+  call node scripts\test-appwrite.mjs
+)
 
 echo.
 echo ============================================
-echo  2/3  Appwrite 로그인 (브라우저가 열립니다)
-echo ============================================
-call appwrite login
-
-echo.
-echo ============================================
-echo  3/3  Appwrite에 실제 DB 구조(테이블/버킷) 생성
-echo ============================================
-call appwrite push collections --all
-
-echo.
-echo ============================================
-echo  Git 커밋 + 푸시 (Vercel 자동 배포 트리거)
-echo ============================================
-call git add -A
-call git commit -m "Migrate backend from Supabase to Appwrite"
-call git push
-
-echo.
-echo ============================================
-echo  완료! 잠시 후 Vercel 대시보드에서 배포 상태를 확인하세요.
+echo  DONE - Appwrite schema push finished.
+echo  Next: set Vercel env vars and redeploy gangnam-on.
 echo ============================================
 pause
+exit /b 0
+
+:fail
+echo.
+echo ============================================
+echo  FAILED - see errors above.
+echo  Common fixes:
+echo    1) Re-create API key with ALL scopes
+echo    2) Check project id / endpoint
+echo    3) Check internet / Appwrite console access
+echo ============================================
+pause
+exit /b 1

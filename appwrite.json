@@ -1,6 +1,30 @@
 {
     "projectId": "6a4be56a00369cf49a31",
     "projectName": "GangnamOn",
+    "functions": [
+        {
+            "$id": "economy",
+            "name": "economy",
+            "runtime": "node-22",
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write",
+                "documents.read",
+                "documents.write"
+            ],
+            "path": "functions/economy"
+        }
+    ],
     "databases": [
         {
             "$id": "main",

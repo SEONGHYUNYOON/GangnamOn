@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Zap, MapPin, Star, Heart, Cloud, Sparkles } from 'lucide-react';
-import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
+import { callEconomy } from '../lib/appwrite';
 import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
 
-const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, updateBeanCount, user = null, onLoginSuccess, onLogout }) => {
+const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount, user = null, onLoginSuccess, onLogout }) => {
      const [onlineCount, setOnlineCount] = useState(1204);
      const [trafficStatus, setTrafficStatus] = useState({
           jayuro: 'smooth',
@@ -140,7 +140,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                return;
           }
 
-          // Cost Logic
+          // Cost Logic (실제 차감/검증은 서버 economy Function에서 수행됩니다)
           const CHANGE_COST = 1000;
           if (beanCount < CHANGE_COST) {
                alert(`닉네임 변경에는 ${CHANGE_COST.toLocaleString()} 온이 필요합니다!\n현재 보유: ${beanCount.toLocaleString()} 온`);
@@ -151,15 +151,14 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           if (!confirmed) return;
 
           try {
-               await databases.updateDocument({
-                    databaseId: DATABASE_ID,
-                    collectionId: COLLECTIONS.profiles,
-                    documentId: user.id,
-                    data: { username: editName, fullName: editName },
-               });
+               const result = await callEconomy({ action: 'change_nickname', newName: editName });
 
-               // Deduct beans safely
-               updateBeanCount(-CHANGE_COST);
+               if (!result.success) {
+                    alert(result.message || "이름 변경 실패");
+                    return;
+               }
+
+               if (setBeanCount) setBeanCount(result.beans);
                if (onLoginSuccess) await onLoginSuccess(); // 부모(App)의 user 상태 새로고침
                setIsEditingName(false);
                alert(`닉네임 변경 완료! -${CHANGE_COST}온`);

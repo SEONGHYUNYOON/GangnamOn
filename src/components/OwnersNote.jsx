@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Download, ChevronRight, Send, User, Rocket, Megaphone } from 'lucide-react';
 import KakaoMap from './KakaoMap';
-import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
+import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy } from '../lib/appwrite';
 import EventTimer from './EventTimer';
 import { normalizeForGangnamDisplay } from '../lib/displayGangnam';
 
@@ -255,7 +255,7 @@ const NoteCard = ({ note, onOpenMinihome, currentUserId, beanCount, onBoost }) =
      );
 };
 
-const OwnersNote = ({ onOpenMinihome, user, beanCount, updateBeanCount, refreshKey, onRequestCreate }) => {
+const OwnersNote = ({ onOpenMinihome, user, beanCount, setBeanCount, refreshKey, onRequestCreate }) => {
      const [notes, setNotes] = useState([]);
      const [loading, setLoading] = useState(true);
 
@@ -309,7 +309,7 @@ const OwnersNote = ({ onOpenMinihome, user, beanCount, updateBeanCount, refreshK
      }, [refreshKey]);
 
      // 온(재화)으로 24시간 상단 고정 노출 구매
-     // (보안/인증 처리는 추후 별도 작업 예정이라 클라이언트에서 직접 처리하는 현재 앱의 방식과 동일하게 구현)
+     // 본인 소유 확인, 비용 차감, featuredUntil 갱신을 전부 서버(economy Function)에서 검증합니다.
      const handleBoost = async (note) => {
           if (!user) {
                alert('로그인이 필요합니다!');
@@ -322,20 +322,13 @@ const OwnersNote = ({ onOpenMinihome, user, beanCount, updateBeanCount, refreshK
           const confirmed = window.confirm(`${BOOST_COST}온을 사용해서 이 이벤트를 ${BOOST_HOURS}시간 동안 상단 고정 노출할까요?`);
           if (!confirmed) return;
 
-          const featuredUntil = new Date(Date.now() + BOOST_HOURS * 60 * 60 * 1000).toISOString();
-          try {
-               await databases.updateDocument({
-                    databaseId: DATABASE_ID,
-                    collectionId: COLLECTIONS.posts,
-                    documentId: note.id,
-                    data: { featuredUntil },
-               });
-          } catch (error) {
-               alert('부스트 적용 실패: ' + error.message);
+          const result = await callEconomy({ action: 'boost_event', postId: note.id });
+          if (!result.success) {
+               alert('부스트 적용 실패: ' + (result.message || '알 수 없는 오류'));
                return;
           }
 
-          updateBeanCount(-BOOST_COST);
+          if (setBeanCount) setBeanCount(result.beans);
           await fetchNotes();
      };
 

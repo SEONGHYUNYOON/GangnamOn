@@ -42,6 +42,8 @@ const AuthWidget = ({ onLoginSuccess }) => {
                console.error("Login error:", error);
                if (error.code === 401) {
                     setAuthError("이메일 또는 비밀번호를 확인해주세요.");
+               } else if (error.message === 'Failed to fetch') {
+                    setAuthError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
                } else {
                     setAuthError(error.message);
                }
@@ -87,16 +89,23 @@ const AuthWidget = ({ onLoginSuccess }) => {
                     },
                     permissions: [
                          Permission.read(Role.any()),
-                         Permission.update(Role.user(newAccount.$id)),
-                         Permission.delete(Role.user(newAccount.$id)),
                     ],
                });
+
+               // 인증 메일 발송 (실패해도 가입 자체는 정상 진행 — 나중에 재전송 버튼으로 다시 보낼 수 있음)
+               try {
+                    await account.createVerification(window.location.origin + window.location.pathname);
+               } catch (verifyError) {
+                    console.error('인증 메일 발송 실패:', verifyError);
+               }
 
                if (onLoginSuccess) onLoginSuccess();
           } catch (error) {
                console.error("Signup error:", error);
                if (error.code === 409) {
                     setAuthError("이미 가입된 이메일입니다.");
+               } else if (error.message === 'Failed to fetch') {
+                    setAuthError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
                } else {
                     setAuthError(error.message || '가입에 실패했습니다.');
                }

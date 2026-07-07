@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame, Lock } from 'lucide-react';
 import logo from '../assets/gangnam_on_logo.png';
 
-const LeftSidebar = ({ activeTab, setActiveTab }) => {
+const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
      // 그룹별 펼침 상태를 사용자가 직접 건드리기 전에는 저장하지 않습니다.
      // (undefined = 아직 수동으로 토글한 적 없음 → 현재 탭이 속한 그룹만 자동으로 펼쳐짐)
      const [expandedOverrides, setExpandedOverrides] = useState({});
@@ -18,7 +18,8 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           // 'lounge' group removed as it is now a special button
           {
                id: 'gathering',
-               title: '[동네 모임] 취미로 하나 되는 강남',
+               tag: '동네 모임',
+               subtitle: '취미로 하나 되는 강남',
                items: [
                     { id: 'hiking', label: '산타는 강남', icon: MapPin, subtext: '등산/트레킹' },
                     { id: 'sports', label: 'FC 강남', icon: Star, subtext: '스포츠/운동' },
@@ -28,7 +29,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           },
           {
                id: 'biz',
-               title: '[비즈니스 네트워크]',
+               tag: '비즈니스 네트워크',
                items: [
                     { id: 'startup_freelance', label: '스타트업/프리랜서', icon: Zap, subtext: '업무 협업/네트워킹' },
                     { id: 'lunch_networking', label: '점심 네트워킹', icon: Coffee, subtext: '식사하며 미팅' },
@@ -39,7 +40,8 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           },
           {
                id: 'community',
-               title: '[소통 공간] 우리끼리 속닥속닥',
+               tag: '소통 공간',
+               subtitle: '우리끼리 속닥속닥',
                items: [
                     { id: 'town_story', label: '타운 스토리', icon: MessageCircle, subtext: '일상/잡담' },
                     { id: 'gangnam_pick', label: '강남 픽', icon: ThumbsUp, subtext: '맛집/핫플' },
@@ -48,14 +50,16 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           },
           {
                id: 'culture',
-               title: '[문화 생활] 감성 충전 강남',
+               tag: '문화 생활',
+               subtitle: '감성 충전 강남',
                items: [
                     { id: 'culture_class', label: '문화 강연 & 클래스', icon: Palette, subtext: '원데이/인문학' }
                ]
           },
           {
                id: 'life',
-               title: '[동네 생활] 찐 로컬들의 정보 공유',
+               tag: '동네 생활',
+               subtitle: '찐 로컬들의 정보 공유',
                items: [
                     { id: 'qna', label: '무엇이든 물어보세요', icon: HelpCircle, subtext: 'Q&A' },
                     { id: 'news', label: '우리 동네 소식통', icon: Bell, subtext: '소식/교통' },
@@ -64,7 +68,8 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           },
           {
                id: 'school',
-               title: '[아이러브스쿨] 추억과 사람 찾기',
+               tag: '아이러브스쿨',
+               subtitle: '추억과 사람 찾기',
                items: [
                     { id: 'school_find', label: '학교 찾기 & 동창회', icon: Book, subtext: '졸업생/기수' },
                     { id: 'friend_find', label: '친구 찾기', icon: Users, subtext: '동네친구' },
@@ -72,10 +77,12 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
           },
           {
                id: 'my',
-               title: '[마이 강남]',
+               tag: '마이 강남',
                items: [
                     { id: 'badge', label: '나의 활동 뱃지', icon: Star, subtext: '강남토박이' },
                     { id: 'schedule', label: '나의 모임 일정', icon: Calendar, subtext: '일정관리' },
+                    // 관리자 계정으로 로그인했을 때만 노출 (일반 사용자에게는 아예 보이지 않음)
+                    ...(isAdmin ? [{ id: 'admin', label: '관리자 대시보드', icon: Lock, subtext: '운영진 전용' }] : []),
                ]
           },
      ];
@@ -108,7 +115,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                               <div className={`text-sm font-bold truncate ${activeTab === 'romance' ? 'text-rose-300' : 'text-rose-700'}`}>
                                    강남 썸&쌈
                               </div>
-                              <div className="text-[10px] text-gray-400 font-medium">2030 핫플레이스</div>
+                              <div className="text-xs text-gray-500 font-medium">2030 핫플레이스</div>
                          </div>
                     </button>
                </div>
@@ -129,7 +136,7 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                               <div className={`text-sm font-bold truncate ${activeTab === 'gangnam_lounge' ? 'text-amber-200' : 'text-slate-700'}`}>
                                    강남 라운지
                               </div>
-                              <div className={`text-[10px] font-medium ${activeTab === 'gangnam_lounge' ? 'text-amber-500/50' : 'text-gray-400'}`}>게임 · 경쟁 · 수다</div>
+                              <div className={`text-xs font-medium ${activeTab === 'gangnam_lounge' ? 'text-amber-500/60' : 'text-gray-500'}`}>게임 · 경쟁 · 수다</div>
                          </div>
                     </button>
                </div>
@@ -149,10 +156,17 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                                    {/* Group Header */}
                                    <button
                                         onClick={() => toggleSection(group.id, isExpanded)}
-                                        className="w-full flex items-center justify-between text-[9px] font-semibold text-gray-300 uppercase tracking-[0.18em] hover:text-gray-400 px-2 py-1 transition-colors"
+                                        className="w-full flex items-start gap-2 text-left px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
                                    >
-                                        <span>{group.title}</span>
-                                        {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                                        <div className="flex-1 min-w-0 leading-snug">
+                                             <div className="text-xs font-bold text-amber-700/90">[{group.tag}]</div>
+                                             {group.subtitle && (
+                                                  <div className="text-sm font-semibold text-gray-700 mt-0.5">{group.subtitle}</div>
+                                             )}
+                                        </div>
+                                        {isExpanded
+                                             ? <ChevronDown className="w-4 h-4 shrink-0 mt-0.5 text-gray-400" />
+                                             : <ChevronRight className="w-4 h-4 shrink-0 mt-0.5 text-gray-400" />}
                                    </button>
 
                                    {/* Group Items */}
@@ -173,10 +187,10 @@ const LeftSidebar = ({ activeTab, setActiveTab }) => {
                                                                  <Icon className={`w-4 h-4 ${activeTab === item.id ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
                                                             </div>
                                                             <div className="min-w-0">
-                                                                 <div className={`text-sm font-semibold truncate ${activeTab === item.id ? 'text-white' : 'text-gray-700'}`}>
+                                                                 <div className={`text-base font-semibold truncate ${activeTab === item.id ? 'text-white' : 'text-gray-800'}`}>
                                                                       {item.label}
                                                                  </div>
-                                                                 <div className={`text-[10px] font-medium truncate ${activeTab === item.id ? 'text-slate-400' : 'text-gray-400'}`}>{item.subtext}</div>
+                                                                 <div className={`text-xs font-medium truncate ${activeTab === item.id ? 'text-slate-300' : 'text-gray-500'}`}>{item.subtext}</div>
                                                             </div>
                                                        </button>
                                                   );
