@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame, Lock } from 'lucide-react';
 import logo from '../assets/gangnam_on_logo.png';
+import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 
 const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
      // 그룹별 펼침 상태를 사용자가 직접 건드리기 전에는 저장하지 않습니다.
      // (undefined = 아직 수동으로 토글한 적 없음 → 현재 탭이 속한 그룹만 자동으로 펼쳐짐)
      const [expandedOverrides, setExpandedOverrides] = useState({});
+     const [termsModalTab, setTermsModalTab] = useState(null); // null | 'terms' | 'privacy'
 
      const toggleSection = (id, isExpandedNow) => {
           setExpandedOverrides(prev => ({
@@ -203,11 +205,22 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                </nav>
 
 
-               <div className="mt-auto pt-4 border-t border-gray-100/60 flex items-center justify-between">
-                    <span className="text-[10px] text-gray-300 font-mono">v1.4.0</span>
-                    <span className="text-[10px] text-gray-300">강남온 © 2026</span>
+               <div className="mt-auto pt-4 border-t border-gray-100/60 flex flex-col gap-2">
+                    <div className="flex items-center justify-center gap-3">
+                         <button onClick={() => setTermsModalTab('terms')} className="text-[10px] text-gray-400 hover:text-gray-600 hover:underline">이용약관</button>
+                         <span className="text-[10px] text-gray-200">|</span>
+                         <button onClick={() => setTermsModalTab('privacy')} className="text-[10px] text-gray-400 hover:text-gray-600 hover:underline">개인정보처리방침</button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                         <span className="text-[10px] text-gray-300 font-mono">v1.4.0</span>
+                         <span className="text-[10px] text-gray-300">강남온 © 2026</span>
+                    </div>
                </div>
                <div className="h-4"></div>
+
+               {termsModalTab && (
+                    <TermsAndPrivacyModal initialTab={termsModalTab} onClose={() => setTermsModalTab(null)} />
+               )}
           </div>
      );
 };

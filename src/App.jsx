@@ -27,6 +27,7 @@ const AdminDashboard = lazy(() => import('./components/AdminDashboard'))
 const GangnamLounge = lazy(() => import('./components/GangnamLounge'))
 const OwnersNote = lazy(() => import('./components/OwnersNote'))
 const DbPresentation = lazy(() => import('./components/DbPresentation'))
+const ResetPasswordModal = lazy(() => import('./components/ResetPasswordModal'))
 
 // 가상 모임 게시물 (홈 + 비즈니스 네트워크 탭에 노출)
 const VIRTUAL_MEETING_ITEMS = [
@@ -92,6 +93,7 @@ function App() {
      const [user, setUser] = useState(null);
      const [isMobileLoginOpen, setIsMobileLoginOpen] = useState(false);
      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+     const [passwordRecovery, setPasswordRecovery] = useState(null); // { userId, secret } | null
 
      // 관리자 대시보드에 접근 가능한 이메일 (운영진 전용 — 다른 사용자에게는 메뉴 자체가 보이지 않음)
      const ADMIN_EMAILS = ['a23642514@gmail.com'];
@@ -174,11 +176,20 @@ function App() {
 
      // 인증 메일의 "이메일 인증하기" 링크를 클릭하면 ?userId=...&secret=... 파라미터와 함께
      // 이 페이지로 돌아오는데, 그걸 감지해서 실제 인증 완료 처리를 해줍니다.
+     // (비밀번호 재설정 메일도 동일한 userId/secret 파라미터를 쓰기 때문에,
+     // AuthWidget에서 재설정 링크에는 flow=recovery를 붙여서 구분합니다.)
      const handleEmailVerificationCallback = async () => {
           const params = new URLSearchParams(window.location.search);
           const userId = params.get('userId');
           const secret = params.get('secret');
+          const flow = params.get('flow');
           if (!userId || !secret) return;
+
+          if (flow === 'recovery') {
+               setPasswordRecovery({ userId, secret });
+               window.history.replaceState({}, '', window.location.pathname);
+               return;
+          }
 
           try {
                await account.updateVerification(userId, secret);
@@ -895,6 +906,15 @@ function App() {
 
                {/* Global Components */}
                <Suspense fallback={null}>
+                    {
+                         passwordRecovery && (
+                              <ResetPasswordModal
+                                   userId={passwordRecovery.userId}
+                                   secret={passwordRecovery.secret}
+                                   onDone={() => { setPasswordRecovery(null); setIsMobileLoginOpen(true); }}
+                              />
+                         )
+                    }
                     {
                          isMiniHomeOpen && (
                               <MiniHomepage

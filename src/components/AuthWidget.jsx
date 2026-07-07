@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ChevronRight, User, MapPin, Smile } from 'lucide-react';
 import { account, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role } from '../lib/appwrite';
+import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 
 const AuthWidget = ({ onLoginSuccess }) => {
      const [email, setEmail] = useState('');
@@ -8,8 +9,11 @@ const AuthWidget = ({ onLoginSuccess }) => {
      const [username, setUsername] = useState('');
      const [region, setRegion] = useState('역삼1동');
      const [gender, setGender] = useState('female'); // 'male' or 'female'
+     const [agreedToTerms, setAgreedToTerms] = useState(false);
+     const [termsModalTab, setTermsModalTab] = useState(null); // null | 'terms' | 'privacy'
 
      const [isSignUpMode, setIsSignUpMode] = useState(false);
+     const [isForgotMode, setIsForgotMode] = useState(false);
      const [authLoading, setAuthLoading] = useState(false);
      const [authError, setAuthError] = useState(null);
 
@@ -58,6 +62,10 @@ const AuthWidget = ({ onLoginSuccess }) => {
                setAuthError("닉네임을 입력해주세요!");
                return;
           }
+          if (!agreedToTerms) {
+               setAuthError("이용약관 및 개인정보처리방침에 동의해주세요.");
+               return;
+          }
           setAuthLoading(true);
           setAuthError(null);
 
@@ -89,6 +97,8 @@ const AuthWidget = ({ onLoginSuccess }) => {
                     },
                     permissions: [
                          Permission.read(Role.any()),
+                         Permission.update(Role.user(newAccount.$id)),
+                         Permission.delete(Role.user(newAccount.$id)),
                     ],
                });
 
@@ -114,11 +124,33 @@ const AuthWidget = ({ onLoginSuccess }) => {
           }
      };
 
+     // 비밀번호 재설정 메일 발송. flow=recovery 파라미터를 붙여서
+     // App.jsx가 이메일 인증 콜백과 구분할 수 있도록 합니다.
+     const handleForgotPassword = async (e) => {
+          e.preventDefault();
+          if (!email) {
+               setAuthError("이메일을 입력해주세요!");
+               return;
+          }
+          setAuthLoading(true);
+          setAuthError(null);
+          try {
+               const redirectUrl = `${window.location.origin}${window.location.pathname}?flow=recovery`;
+               await account.createRecovery(email, redirectUrl);
+          } catch (error) {
+               console.error('비밀번호 재설정 메일 발송 실패:', error);
+               // 계정 존재 여부가 노출되지 않도록 실패해도 동일한 안내 메시지를 보여줍니다.
+          } finally {
+               setAuthError('입력하신 이메일로 재설정 링크를 보내드렸어요. 메일함을 확인해주세요 📧');
+               setAuthLoading(false);
+          }
+     };
+
      return (
           <div className="bg-white rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-gray-100 mb-6 group relative overflow-hidden w-full max-w-sm mx-auto">
                <div className="flex justify-between items-center mb-6 relative z-10">
                     <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider">
-                         {isSignUpMode ? 'Join Gangnam On' : 'Welcome Back'}
+                         {isForgotMode ? 'Find Password' : isSignUpMode ? 'Join Gangnam On' : 'Welcome Back'}
                     </h3>
                     <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
                </div>
@@ -126,17 +158,17 @@ const AuthWidget = ({ onLoginSuccess }) => {
                <div className="flex flex-col relative z-10">
                     <div className="text-center mb-6">
                          <h2 className="text-xl font-bold text-gray-900 mb-1">
-                              {isSignUpMode ? '강남온 시작하기' : '강남온 로그인'}
+                              {isForgotMode ? '비밀번호 찾기' : isSignUpMode ? '강남온 시작하기' : '강남온 로그인'}
                          </h2>
                          <p className="text-xs text-gray-500">
-                              {isSignUpMode ? '이웃과 소통하는 강남 라이프!' : '오늘도 강남에서 즐거운 하루 보내세요!'}
+                              {isForgotMode ? '가입하신 이메일로 재설정 링크를 보내드릴게요' : isSignUpMode ? '이웃과 소통하는 강남 라이프!' : '오늘도 강남에서 즐거운 하루 보내세요!'}
                          </p>
                     </div>
 
-                    <form onSubmit={isSignUpMode ? handleSignUp : handleLogin} className="space-y-3">
+                    <form onSubmit={isForgotMode ? handleForgotPassword : (isSignUpMode ? handleSignUp : handleLogin)} className="space-y-3">
 
                          {/* Signup Extra Fields */}
-                         {isSignUpMode && (
+                         {isSignUpMode && !isForgotMode && (
                               <div className="space-y-3 animate-in slide-in-from-top-2 fade-in duration-300">
                                    {/* Username */}
                                    <div className="relative">
@@ -205,17 +237,55 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    required
                               />
                          </div>
-                         <div className="relative">
-                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                              <input
-                                   type="password"
-                                   placeholder="비밀번호"
-                                   value={password}
-                                   onChange={(e) => setPassword(e.target.value)}
-                                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
-                                   required
-                              />
-                         </div>
+                         {!isForgotMode && (
+                              <div className="relative">
+                                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                   <input
+                                        type="password"
+                                        placeholder="비밀번호"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
+                                        required
+                                   />
+                              </div>
+                         )}
+
+                         {/* 로그인 화면에서만: 비밀번호 찾기 링크 */}
+                         {!isSignUpMode && !isForgotMode && (
+                              <div className="text-right -mt-1">
+                                   <button
+                                        type="button"
+                                        onClick={() => { setIsForgotMode(true); setAuthError(null); }}
+                                        className="text-[11px] text-gray-400 hover:text-amber-700 hover:underline"
+                                   >
+                                        비밀번호를 잊으셨나요?
+                                   </button>
+                              </div>
+                         )}
+
+                         {/* 회원가입 화면에서만: 약관 동의 체크박스 */}
+                         {isSignUpMode && !isForgotMode && (
+                              <label className="flex items-start gap-2 px-1 cursor-pointer select-none">
+                                   <input
+                                        type="checkbox"
+                                        checked={agreedToTerms}
+                                        onChange={(e) => setAgreedToTerms(e.target.checked)}
+                                        className="mt-0.5 w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-400"
+                                   />
+                                   <span className="text-[11px] text-gray-500 leading-snug">
+                                        [필수]{' '}
+                                        <button type="button" onClick={() => setTermsModalTab('terms')} className="underline font-bold text-gray-700 hover:text-amber-700">
+                                             이용약관
+                                        </button>{' '}
+                                        및{' '}
+                                        <button type="button" onClick={() => setTermsModalTab('privacy')} className="underline font-bold text-gray-700 hover:text-amber-700">
+                                             개인정보처리방침
+                                        </button>
+                                        에 동의합니다.
+                                   </span>
+                              </label>
+                         )}
 
                          {authError && (
                               <p className={`text-xs text-center font-bold px-2 ${authError.includes('전송했습니다') ? 'text-green-600' : 'text-red-500'}`}>
@@ -228,11 +298,21 @@ const AuthWidget = ({ onLoginSuccess }) => {
                               disabled={authLoading}
                               className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-slate-200 hover:bg-slate-800 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group/btn"
                          >
-                              {authLoading ? '처리중...' : (isSignUpMode ? '가입하고 시작하기' : '로그인')}
+                              {authLoading ? '처리중...' : (isForgotMode ? '재설정 링크 보내기' : isSignUpMode ? '가입하고 시작하기' : '로그인')}
                               {!authLoading && <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />}
                          </button>
                     </form>
 
+                    {isForgotMode ? (
+                         <div className="mt-6 pt-4 border-t border-gray-50 text-center">
+                              <button
+                                   onClick={() => { setIsForgotMode(false); setAuthError(null); }}
+                                   className="text-xs font-bold text-amber-700 hover:underline"
+                              >
+                                   ← 로그인으로 돌아가기
+                              </button>
+                         </div>
+                    ) : (
                     <div className="mt-6 pt-4 border-t border-gray-50 text-center">
                          <p className="text-xs text-gray-400">
                               {isSignUpMode ? '이미 계정이 있으신가요? ' : '아직 계정이 없으신가요? '}
@@ -243,6 +323,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         setEmail('');
                                         setPassword('');
                                         setUsername('');
+                                        setAgreedToTerms(false);
                                    }}
                                    className="font-bold text-amber-700 hover:underline"
                               >
@@ -251,7 +332,12 @@ const AuthWidget = ({ onLoginSuccess }) => {
                               </button>
                          </p>
                     </div>
+                    )}
                </div>
+
+               {termsModalTab && (
+                    <TermsAndPrivacyModal initialTab={termsModalTab} onClose={() => setTermsModalTab(null)} />
+               )}
           </div>
      );
 };
