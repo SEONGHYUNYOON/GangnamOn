@@ -103,11 +103,11 @@ const GangnamNews = ({ compact = false }) => {
                     <div>
                          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-xs font-black text-brand-accent">
                               <Bell className="h-3.5 w-3.5" />
-                              {source} RSS
+                              {source} 수집
                          </div>
                          <h2 className="text-2xl font-black tracking-tight text-brand-ink md:text-3xl">강남구 소식</h2>
                          <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-                              강남구청 홈페이지의 공식 소식을 모아 보여줍니다.
+                              강남구청 강남이슈 목록에서 기사 데이터를 직접 가져와 보여줍니다.
                          </p>
                     </div>
                     <a

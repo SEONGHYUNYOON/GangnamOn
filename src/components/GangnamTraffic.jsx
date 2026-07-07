@@ -157,6 +157,97 @@ const subwayStations = [
           ],
           stops: ['반포', '고속터미널', '사평', '신논현', '언주'],
      },
+     {
+          id: 'yeoksam',
+          name: '역삼역',
+          description: '2호선',
+          mapQuery: '역삼역',
+          lines: [
+               {
+                    id: 'yeoksam-line2',
+                    chip: '2',
+                    color: 'bg-green-500',
+                    label: '2호선',
+                    directions: [
+                         { toward: '강남역 · 교대역 방면', destination: '신도림행', eta: '3분', next: '7분', platform: '외선순환 승강장', landmark: '3번 출구·GS타워 쪽 이동에 유리' },
+                         { toward: '선릉역 · 삼성역 방면', destination: '성수행', eta: '4분', next: '8분', platform: '내선순환 승강장', landmark: '8번 출구·테헤란로 동쪽 이동에 유리' },
+                    ],
+                    transfer: '테헤란로 오피스 밀집 구간 접근에 적합',
+               },
+          ],
+          stops: ['강남', '역삼', '선릉', '삼성', '종합운동장'],
+     },
+     {
+          id: 'samsung',
+          name: '삼성역',
+          description: '2호선',
+          mapQuery: '삼성역',
+          lines: [
+               {
+                    id: 'samsung-line2',
+                    chip: '2',
+                    color: 'bg-green-500',
+                    label: '2호선',
+                    directions: [
+                         { toward: '선릉역 · 역삼역 · 강남역 방면', destination: '신도림행', eta: '3분', next: '7분', platform: '외선순환 승강장', landmark: '5번 출구·코엑스 서측 이동에 유리' },
+                         { toward: '종합운동장 · 잠실새내 방면', destination: '성수행', eta: '5분', next: '9분', platform: '내선순환 승강장', landmark: '6번 출구·무역센터 쪽 이동에 유리' },
+                    ],
+                    transfer: '코엑스·무역센터 방문 수요가 많은 역',
+               },
+          ],
+          stops: ['선릉', '삼성', '종합운동장', '잠실새내', '잠실'],
+     },
+     {
+          id: 'gangnam-gu-office',
+          name: '강남구청역',
+          description: '7호선 · 수인분당선',
+          mapQuery: '강남구청역',
+          lines: [
+               {
+                    id: 'ggo-line7',
+                    chip: '7',
+                    color: 'bg-emerald-700',
+                    label: '7호선',
+                    directions: [
+                         { toward: '논현역 · 고속터미널 방면', destination: '석남행', eta: '4분', next: '10분', platform: '하행 승강장', landmark: '3번 출구·강남구청 방면' },
+                         { toward: '청담역 · 건대입구 방면', destination: '장암행', eta: '5분', next: '11분', platform: '상행 승강장', landmark: '1번 출구·청담동 방면' },
+                    ],
+                    transfer: '구청 방문과 청담·논현 이동의 중간 거점',
+               },
+               {
+                    id: 'ggo-bundang',
+                    chip: '분당',
+                    color: 'bg-yellow-500',
+                    label: '수인분당선',
+                    directions: [
+                         { toward: '선정릉 · 선릉역 방면', destination: '수원행', eta: '6분', next: '13분', platform: '하행 승강장', landmark: '선정릉·테헤란로 이동에 유리' },
+                         { toward: '압구정로데오 · 왕십리 방면', destination: '왕십리행', eta: '7분', next: '14분', platform: '상행 승강장', landmark: '압구정로데오 이동에 유리' },
+                    ],
+                    transfer: '압구정로데오와 선릉을 잇는 축',
+               },
+          ],
+          stops: ['압구정로데오', '강남구청', '선정릉', '선릉', '한티'],
+     },
+     {
+          id: 'apgujeong-rodeo',
+          name: '압구정로데오역',
+          description: '수인분당선',
+          mapQuery: '압구정로데오역',
+          lines: [
+               {
+                    id: 'apgujeong-bundang',
+                    chip: '분당',
+                    color: 'bg-yellow-500',
+                    label: '수인분당선',
+                    directions: [
+                         { toward: '강남구청역 · 선정릉역 방면', destination: '수원행', eta: '5분', next: '12분', platform: '하행 승강장', landmark: '5번 출구·갤러리아 백화점 방면' },
+                         { toward: '서울숲 · 왕십리 방면', destination: '왕십리행', eta: '6분', next: '13분', platform: '상행 승강장', landmark: '6번 출구·도산공원 쪽 이동에 유리' },
+                    ],
+                    transfer: '압구정·청담 약속 장소 접근에 적합',
+               },
+          ],
+          stops: ['서울숲', '압구정로데오', '강남구청', '선정릉', '선릉'],
+     },
 ];
 
 const busRoutes = [
@@ -298,10 +389,15 @@ const roadSegments = [
      },
 ];
 
+const openBusLocation = (routeName) => {
+     const url = `https://map.kakao.com/link/search/${encodeURIComponent(`${routeName} 버스 현재 위치 강남`)}`;
+     window.open(url, '_blank', 'noopener,noreferrer');
+};
+
 const SelectionOverlay = ({ title, items, currentId, onSelect, onClose, icon: Icon }) => (
      <Portal>
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
-               <div className="flex max-h-[80vh] w-full max-w-[420px] flex-col rounded-2xl bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+               <div className="flex max-h-[82vh] w-full max-w-[680px] flex-col rounded-2xl bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                     <div className="mb-4 flex items-center justify-between border-b border-surface-border pb-3">
                          <div className="flex items-center gap-2">
                               <Icon className="h-5 w-5 text-brand-accent" />
@@ -311,7 +407,7 @@ const SelectionOverlay = ({ title, items, currentId, onSelect, onClose, icon: Ic
                               <X className="h-5 w-5" />
                          </button>
                     </div>
-                    <div className="space-y-2 overflow-y-auto pr-1">
+                    <div className="grid gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
                          {items.map((item) => (
                               <button
                                    key={item.id}
@@ -472,7 +568,7 @@ const GangnamTraffic = ({ embedded = false }) => {
                          title={`${bus.type} ${bus.name}`}
                          subtitle={`${bus.stop} · 정류장 ID ${bus.stopId}`}
                          onClose={() => setBusDetail(false)}
-                         mapQuery={`${bus.stop} ${bus.name}`}
+                         mapQuery={`${bus.name} 버스 현재 위치 강남`}
                     >
                          <div className="space-y-3">
                               <div className="grid grid-cols-2 gap-3">
@@ -622,17 +718,23 @@ const GangnamTraffic = ({ embedded = false }) => {
                          {favoriteBuses.length > 0 && (
                               <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
                                    {favoriteBuses.map((favorite) => (
-                                        <button
-                                             key={favorite.id}
-                                             type="button"
-                                             onClick={() => setBusId(favorite.id)}
-                                             className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-black transition-colors ${favorite.id === bus.id
-                                                  ? 'border-brand bg-brand text-white'
-                                                  : 'border-surface-border bg-white text-slate-500 hover:bg-brand-light'
-                                                  }`}
-                                        >
-                                             {favorite.name}
-                                        </button>
+                                        <div key={favorite.id} className={`flex shrink-0 items-center overflow-hidden rounded-full border text-[10px] font-black ${favorite.id === bus.id ? 'border-brand bg-brand text-white' : 'border-surface-border bg-white text-slate-500'}`}>
+                                             <button
+                                                  type="button"
+                                                  onClick={() => setBusId(favorite.id)}
+                                                  className={`px-2.5 py-1 transition-colors ${favorite.id === bus.id ? '' : 'hover:bg-brand-light'}`}
+                                             >
+                                                  {favorite.name}
+                                             </button>
+                                             <button
+                                                  type="button"
+                                                  onClick={() => openBusLocation(favorite.name)}
+                                                  className={`border-l px-2 py-1 transition-colors ${favorite.id === bus.id ? 'border-white/20 hover:bg-white/10' : 'border-surface-border hover:bg-brand-light'}`}
+                                                  aria-label={`${favorite.name} 현재 위치 확인`}
+                                             >
+                                                  위치
+                                             </button>
+                                        </div>
                                    ))}
                               </div>
                          )}
@@ -684,6 +786,16 @@ const GangnamTraffic = ({ embedded = false }) => {
                                    <span className="shrink-0 text-[10px] font-black text-brand-accent">상세</span>
                               </div>
                          </button>
+                         {isFavoriteBus && (
+                              <button
+                                   type="button"
+                                   onClick={() => openBusLocation(bus.name)}
+                                   className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-brand-gold/25 bg-brand-light px-3 py-2 text-[11px] font-black text-brand-accent transition-colors hover:bg-white"
+                              >
+                                   {bus.name} 현재 위치 확인
+                                   <ExternalLink className="h-3 w-3" />
+                              </button>
+                         )}
                     </div>
                </div>
           </div>

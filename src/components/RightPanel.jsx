@@ -394,9 +394,10 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                          <span className="rounded-full bg-brand px-2.5 py-1 text-[10px] font-black text-white">LIVE</span>
                     </div>
 
-                    <button
-                         type="button"
-                         onClick={() => window.open('https://search.naver.com/search.naver?query=서울+강남구+역삼동+날씨', '_blank', 'noopener,noreferrer')}
+                    <a
+                         href="https://search.naver.com/search.naver?query=서울+강남구+역삼동+날씨"
+                         target="_blank"
+                         rel="noreferrer"
                          className="mb-3 w-full rounded-xl border border-surface-border bg-surface-muted p-4 text-left transition-all hover:bg-white"
                     >
                          {/* Weather Section */}
@@ -432,7 +433,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                               </>
                          )}
                          </div>
-                    </button>
+                    </a>
 
                     <GangnamTraffic embedded />
                </section>
