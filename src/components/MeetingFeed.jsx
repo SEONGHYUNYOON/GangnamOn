@@ -82,9 +82,9 @@ const MeetingFeed = ({ items }) => {
      return (
           <>
                <div className="space-y-6">
-                    <div className="flex justify-between items-end px-2">
-                         <h2 className="text-xl font-bold text-gray-900">🔥 지금 핫한 강남 모임</h2>
-                         <button className="text-sm text-purple-600 font-bold hover:underline underline-offset-4 flex items-center">
+                    <div className="flex justify-between items-end px-1">
+                         <h2 className="text-xl font-black text-gray-900">지금 핫한 강남 모임</h2>
+                         <button className="text-sm text-brand-accent font-bold hover:underline underline-offset-4 flex items-center">
                               전체 모임 일정 보기 <ChevronRight className="w-4 h-4 ml-1" />
                          </button>
                     </div>
@@ -94,11 +94,11 @@ const MeetingFeed = ({ items }) => {
                               <div
                                    key={item.id}
                                    onClick={() => setSelectedMeeting(item)}
-                                   className={`bg-white rounded-3xl p-5 border shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden ${item.isEvent ? 'border-purple-200 ring-1 ring-purple-100' : 'border-gray-100'}`}
+                                   className={`bg-white rounded-card p-4 md:p-5 border shadow-soft hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group relative overflow-hidden ${item.isEvent ? 'border-brand-gold/30 ring-1 ring-brand-gold/10' : 'border-surface-border'}`}
                               >
                                    <div className="flex gap-5">
                                         {/* Left: Thumbnail Image */}
-                                        <div className="w-32 h-32 md:w-36 md:h-36 flex-shrink-0 rounded-2xl overflow-hidden relative">
+                                        <div className="w-28 h-28 md:w-36 md:h-36 flex-shrink-0 rounded-xl overflow-hidden relative">
                                              <img
                                                   src={item.image}
                                                   alt={item.title}
@@ -148,13 +148,13 @@ const MeetingFeed = ({ items }) => {
                                              <div>
                                                   {/* Category Badge */}
                                                   <div className="flex items-center gap-2 mb-2">
-                                                       <span className={`text-xs font-bold px-2 py-1 rounded-lg border ${item.isEvent ? 'text-white bg-gradient-to-r from-purple-500 to-pink-500 border-transparent' : 'text-purple-600 bg-purple-50 border-purple-100'}`}>
+                                                       <span className={`text-xs font-bold px-2 py-1 rounded-lg border ${item.isEvent ? 'text-white bg-brand border-transparent' : 'text-brand-accent bg-brand-light border-brand-gold/20'}`}>
                                                             {item.category}
                                                        </span>
                                                   </div>
 
                                                   {/* Title */}
-                                                  <h3 className="text-lg md:text-xl font-bold text-gray-900 leading-snug mb-2 pr-16 group-hover:text-purple-700 transition-colors line-clamp-2">
+                                                  <h3 className="text-lg md:text-xl font-bold text-gray-900 leading-snug mb-2 pr-16 group-hover:text-brand-accent transition-colors line-clamp-2">
                                                        {item.title}
                                                   </h3>
 
@@ -188,8 +188,8 @@ const MeetingFeed = ({ items }) => {
                                                   </div>
 
                                                   {/* Participant Status */}
-                                                  <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 group-hover:bg-purple-50 group-hover:border-purple-100 transition-colors">
-                                                       <Users className="w-3.5 h-3.5 text-gray-400 group-hover:text-purple-400" />
+                                                  <div className="flex items-center gap-1.5 bg-surface-muted px-3 py-1.5 rounded-full border border-surface-border group-hover:bg-brand-light group-hover:border-brand-gold/20 transition-colors">
+                                                       <Users className="w-3.5 h-3.5 text-gray-400 group-hover:text-brand-accent" />
                                                        <span className={`text-xs font-bold ${item.participants >= item.maxParticipants ? 'text-red-500' : 'text-gray-900'
                                                             }`}>
                                                             {item.participants}/{item.maxParticipants}명

@@ -7,12 +7,14 @@
           font-family: 'Pretendard', sans-serif;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
-          background-color: #f4f5f7;
+          background-color: #f5f6f8;
      }
 
      body {
-          background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 45%, #fafaf9 100%);
+          background:
+               linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(245,246,248,0.98) 36%, #f5f6f8 100%);
           min-height: 100vh;
+          color: #15171c;
      }
 
      /* 스크롤바 숨기기 유틸리티 */
@@ -122,11 +124,11 @@
      }
 
      .card-surface {
-          @apply bg-white rounded-card border border-gray-100 shadow-soft;
+          @apply bg-white rounded-card border border-surface-border shadow-soft;
      }
 
      .badge-brand {
-          @apply text-brand bg-brand-light border border-brand/10 text-xs font-bold px-2 py-1 rounded-lg;
+          @apply text-brand bg-brand-light border border-brand-gold/20 text-xs font-bold px-2 py-1 rounded-lg;
      }
 
      .badge-pick {

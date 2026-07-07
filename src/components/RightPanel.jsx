@@ -281,17 +281,17 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      // === STANDARD RENDER ===
      return (
           // Modified: Removed sticky top-0, h-full, hidden lg:block
-          <div className="w-full p-8 transition-colors duration-500">
+          <div className="w-full p-5 transition-colors duration-500">
 
                {/* 1. Login Widget OR My Mini-Homepage Widget */}
                {user ? (
                     <div
                          onClick={onOpenMinihome}
-                         className="bg-white rounded-2xl p-6 shadow-soft border border-surface-border mb-6 cursor-pointer hover:border-amber-200/60 hover:shadow-soft-lg transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
+                         className="bg-white rounded-card p-6 shadow-soft border border-surface-border mb-5 cursor-pointer hover:border-brand-gold/30 hover:shadow-soft-lg transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
                     >
                          <div className="flex justify-between items-center mb-6 relative z-10">
                               <div className="flex items-center gap-2">
-                                   <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider group-hover:text-amber-700 transition-colors">내 미니홈피</h3>
+                                   <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider group-hover:text-brand-accent transition-colors">내 미니홈피</h3>
                                    <span className="bg-green-100 text-green-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ONLINE</span>
                               </div>
 
@@ -362,10 +362,10 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                         e.stopPropagation();
                                         onOpenRewardCenter();
                                    }}
-                                   className="flex items-center gap-1.5 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200 mt-2 mb-4 cursor-pointer hover:bg-yellow-100 transition-colors hover:scale-110 transform"
+                                   className="flex items-center gap-1.5 bg-brand-light px-3 py-1 rounded-full border border-brand-gold/20 mt-2 mb-4 cursor-pointer hover:bg-white transition-colors hover:scale-110 transform"
                               >
                                    <span className="text-sm">⚡</span>
-                                   <span className="text-xs font-black text-yellow-600">{beanCount.toLocaleString()} 온</span>
+                                   <span className="text-xs font-black text-brand-accent">{beanCount.toLocaleString()} 온</span>
                               </div>
 
                               <div className="flex gap-8 w-full justify-center border-t border-gray-50 pt-4">
@@ -384,13 +384,22 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                     renderLoginWidget()
                )}
 
-               {/* 2. Weather & Traffic Widget */}
-               <div
-                    onClick={() => window.open('https://search.naver.com/search.naver?query=강남+역삼동+날씨', '_blank')}
-                    className="bg-gradient-to-br from-sky-50 to-blue-50 rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-blue-100 mb-6 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group"
-               >
-                    {/* Weather Section */}
-                    <div className="flex items-center justify-between mb-6 relative z-10 h-12">
+               <section className="mb-5 rounded-card border border-surface-border bg-white p-4 shadow-soft">
+                    <div className="mb-4 flex items-center justify-between">
+                         <div>
+                              <h3 className="text-xs font-black uppercase tracking-wider text-brand-accent">Gangnam Live</h3>
+                              <p className="mt-1 text-[11px] font-semibold text-slate-400">날씨와 이동 정보를 빠르게 확인하세요.</p>
+                         </div>
+                         <span className="rounded-full bg-brand px-2.5 py-1 text-[10px] font-black text-white">LIVE</span>
+                    </div>
+
+                    <button
+                         type="button"
+                         onClick={() => window.open('https://search.naver.com/search.naver?query=강남+역삼동+날씨', '_blank')}
+                         className="mb-3 w-full rounded-xl border border-surface-border bg-surface-muted p-4 text-left transition-all hover:bg-white"
+                    >
+                         {/* Weather Section */}
+                         <div className="flex items-center justify-between relative z-10 min-h-12">
                          {weather.loading ? (
                               <div className="w-full flex justify-between items-center animate-pulse">
                                    <div className="h-8 w-24 bg-blue-200/50 rounded-lg"></div>
@@ -417,21 +426,18 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    </div>
                               </>
                          )}
-                    </div>
+                         </div>
+                    </button>
 
-                    {/* Divider */}
-
-               </div>
-
-               {/* 2.5 New Traffic Widget */}
-               <GangnamTraffic />
+                    <GangnamTraffic embedded />
+               </section>
 
                {/* 3. Real-time Users Widget */}
-               <div className="bg-white rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-gray-100">
+               <div className="bg-white rounded-card p-6 shadow-soft border border-surface-border">
 
                     {/* Header with Visual Effect */}
                     <div className="flex items-center justify-between mb-6">
-                         <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider">Live Now</h3>
+                         <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider">Gangnam Live</h3>
                          <div className="flex items-center gap-2 bg-green-50 px-2.5 py-1 rounded-full border border-green-100">
                               <div className="relative flex h-2 w-2">
                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>

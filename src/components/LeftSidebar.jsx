@@ -90,9 +90,9 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
      ];
 
      return (
-          <div className="flex flex-col w-full h-full p-6 border-r border-surface-border bg-white/80 backdrop-blur-sm sticky top-0 overflow-y-auto scrollbar-hide">
+          <div className="flex flex-col w-full h-full p-5 border border-surface-border bg-white/90 backdrop-blur-xl sticky top-5 overflow-y-auto no-scrollbar rounded-card shadow-soft">
                {/* Logo */}
-               <div className="mb-8 px-2 flex items-center justify-center">
+               <div className="mb-7 px-2 flex items-center justify-center">
                     <GangnamOnLogo
                          className="h-14 w-auto cursor-pointer hover:scale-105 transition-transform duration-200"
                          onClick={() => setActiveTab('home')}
@@ -103,7 +103,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                <div className="mb-2 px-0">
                     <button
                          onClick={() => setActiveTab('romance')}
-                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 ${activeTab === 'romance'
+                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === 'romance'
                               ? 'bg-[#1a0810] border border-rose-800/60 shadow-[0_2px_16px_rgba(220,38,38,0.08)]'
                               : 'bg-white border border-rose-100 hover:border-rose-200 hover:bg-rose-50/30'
                               }`}
@@ -124,7 +124,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                <div className="mb-6 px-0">
                     <button
                          onClick={() => setActiveTab('gangnam_lounge')}
-                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 ${activeTab === 'gangnam_lounge'
+                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === 'gangnam_lounge'
                               ? 'bg-[#0a0c18] border border-amber-500/25 shadow-[0_2px_16px_rgba(251,191,36,0.06)]'
                               : 'bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
                               }`}
@@ -156,10 +156,10 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                                    {/* Group Header */}
                                    <button
                                         onClick={() => toggleSection(group.id, isExpanded)}
-                                        className="w-full flex items-start gap-2 text-left px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                                        className="w-full flex items-start gap-2 text-left px-2 py-1.5 rounded-lg hover:bg-surface-muted transition-colors"
                                    >
                                         <div className="flex-1 min-w-0 leading-snug">
-                                             <div className="text-xs font-bold text-amber-700/90">[{group.tag}]</div>
+                                             <div className="text-[11px] font-black uppercase text-brand-accent">{group.tag}</div>
                                              {group.subtitle && (
                                                   <div className="text-sm font-semibold text-gray-700 mt-0.5">{group.subtitle}</div>
                                              )}
@@ -179,8 +179,8 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                                                             key={item.id}
                                                             onClick={() => setActiveTab(item.id)}
                                                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group text-left ${activeTab === item.id
-                                                                 ? 'bg-slate-900 shadow-sm'
-                                                                 : 'hover:bg-gray-50'
+                                                                 ? 'bg-brand shadow-sm'
+                                                                 : 'hover:bg-surface-muted'
                                                                  }`}
                                                        >
                                                             <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors shrink-0 ${activeTab === item.id ? 'bg-white/10' : 'bg-gray-100 group-hover:bg-gray-200'}`}>

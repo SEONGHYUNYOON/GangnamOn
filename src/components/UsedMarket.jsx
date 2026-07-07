@@ -6,9 +6,9 @@ const UsedMarket = ({ items }) => {
      const [selectedItem, setSelectedItem] = useState(null);
 
      return (
-          <div className="bg-white rounded-3xl p-6 shadow-[0_4px_30px_rgba(0,0,0,0.02)] border border-gray-100">
+          <div className="bg-white rounded-card p-5 md:p-6 shadow-soft border border-surface-border">
                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-bold text-gray-900">중고마켓 & 라이프 ✨</h2>
+                    <h2 className="text-lg font-black text-gray-900">중고마켓 & 라이프</h2>
                     <span className="text-xs text-gray-400 cursor-pointer hover:text-black hover:underline underline-offset-4">더보기</span>
                </div>
 

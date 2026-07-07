@@ -8,7 +8,7 @@ const GangnamOnLogo = ({ className = 'h-14 w-auto', onClick }) => {
 
      return (
           <svg
-               viewBox="0 0 200 60"
+               viewBox="0 0 188 60"
                className={className}
                onClick={onClick}
                role="img"
@@ -32,8 +32,8 @@ const GangnamOnLogo = ({ className = 'h-14 w-auto', onClick }) => {
                <text x="54" y="42" fontSize="32" fontWeight="700" fill={DARK}>강남</text>
 
                {/* 코인형 o + n (자간 좁힘) */}
-               <circle cx="146" cy="24" r="14" fill={GOLD} />
-               <text x="163" y="42" fontSize="32" fontWeight="500" fill={GOLD}>n</text>
+               <circle cx="130" cy="24" r="14" fill={GOLD} />
+               <text x="145" y="42" fontSize="32" fontWeight="500" fill={GOLD}>n</text>
           </svg>
      );
 };

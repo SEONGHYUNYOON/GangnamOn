@@ -9,7 +9,7 @@ const ChatWidget = () => {
 
                {/* Chat Window */}
                <div
-                    className={`pointer-events-auto bg-white rounded-3xl shadow-2xl border border-gray-100 w-[360px] h-[550px] mb-4 origin-bottom-right transition-all duration-300 transform ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-24'
+                    className={`pointer-events-auto bg-white rounded-card shadow-2xl border border-surface-border w-[min(360px,calc(100vw-32px))] h-[min(550px,calc(100vh-120px))] mb-4 origin-bottom-right transition-all duration-300 transform ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-24'
                          } overflow-hidden flex flex-col`}
                >
                     {/* Header */}
@@ -49,7 +49,7 @@ const ChatWidget = () => {
 
                          {/* Sent Message */}
                          <div className="flex flex-col items-end gap-1 max-w-[80%] ml-auto">
-                              <div className="bg-purple-600 p-3 rounded-2xl rounded-br-none shadow-sm text-sm text-white">
+                              <div className="bg-brand p-3 rounded-2xl rounded-br-none shadow-sm text-sm text-white">
                                    네! 방금 봤어요 ㅎㅎ 사진 너무 예쁘던데요?
                               </div>
                               <span className="text-[10px] text-gray-400">오전 10:25</span>
@@ -74,7 +74,7 @@ const ChatWidget = () => {
                                    placeholder="메시지 보내기..."
                                    className="flex-1 bg-transparent text-sm focus:outline-none"
                               />
-                              <button className="text-purple-600 hover:text-purple-700 transition-colors">
+                              <button className="text-brand-accent hover:text-brand transition-colors">
                                    <Send className="w-5 h-5" />
                               </button>
                          </div>
@@ -87,7 +87,7 @@ const ChatWidget = () => {
                {/* Floating Action Button (FAB) */}
                <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className={`pointer-events-auto rounded-full w-14 h-14 flex items-center justify-center shadow-[0_8px_30px_rgba(124,58,237,0.3)] transition-all duration-300 hover:scale-110 active:scale-95 z-[70] ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:rotate-12'
+                    className={`pointer-events-auto rounded-full w-14 h-14 flex items-center justify-center shadow-[0_12px_34px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 active:scale-95 z-[70] ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-brand hover:bg-brand-dark hover:rotate-12'
                          }`}
                >
                     {isOpen ? (

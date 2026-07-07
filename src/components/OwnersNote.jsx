@@ -239,9 +239,11 @@ const NoteCard = ({ note, onOpenMinihome, currentUserId, beanCount, onBoost }) =
                          <div className="mt-4 animate-in fade-in slide-in-from-top-2">
                               {/* Using random slight variation for demo, in real app use actual lat/lng */}
                               <KakaoMap
-                                   latitude={37.751853 + (Math.random() * 0.01 - 0.005)}
-                                   longitude={126.764666 + (Math.random() * 0.01 - 0.005)}
-                                   style={{ width: '100%', height: '200px' }}
+                                   latitude={37.4979}
+                                   longitude={127.0276}
+                                   label={note.storeName || note.author || "강남 이벤트"}
+                                   address={note.location || "서울 강남구 강남역 일대"}
+                                   style={{ width: '100%', height: '220px' }}
                               />
                          </div>
                     )}

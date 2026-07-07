@@ -19,6 +19,8 @@ const DiningCompanion = () => {
             gender: 'female',
             mannerTemp: 37.2,
             location: '역삼 카페거리',
+            lat: 37.5013,
+            lng: 127.0396,
             tags: ['#맛집탐방', '#조용한식사'],
             bg: 'bg-orange-50'
         },
@@ -32,6 +34,8 @@ const DiningCompanion = () => {
             gender: 'mixed',
             mannerTemp: 38.5,
             location: '강남역 근처',
+            lat: 37.4979,
+            lng: 127.0276,
             tags: ['#카페투어', '#인생샷'],
             bg: 'bg-amber-50'
         },
@@ -45,6 +49,8 @@ const DiningCompanion = () => {
             gender: 'male',
             mannerTemp: 36.5,
             location: '역삼 로타리',
+            lat: 37.5008,
+            lng: 127.0367,
             tags: ['#더치페이', '#반주가능'],
             bg: 'bg-red-50'
         },
@@ -58,6 +64,8 @@ const DiningCompanion = () => {
             gender: 'female',
             mannerTemp: 40.1,
             location: '청담동',
+            lat: 37.5194,
+            lng: 127.0490,
             tags: ['#디저트', '#수다타임'],
             bg: 'bg-pink-50'
         },
@@ -71,6 +79,8 @@ const DiningCompanion = () => {
             gender: 'mixed',
             mannerTemp: 36.8,
             location: '코엑스 잔디광장',
+            lat: 37.5117,
+            lng: 127.0592,
             tags: ['#건강식', '#다이어트'],
             bg: 'bg-green-50'
         },
@@ -84,6 +94,8 @@ const DiningCompanion = () => {
             gender: 'male',
             mannerTemp: 37.0,
             location: '강남역',
+            lat: 37.4979,
+            lng: 127.0276,
             tags: ['#축구시청', '#치맥'],
             bg: 'bg-blue-50'
         }
@@ -96,18 +108,18 @@ const DiningCompanion = () => {
     });
 
     return (
-        <div className="py-2">
+        <div className="py-1">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between px-1 mb-4 gap-3">
                 <div>
                     <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                        혼밥 매칭 🍝
+                        혼밥 매칭
                     </h2>
                     <p className="text-xs text-gray-500 mt-1">취향에 맞는 밥친구를 찾아보세요!</p>
                 </div>
 
                 {/* Gender Filter Buttons */}
-                <div className="flex bg-gray-100 p-1 rounded-xl overflow-x-auto scrollbar-hide">
+                <div className="flex bg-white p-1 rounded-xl overflow-x-auto scrollbar-hide border border-surface-border shadow-soft">
                     <button
                         onClick={() => setGenderFilter('all')}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'all' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
@@ -116,7 +128,7 @@ const DiningCompanion = () => {
                     </button>
                     <button
                         onClick={() => setGenderFilter('mixed')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'mixed' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'mixed' ? 'bg-brand text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                     >
                         👫 혼성
                     </button>
@@ -141,9 +153,9 @@ const DiningCompanion = () => {
                     <button
                         key={cat}
                         onClick={() => setFilter(cat)}
-                        className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shadow-sm ${filter === cat
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
+                        className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shadow-sm ${filter === cat
+                            ? 'bg-brand text-white'
+                            : 'bg-white text-gray-500 border border-surface-border hover:bg-surface-muted'
                             }`}
                     >
                         {cat === 'all' && '전체 메뉴'}
@@ -159,10 +171,10 @@ const DiningCompanion = () => {
                 {filteredList.map((item) => (
                     <div
                         key={item.id}
-                        className="snap-center min-w-[280px] md:min-w-[300px] bg-white rounded-[2rem] p-5 shadow-lg shadow-gray-100 border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300"
+                        className="snap-center min-w-[280px] md:min-w-[300px] bg-white rounded-card p-5 shadow-soft border border-surface-border relative group hover:-translate-y-0.5 hover:shadow-soft-lg transition-all duration-300"
                     >
                         {/* 3D Icon Area */}
-                        <div className={`h-32 rounded-3xl ${item.bg} mb-4 flex items-center justify-center relative overflow-hidden`}>
+                        <div className={`h-32 rounded-xl ${item.bg} mb-4 flex items-center justify-center relative overflow-hidden`}>
                             <div className="text-[5rem] drop-shadow-xl transform group-hover:scale-110 transition-transform duration-500 filter hover:brightness-110">
                                 {item.foodIcon}
                             </div>
@@ -217,9 +229,11 @@ const DiningCompanion = () => {
                                 <div className="mt-3 animate-in fade-in slide-in-from-bottom-2">
                                     <div className="relative rounded-xl overflow-hidden border border-gray-200">
                                         <KakaoMap
-                                            latitude={37.751853} // Dummy Logic
-                                            longitude={126.764666}
-                                            style={{ width: '100%', height: '150px' }}
+                                            latitude={item.lat}
+                                            longitude={item.lng}
+                                            label={item.title}
+                                            address={item.location}
+                                            style={{ width: '100%', height: '180px' }}
                                         />
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setActiveMapId(null); }}
@@ -233,8 +247,8 @@ const DiningCompanion = () => {
                                 <button
                                     onClick={() => setActiveMapId(item.id)}
                                     className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2 group-hover:shadow-md ${item.category === 'cafe'
-                                        ? 'bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white'
-                                        : 'bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white'
+                                        ? 'bg-brand-light text-brand-accent hover:bg-brand-gold hover:text-white'
+                                        : 'bg-brand text-white hover:bg-brand-dark'
                                         }`}>
                                     {item.category === 'cafe' ? '같이 가요 ☕' : '밥 먹자! 🍴'}
                                 </button>

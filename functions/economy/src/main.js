@@ -50,6 +50,18 @@ const NICKNAME_COST = 1000;
 const BOOST_COST = 300;
 const BOOST_HOURS = 24;
 
+// profiles.username은 required입니다. 스키마 push 이전에 생성된 문서는 username이
+// 비어 있어 beans만 updateDocument 하면 Appwrite가 500을 반환합니다.
+function profileUpdateData(profile, userId, fields) {
+     const data = { ...fields };
+     if (!profile.username) {
+          const fallback = `user_${userId.slice(-8)}`;
+          data.username = fallback;
+          if (!profile.fullName) data.fullName = fallback;
+     }
+     return data;
+}
+
 export default async ({ req, res, log, error }) => {
      let userId = req.headers['x-appwrite-user-id'];
 
@@ -110,10 +122,10 @@ export default async ({ req, res, log, error }) => {
                     const newBeans = currentBeans - price;
                     const newStyles = [...unlockedStyles, styleId];
 
-                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, {
+                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, {
                          beans: newBeans,
                          unlockedStyles: newStyles,
-                    });
+                    }));
 
                     return res.json({ success: true, beans: newBeans, unlockedStyles: newStyles });
                }
@@ -130,7 +142,7 @@ export default async ({ req, res, log, error }) => {
                     }
 
                     const newBeans = currentBeans - cost;
-                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, { beans: newBeans });
+                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, { beans: newBeans }));
 
                     return res.json({ success: true, beans: newBeans, spent: cost });
                }
@@ -153,7 +165,7 @@ export default async ({ req, res, log, error }) => {
                     const newBeans = currentBeans - BOOST_COST;
 
                     await databases.updateDocument(DATABASE_ID, POSTS, postId, { featuredUntil });
-                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, { beans: newBeans });
+                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, { beans: newBeans }));
 
                     return res.json({ success: true, beans: newBeans, featuredUntil });
                }
@@ -199,7 +211,7 @@ export default async ({ req, res, log, error }) => {
                     }
 
                     const newBeans = currentBeans + reward;
-                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, { beans: newBeans });
+                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, { beans: newBeans }));
 
                     return res.json({ success: true, beans: newBeans, earned: reward });
                }

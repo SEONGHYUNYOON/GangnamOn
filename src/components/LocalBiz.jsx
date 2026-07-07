@@ -307,8 +307,10 @@ const LocalBiz = () => {
                                              <h4 className="font-bold text-gray-900 mb-3 text-sm">위치 보기</h4>
                                              {/* Pass dummy lat/lng for demo purposes since mock data doesn't have it yet */}
                                              <KakaoMap
-                                                  latitude={selectedStore.lat || 37.751853}
-                                                  longitude={selectedStore.lng || 126.764666}
+                                                  latitude={selectedStore.lat || 37.4979}
+                                                  longitude={selectedStore.lng || 127.0276}
+                                                  label={selectedStore.name}
+                                                  address={selectedStore.location}
                                              />
                                         </div>
                                    </div>

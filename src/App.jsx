@@ -5,8 +5,9 @@ import LeftSidebar from './components/LeftSidebar'
 import RightPanel from './components/RightPanel'
 import ChatWidget from './components/ChatWidget'
 import Toast from './components/Toast'
+import KakaoMap from './components/KakaoMap'
 import './index.css'
-import { User, LogIn, Menu, X, Megaphone, Loader2, Lock } from 'lucide-react'
+import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, Search, CalendarDays, MapPin } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy Load Heavy Components
@@ -119,6 +120,22 @@ function App() {
                     collectionId: COLLECTIONS.profiles,
                     documentId: rawUser.$id,
                });
+               // 스키마 push 이전에 생성된 빈 프로필(username/beans 없음)은 economy Function이
+               // beans=0으로 처리해 "온 부족" 오류를 냅니다. UI 기본값(1250)과 불일치하므로 복구합니다.
+               if (!profile?.username) {
+                    profile = await databases.updateDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.profiles,
+                         documentId: rawUser.$id,
+                         data: {
+                              username: rawUser.name || rawUser.email?.split('@')[0] || '강남주민',
+                              fullName: rawUser.name || rawUser.email?.split('@')[0] || '강남주민',
+                              beans: profile?.beans ?? 1250,
+                              location: profile?.location || '강남',
+                              unlockedStyles: profile?.unlockedStyles || ['lorelei', 'avataaars'],
+                         },
+                    });
+               }
           } catch (e) {
                // 프로필 문서가 없으면 새로 생성
                try {
@@ -557,23 +574,23 @@ function App() {
 
 
                {/* Central Container */}
-               <div className="w-full max-w-[1920px] flex min-h-screen relative pt-20 lg:pt-0 pb-8 px-2 lg:px-4 gap-4 xl:gap-8">
+               <div className="w-full max-w-[1880px] flex min-h-screen relative pt-20 lg:pt-0 pb-8 px-3 lg:px-5 gap-5 xl:gap-8">
 
                     {/* === Left Column (Fixed Width) === */}
-                    <div className="w-[240px] xl:w-[280px] h-screen sticky top-0 hidden md:block overflow-y-auto no-scrollbar shrink-0 pt-4">
+                    <div className="w-[240px] xl:w-[280px] h-screen sticky top-0 hidden md:block overflow-y-auto no-scrollbar shrink-0 pt-5">
                          <LeftSidebar activeTab={activeTab} setActiveTab={handleTabChange} isAdmin={isAdmin} />
                     </div>
 
                     {/* === Center Column (Flexible) === */}
-                    <main className="flex-1 min-w-0 py-4 lg:py-8 h-full flex flex-col gap-6">
+                    <main className="flex-1 min-w-0 py-4 lg:py-8 h-full flex flex-col gap-5">
 
                          {/* 이메일 미인증 안내 배너 */}
                          {user && user.emailVerification === false && (
-                              <div className="flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm font-bold rounded-xl px-4 py-3">
+                              <div className="flex items-center justify-between gap-3 bg-white border border-brand-gold/25 text-brand text-sm font-bold rounded-card px-4 py-3 shadow-soft">
                                    <span>📧 이메일 인증이 아직 안 됐어요. 받은 메일함을 확인해주세요.</span>
                                    <button
                                         onClick={handleResendVerification}
-                                        className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                                        className="shrink-0 bg-brand hover:bg-brand-dark text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
                                    >
                                         인증 메일 재전송
                                    </button>
@@ -583,11 +600,10 @@ function App() {
                          {/* Top Marquee Banner */}
                          <div className="relative group">
                               <div
-                                   className={`rounded-2xl overflow-hidden py-3 mb-6 transition-colors duration-500 backdrop-blur-md cursor-pointer border ${activeTab === 'romance' ? 'bg-purple-900/60 border-purple-500/30' : 'bg-slate-900/90 border-slate-700/50 text-white shadow-soft'
+                                   className={`rounded-card overflow-hidden py-2.5 transition-colors duration-500 backdrop-blur-md cursor-pointer border ${activeTab === 'romance' ? 'bg-purple-900/60 border-purple-500/30' : 'bg-brand text-white border-white/10 shadow-soft'
                                         }`}
                               >
-                                   <div className="h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
-                                   <div className="animate-marquee whitespace-nowrap text-sm font-semibold tracking-wide text-white/95 inline-flex items-center gap-8 shrink-0 px-1" style={{ width: "max-content" }}>
+                                   <div className="animate-marquee whitespace-nowrap text-[13px] font-semibold text-white/90 inline-flex items-center gap-8 shrink-0 px-1" style={{ width: "max-content" }}>
                                         {/* 한 번에 한 블록만 이동하므로 마지막 문장이 왼쪽 끝을 지날 때까지 잘리지 않음 */}
                                         {[...bannerMessages, ...bannerMessages].map((item, i) => (
                                              <span
@@ -605,7 +621,7 @@ function App() {
                               {/* Add Banner Button (Visible on Hover/Always for accessibility) */}
                               <button
                                    onClick={() => setIsBannerModalOpen(true)}
-                                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-amber-500 text-slate-900 p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-95 z-10"
+                                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-gold text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-95 z-10"
                                    title="배너 등록하기 (500온)"
                               >
                                    <Megaphone className="w-4 h-4" />
@@ -648,22 +664,60 @@ function App() {
                                         {/* 1. HOME TAB */}
                                         {activeTab === 'home' && (
                                              <>
-                                                  {/* Host Banner */}
-                                                  <div
-                                                       onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
-                                                       className="bg-white rounded-2xl p-5 border border-surface-border shadow-soft flex items-center justify-between hover:border-amber-200/80 hover:shadow-soft-lg transition-all cursor-pointer group"
-                                                  >
-                                                       <div className="flex items-center gap-4">
-                                                            <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center text-xl text-amber-400 group-hover:scale-105 transition-transform">✨</div>
-                                                            <div>
-                                                                 <h3 className="font-bold text-slate-900">나만의 소모임 만들기</h3>
-                                                                 <p className="text-xs text-slate-500">강남 리더 뱃지를 획득해보세요</p>
+                                                  <section className="relative overflow-hidden rounded-card border border-surface-border bg-white shadow-soft">
+                                                       <div className="grid gap-6 p-5 md:grid-cols-[1fr_360px] md:p-7 xl:grid-cols-[1fr_420px]">
+                                                            <div className="flex min-h-[330px] flex-col justify-between">
+                                                                 <div>
+                                                                      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-xs font-bold text-brand-accent">
+                                                                           <MapPin className="h-3.5 w-3.5" />
+                                                                           Gangnam local operating system
+                                                                      </div>
+                                                                      <h1 className="max-w-3xl text-3xl font-black leading-tight text-brand-ink [word-break:keep-all] md:text-5xl">
+                                                                           강남 생활을 위치, 이동, 모임 기준으로 정리합니다.
+                                                                      </h1>
+                                                                      <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-slate-500 [word-break:keep-all]">
+                                                                           강남역, 역삼, 선릉, 신논현 일대의 모임과 장소를 지도 기반으로 보고 바로 길찾기까지 이어갑니다.
+                                                                      </p>
+                                                                 </div>
+                                                                 <div className="mt-8 grid gap-3 sm:grid-cols-[1fr_auto]">
+                                                                      <div className="flex min-h-[50px] items-center gap-3 rounded-xl border border-surface-border bg-surface-muted px-4 text-sm font-semibold text-slate-400">
+                                                                           <Search className="h-4 w-4 text-slate-400" />
+                                                                           강남역 점심 모임, 역삼 카페, 청담 이벤트
+                                                                      </div>
+                                                                      <button
+                                                                           onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
+                                                                           className="min-h-[50px] rounded-xl bg-brand px-5 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark active:scale-[0.98]"
+                                                                      >
+                                                                           모임 개설하기
+                                                                      </button>
+                                                                 </div>
+                                                                 <div className="mt-5 grid grid-cols-3 gap-2 text-slate-500">
+                                                                      <div className="rounded-xl border border-surface-border bg-white p-3">
+                                                                           <p className="text-lg font-black text-brand-ink">4개</p>
+                                                                           <p className="text-[11px] font-bold">주요 권역</p>
+                                                                      </div>
+                                                                      <div className="rounded-xl border border-surface-border bg-white p-3">
+                                                                           <p className="text-lg font-black text-brand-ink">6+</p>
+                                                                           <p className="text-[11px] font-bold">지하철 노선</p>
+                                                                      </div>
+                                                                      <div className="rounded-xl border border-surface-border bg-white p-3">
+                                                                           <p className="text-lg font-black text-brand-ink">길찾기</p>
+                                                                           <p className="text-[11px] font-bold">카카오 연동</p>
+                                                                      </div>
+                                                                 </div>
+                                                            </div>
+                                                            <div className="h-[280px] rounded-card border border-surface-border bg-surface-muted p-3 md:h-auto">
+                                                                 <KakaoMap
+                                                                      latitude={37.4979}
+                                                                      longitude={127.0276}
+                                                                      level={4}
+                                                                      label="강남역 중심"
+                                                                      address="서울 강남구 강남대로 지하396"
+                                                                      style={{ width: '100%', height: '100%' }}
+                                                                 />
                                                             </div>
                                                        </div>
-                                                       <button className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all transform group-hover:translate-x-0.5">
-                                                            모임 개설하기
-                                                       </button>
-                                                  </div>
+                                                  </section>
                                                   <ILoveSchool />
                                                   <DiningCompanion />
                                                   <MeetingFeed items={meetingItems} />
@@ -799,7 +853,7 @@ function App() {
                     </main>
 
                     {/* === Right Column (Fixed Width) === */}
-                    <div className="w-[300px] xl:w-[350px] h-screen sticky top-0 hidden lg:block overflow-y-auto shrink-0 pt-4">
+                    <div className="w-[320px] 2xl:w-[350px] h-screen sticky top-0 hidden 2xl:block overflow-y-auto no-scrollbar shrink-0 pt-5">
                          {/* Pass bean stats and dark mode flag */}
                          <RightPanel
                               onOpenMinihome={() => handleOpenMinihome()}

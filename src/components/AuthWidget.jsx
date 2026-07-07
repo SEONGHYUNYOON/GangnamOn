@@ -147,17 +147,17 @@ const AuthWidget = ({ onLoginSuccess }) => {
      };
 
      return (
-          <div className="bg-white rounded-3xl p-6 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-gray-100 mb-6 group relative overflow-hidden w-full max-w-sm mx-auto">
+          <div className="bg-white rounded-card p-6 shadow-soft border border-surface-border mb-5 group relative overflow-hidden w-full max-w-sm mx-auto">
                <div className="flex justify-between items-center mb-6 relative z-10">
                     <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider">
                          {isForgotMode ? 'Find Password' : isSignUpMode ? 'Join Gangnam On' : 'Welcome Back'}
                     </h3>
-                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                    <div className="w-2 h-2 rounded-full bg-brand-gold animate-pulse"></div>
                </div>
 
                <div className="flex flex-col relative z-10">
                     <div className="text-center mb-6">
-                         <h2 className="text-xl font-bold text-gray-900 mb-1">
+                         <h2 className="text-xl font-black text-brand-ink mb-1">
                               {isForgotMode ? '비밀번호 찾기' : isSignUpMode ? '강남온 시작하기' : '강남온 로그인'}
                          </h2>
                          <p className="text-xs text-gray-500">
@@ -178,7 +178,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                              placeholder="닉네임 (활동명)"
                                              value={username}
                                              onChange={(e) => setUsername(e.target.value)}
-                                             className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
+                                             className="w-full pl-10 pr-4 py-3 bg-surface-muted border border-surface-border rounded-xl text-sm focus:outline-none focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/15 transition-all"
                                              required
                                         />
                                    </div>
@@ -189,8 +189,8 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                              type="button"
                                              onClick={() => setGender('female')}
                                              className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${gender === 'female'
-                                                  ? 'bg-pink-50 text-pink-600 border-pink-200 ring-2 ring-pink-100'
-                                                  : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-gray-100'
+                                                  ? 'bg-brand text-white border-brand ring-2 ring-brand-gold/20'
+                                                  : 'bg-surface-muted text-gray-500 border-surface-border hover:bg-white'
                                                   }`}
                                         >
                                              <Smile className="w-4 h-4" />
@@ -200,8 +200,8 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                              type="button"
                                              onClick={() => setGender('male')}
                                              className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${gender === 'male'
-                                                  ? 'bg-blue-50 text-blue-600 border-blue-200 ring-2 ring-blue-100'
-                                                  : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-gray-100'
+                                                  ? 'bg-brand text-white border-brand ring-2 ring-brand-gold/20'
+                                                  : 'bg-surface-muted text-gray-500 border-surface-border hover:bg-white'
                                                   }`}
                                         >
                                              <Smile className="w-4 h-4" />
@@ -215,7 +215,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         <select
                                              value={region}
                                              onChange={(e) => setRegion(e.target.value)}
-                                             className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all appearance-none cursor-pointer text-gray-700 font-medium"
+                                             className="w-full pl-10 pr-4 py-3 bg-surface-muted border border-surface-border rounded-xl text-sm focus:outline-none focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/15 transition-all appearance-none cursor-pointer text-gray-700 font-medium"
                                         >
                                              {gangnamRegions.map((r) => (
                                                   <option key={r} value={r}>{r}</option>
@@ -233,7 +233,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    placeholder="이메일 주소"
                                    value={email}
                                    onChange={(e) => setEmail(e.target.value)}
-                                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
+                                   className="w-full pl-10 pr-4 py-3 bg-surface-muted border border-surface-border rounded-xl text-sm focus:outline-none focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/15 transition-all"
                                    required
                               />
                          </div>
@@ -245,7 +245,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         placeholder="비밀번호"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"
+                                        className="w-full pl-10 pr-4 py-3 bg-surface-muted border border-surface-border rounded-xl text-sm focus:outline-none focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/15 transition-all"
                                         required
                                    />
                               </div>
@@ -257,7 +257,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    <button
                                         type="button"
                                         onClick={() => { setIsForgotMode(true); setAuthError(null); }}
-                                        className="text-[11px] text-gray-400 hover:text-amber-700 hover:underline"
+                                        className="text-[11px] text-gray-400 hover:text-brand-accent hover:underline"
                                    >
                                         비밀번호를 잊으셨나요?
                                    </button>
@@ -271,15 +271,15 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         type="checkbox"
                                         checked={agreedToTerms}
                                         onChange={(e) => setAgreedToTerms(e.target.checked)}
-                                        className="mt-0.5 w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-400"
+                                        className="mt-0.5 w-4 h-4 rounded border-gray-300 text-brand-accent focus:ring-brand-gold/40"
                                    />
                                    <span className="text-[11px] text-gray-500 leading-snug">
                                         [필수]{' '}
-                                        <button type="button" onClick={() => setTermsModalTab('terms')} className="underline font-bold text-gray-700 hover:text-amber-700">
+                                        <button type="button" onClick={() => setTermsModalTab('terms')} className="underline font-bold text-gray-700 hover:text-brand-accent">
                                              이용약관
                                         </button>{' '}
                                         및{' '}
-                                        <button type="button" onClick={() => setTermsModalTab('privacy')} className="underline font-bold text-gray-700 hover:text-amber-700">
+                                        <button type="button" onClick={() => setTermsModalTab('privacy')} className="underline font-bold text-gray-700 hover:text-brand-accent">
                                              개인정보처리방침
                                         </button>
                                         에 동의합니다.
@@ -296,7 +296,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                          <button
                               type="submit"
                               disabled={authLoading}
-                              className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-slate-200 hover:bg-slate-800 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group/btn"
+                              className="w-full bg-brand text-white font-bold py-3 rounded-xl shadow-soft hover:bg-brand-dark hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group/btn"
                          >
                               {authLoading ? '처리중...' : (isForgotMode ? '재설정 링크 보내기' : isSignUpMode ? '가입하고 시작하기' : '로그인')}
                               {!authLoading && <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />}
@@ -307,7 +307,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                          <div className="mt-6 pt-4 border-t border-gray-50 text-center">
                               <button
                                    onClick={() => { setIsForgotMode(false); setAuthError(null); }}
-                                   className="text-xs font-bold text-amber-700 hover:underline"
+                                   className="text-xs font-bold text-brand-accent hover:underline"
                               >
                                    ← 로그인으로 돌아가기
                               </button>
@@ -325,10 +325,10 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         setUsername('');
                                         setAgreedToTerms(false);
                                    }}
-                                   className="font-bold text-amber-700 hover:underline"
+                                   className="font-bold text-brand-accent hover:underline"
                               >
                                    {isSignUpMode ? '로그인' : '회원가입'}
-                                   {!isSignUpMode && <span className="text-[10px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded ml-1">3초컷</span>}
+                                   {!isSignUpMode && <span className="text-[10px] bg-brand-light text-brand-accent px-1 py-0.5 rounded ml-1 border border-brand-gold/20">3초컷</span>}
                               </button>
                          </p>
                     </div>

@@ -14,20 +14,20 @@ const ILoveSchool = () => {
      ];
 
      return (
-          <div className="bg-white rounded-3xl p-6 shadow-[0_4px_30px_rgba(0,0,0,0.02)] border border-gray-100 mb-8">
+          <div className="bg-white rounded-card p-5 md:p-6 shadow-soft border border-surface-border">
 
                {/* Header */}
                <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                         <div className="p-2 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg text-white">
+                         <div className="p-2 bg-brand rounded-lg text-brand-gold">
                               <Book className="w-5 h-5" />
                          </div>
                          <div>
                               <h2 className="text-lg font-bold text-gray-900">아이러브스쿨</h2>
-                              <p className="text-xs text-gray-400">그때 그 시절 친구들을 찾아보세요</p>
+                              <p className="text-xs text-gray-500">그때 그 시절 친구들을 찾아보세요</p>
                          </div>
                     </div>
-                    <button className="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-full transition-colors">
+                    <button className="text-xs font-bold text-brand-accent bg-brand-light hover:bg-brand-light/70 px-3 py-1.5 rounded-full transition-colors border border-brand-gold/20">
                          개교 신청 하기
                     </button>
                </div>
@@ -39,7 +39,7 @@ const ILoveSchool = () => {
                          placeholder="학교 이름이나 졸업년도를 검색해보세요"
                          value={searchTerm}
                          onChange={(e) => setSearchTerm(e.target.value)}
-                         className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all text-sm placeholder-gray-400 font-medium"
+                         className="w-full pl-12 pr-4 py-4 bg-surface-muted border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold/20 transition-all text-sm placeholder-gray-400 font-medium"
                     />
                     <Search className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
                </div>
@@ -47,22 +47,22 @@ const ILoveSchool = () => {
                {/* Horizontal Scroll - Popular Cohorts */}
                <div>
                     <div className="flex justify-between items-end mb-4 px-1">
-                         <h3 className="font-bold text-gray-800 text-sm">🔥 요즘 뜨는 동창회</h3>
-                         <span className="text-xs text-gray-400 cursor-pointer hover:text-purple-500 transition-colors">전체보기</span>
+                         <h3 className="font-bold text-gray-800 text-sm">요즘 뜨는 동창회</h3>
+                         <span className="text-xs text-gray-400 cursor-pointer hover:text-brand-accent transition-colors">전체보기</span>
                     </div>
 
                     <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
                          {popularCohorts.map((item) => (
                               <div
                                    key={item.id}
-                                   className="flex-shrink-0 w-40 p-4 rounded-2xl border border-gray-100 bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer snap-start group"
+                                   className="flex-shrink-0 w-40 p-4 rounded-card border border-surface-border bg-white hover:shadow-soft hover:-translate-y-0.5 transition-all duration-300 cursor-pointer snap-start group"
                               >
                                    <div className={`w-10 h-10 rounded-full ${item.color} flex items-center justify-center text-xl mb-3`}>
                                         {item.logo}
                                    </div>
                                    <div className="mb-1">
                                         <span className="text-[10px] text-gray-400 block mb-0.5">{item.year}년 졸업</span>
-                                        <h4 className="font-bold text-gray-900 text-base group-hover:text-purple-600 transition-colors">
+                                             <h4 className="font-bold text-gray-900 text-base group-hover:text-brand-accent transition-colors">
                                              {item.school} <span className="text-sm font-normal text-gray-500">{item.round}회</span>
                                         </h4>
                                    </div>
