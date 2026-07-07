@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Zap, MapPin, Star, Heart, Cloud, Sparkles } from 'lucide-react';
+import { Sun, Zap, MapPin, Star, Heart, Cloud, Sparkles, ExternalLink } from 'lucide-react';
 import { callEconomy } from '../lib/appwrite';
 import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
@@ -395,7 +395,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
                     <button
                          type="button"
-                         onClick={() => window.open('https://search.naver.com/search.naver?query=강남+역삼동+날씨', '_blank')}
+                         onClick={() => window.open('https://search.naver.com/search.naver?query=서울+강남구+역삼동+날씨', '_blank', 'noopener,noreferrer')}
                          className="mb-3 w-full rounded-xl border border-surface-border bg-surface-muted p-4 text-left transition-all hover:bg-white"
                     >
                          {/* Weather Section */}
@@ -422,6 +422,10 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                         <div className="flex items-center justify-end gap-1 text-xs text-gray-500">
                                              <Cloud className="w-3 h-3" />
                                              <span>습도 {weather.humidity !== null ? weather.humidity : '-'}%</span>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-end gap-1 text-[10px] font-black text-brand-accent">
+                                             <span>상세 날씨 보기</span>
+                                             <ExternalLink className="h-3 w-3" />
                                         </div>
                                    </div>
                               </>

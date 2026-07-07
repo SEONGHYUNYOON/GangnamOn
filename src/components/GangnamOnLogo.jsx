@@ -1,39 +1,52 @@
 import React from 'react';
 
-// 강남On 브랜드 로고 (전원 버튼 아이콘 + "강남" + 코인형 o + n, 자간 좁힘)
-// 기존 860KB PNG 목업 이미지를 대체하는 SVG 워드마크입니다.
 const GangnamOnLogo = ({ className = 'h-14 w-auto', onClick }) => {
-     const GOLD = '#B8860B';
+     const GOLD = '#B88A14';
      const DARK = '#111827';
 
      return (
           <svg
-               viewBox="0 0 188 60"
+               viewBox="0 0 176 58"
                className={className}
                onClick={onClick}
                role="img"
                aria-label="강남On"
           >
-               {/* 전원 버튼 아이콘 */}
-               <circle
-                    cx="26"
-                    cy="30"
-                    r="15"
-                    fill="none"
-                    stroke={GOLD}
-                    strokeWidth="3.4"
-                    strokeDasharray="78 16"
-                    strokeDashoffset="-8"
-                    strokeLinecap="round"
-               />
-               <line x1="26" y1="8" x2="26" y2="24" stroke={GOLD} strokeWidth="3.4" strokeLinecap="round" />
+               <defs>
+                    <linearGradient id="gangnamOnGold" x1="18" y1="10" x2="44" y2="42" gradientUnits="userSpaceOnUse">
+                         <stop stopColor="#D3A12A" />
+                         <stop offset="1" stopColor="#9C7107" />
+                    </linearGradient>
+               </defs>
 
-               {/* 강남 */}
-               <text x="54" y="42" fontSize="32" fontWeight="700" fill={DARK}>강남</text>
+               <g transform="translate(5 9)">
+                    <rect x="0" y="0" width="40" height="40" rx="14" fill="url(#gangnamOnGold)" />
+                    <path d="M12 25.5C12 18 20 12.5 28 15.8" fill="none" stroke="white" strokeWidth="3.2" strokeLinecap="round" />
+                    <path d="M28 12.5V18.5H34" fill="none" stroke="white" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="20" cy="20" r="3" fill="white" opacity="0.95" />
+               </g>
 
-               {/* 코인형 o + n (자간 좁힘) */}
-               <circle cx="130" cy="24" r="14" fill={GOLD} />
-               <text x="145" y="42" fontSize="32" fontWeight="500" fill={GOLD}>n</text>
+               <text
+                    x="56"
+                    y="39"
+                    fontFamily="Pretendard, SUIT, Inter, system-ui, sans-serif"
+                    fontSize="30"
+                    fontWeight="800"
+                    fill={DARK}
+               >
+                    강남
+               </text>
+               <text
+                    x="118"
+                    y="39"
+                    fontFamily="Inter, Pretendard, system-ui, sans-serif"
+                    fontSize="29"
+                    fontWeight="700"
+                    fontStyle="italic"
+                    fill={GOLD}
+               >
+                    on
+               </text>
           </svg>
      );
 };
