@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role } from '../lib/appwrite';
-import { X, Heart, Mail, MapPin, Sparkles, Music2, Youtube, Link2, PlayCircle } from 'lucide-react';
+import { BookOpen, ChevronRight, Heart, Home, Link2, Mail, Music2, PlayCircle, Send, Settings, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
 
@@ -23,54 +23,39 @@ const extractYoutubeId = (value = '') => {
      return /^[a-zA-Z0-9_-]{6,}$/.test(input) ? input : '';
 };
 
+const surfLinks = [
+     { name: '강남 북클럽', status: '오늘 독서모임 열림', tone: 'bg-amber-50 text-amber-800' },
+     { name: '역삼 러너스', status: '한강 10km 모집중', tone: 'bg-blue-50 text-blue-800' },
+     { name: '단대부고 25회', status: '동창회 사진 업데이트', tone: 'bg-emerald-50 text-emerald-800' },
+     { name: '테헤란 스타트업랩', status: '점심 네트워킹', tone: 'bg-violet-50 text-violet-800' },
+];
+
 const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) => {
-     // Guestbook State
      const [guestbookEntries, setGuestbookEntries] = useState([]);
      const [newComment, setNewComment] = useState('');
-     const [isPublic, setIsPublic] = useState(false);
-     const [ilchonCount] = useState(Math.floor(Math.random() * 50) + 10);
-     const [isBgmOpen, setIsBgmOpen] = useState(false);
-     const [miniSettings, setMiniSettings] = useState({
-          bgmUrl: '',
-          bgmTitle: '',
-          bgmVideoId: '',
-     });
-     const [bgmDraft, setBgmDraft] = useState({
-          bgmUrl: '',
-          bgmTitle: '',
-     });
-
-     // Profile & Edit State
      const [profileData, setProfileData] = useState(null);
+     const [activePane, setActivePane] = useState('home');
      const [isEditing, setIsEditing] = useState(false);
-     const [editForm, setEditForm] = useState({
-          location: '',
-          mbti: '',
-          job: '',
-          bio: ''
-     });
-
-     // 🛑 Safeguard: If no user is logged in, show login prompt instead of crashing
-     if (!user) {
-          return (
-               <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}>
-                    <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full mx-4" onClick={e => e.stopPropagation()}>
-                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                              <Sparkles className="w-8 h-8 text-purple-600" />
-                         </div>
-                         <h3 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요해요! 😅</h3>
-                         <p className="text-gray-500 mb-6">나만의 강남 라이프를 기록하려면<br />먼저 로그인해주세요.</p>
-                         <button onClick={onClose} className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors">
-                              확인
-                         </button>
-                    </div>
-               </div>
-          );
-     }
+     const [isBgmOpen, setIsBgmOpen] = useState(false);
+     const [miniSettings, setMiniSettings] = useState({ bgmUrl: '', bgmTitle: '', bgmVideoId: '' });
+     const [bgmDraft, setBgmDraft] = useState({ bgmUrl: '', bgmTitle: '' });
+     const [editForm, setEditForm] = useState({ location: '', mbti: '', job: '', bio: '' });
+     const [todayCount] = useState(Math.floor(Math.random() * 80) + 48);
+     const [totalCount] = useState(Math.floor(Math.random() * 9000) + 3200);
+     const [ilchonCount] = useState(Math.floor(Math.random() * 50) + 10);
 
      const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
+     const displayName = profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '강남 이웃';
+     const displayLocation = profileData?.location || user?.user_metadata?.location || '강남';
+     const avatarUrl = profileData?.avatarUrl || user?.user_metadata?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gangnam';
+     const statusMessage = profileData?.statusMessage || profileData?.bio || '오늘도 강남에서 좋은 사람을 만나는 중.';
 
-     // Fetch Profile Data
+     const panes = useMemo(() => [
+          { id: 'home', label: '홈', icon: Home },
+          { id: 'guestbook', label: '방명록', icon: BookOpen },
+          { id: 'surf', label: '파도타기', icon: ChevronRight },
+     ], []);
+
      useEffect(() => {
           const fetchProfile = async () => {
                if (!user?.id) return;
@@ -85,7 +70,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                          location: data.location || '',
                          mbti: data.mbti || '',
                          job: data.job || '',
-                         bio: data.statusMessage || '' // mapping bio to statusMessage
+                         bio: data.statusMessage || '',
                     });
                } catch (error) {
                     console.error('프로필 로딩 실패:', error);
@@ -95,6 +80,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
      }, [user?.id]);
 
      useEffect(() => {
+          if (!user) return;
           try {
                const saved = window.localStorage.getItem(getMinihomeStorageKey(user));
                if (!saved) return;
@@ -106,19 +92,43 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                     bgmVideoId: parsed.bgmVideoId || extractYoutubeId(parsed.bgmUrl || ''),
                };
                setMiniSettings(next);
-               setBgmDraft({
-                    bgmUrl: next.bgmUrl,
-                    bgmTitle: next.bgmTitle,
-               });
+               setBgmDraft({ bgmUrl: next.bgmUrl, bgmTitle: next.bgmTitle });
           } catch (error) {
                console.warn('미니홈피 설정 로딩 실패:', error);
           }
      }, [user?.id, user?.user_metadata?.username]);
 
-     // Save Profile Data
+     useEffect(() => {
+          const fetchGuestbook = async () => {
+               if (!user?.id) return;
+               try {
+                    const res = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.guestbookEntries,
+                         queries: [Query.equal('hostId', user.id), Query.orderDesc('$createdAt')],
+                    });
+                    setGuestbookEntries(res.documents);
+               } catch (error) {
+                    console.error('방명록 로딩 실패:', error);
+               }
+          };
+
+          fetchGuestbook();
+          if (!user?.id) return undefined;
+
+          const unsubscribe = client.subscribe(
+               [`databases.${DATABASE_ID}.collections.${COLLECTIONS.guestbookEntries}.documents`],
+               (response) => {
+                    const isCreate = response.events.some(event => event.endsWith('.create'));
+                    if (isCreate && response.payload?.hostId === user.id) fetchGuestbook();
+               },
+          );
+
+          return () => unsubscribe();
+     }, [user?.id]);
+
      const handleSaveProfile = async () => {
           if (!isOwner) return;
-
           try {
                await databases.updateDocument({
                     databaseId: DATABASE_ID,
@@ -131,8 +141,6 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                          statusMessage: editForm.bio,
                     },
                });
-
-               // Update local state
                setProfileData(prev => ({
                     ...prev,
                     location: editForm.location,
@@ -142,14 +150,13 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                }));
                setIsEditing(false);
           } catch (error) {
-               console.error("Profile update failed:", error);
-               alert("프로필 저장 실패");
+               console.error('Profile update failed:', error);
+               alert('프로필 저장 실패');
           }
      };
 
      const handleSaveBgm = () => {
           if (!isOwner) return;
-
           const videoId = extractYoutubeId(bgmDraft.bgmUrl);
           if (bgmDraft.bgmUrl.trim() && !videoId) {
                alert('유튜브 링크 또는 영상 ID를 확인해주세요.');
@@ -167,73 +174,26 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           setIsBgmOpen(false);
      };
 
-     // Mock Gallery Images (Keep for now, or fetch if we had a gallery table)
-     const galleryImages = [
-          'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?auto=format&fit=crop&q=80&w=300&h=300',
-          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=300&h=300',
-          'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=300&h=300',
-          'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=300&h=300',
-          'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&q=80&w=300&h=300',
-          'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=300&h=300',
-     ];
-
-     // Fetch Guestbook Entries
-     useEffect(() => {
-          const fetchGuestbook = async () => {
-               if (!user?.id) return;
-
-               try {
-                    const res = await databases.listDocuments({
-                         databaseId: DATABASE_ID,
-                         collectionId: COLLECTIONS.guestbookEntries,
-                         queries: [Query.equal('hostId', user.id), Query.orderDesc('$createdAt')],
-                    });
-                    setGuestbookEntries(res.documents);
-               } catch (error) {
-                    console.error('방명록 로딩 실패:', error);
-               }
-          };
-
-          fetchGuestbook();
-
-          if (!user?.id) return;
-
-          // Realtime Subscription (Appwrite Realtime)
-          const unsubscribe = client.subscribe(
-               [`databases.${DATABASE_ID}.collections.${COLLECTIONS.guestbookEntries}.documents`],
-               (response) => {
-                    const isCreate = response.events.some(e => e.endsWith('.create'));
-                    if (isCreate && response.payload?.hostId === user.id) {
-                         fetchGuestbook();
-                    }
-               }
-          );
-
-          return () => {
-               unsubscribe();
-          };
-     }, [user?.id]);
-
      const handlePostComment = async () => {
           if (!newComment.trim()) return;
           if (!currentUser) {
-               alert("로그인이 필요합니다!");
+               alert('로그인이 필요합니다.');
+               return;
+          }
+          if (!user?.id) {
+               alert('이 미니홈피에는 방명록을 남길 수 없습니다.');
                return;
           }
 
           try {
-               if (!user?.id) {
-                    alert("이 미니홈피에는 방명록을 남길 수 없습니다.");
-                    return;
-               }
                await databases.createDocument({
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.guestbookEntries,
                     documentId: ID.unique(),
                     data: {
-                         hostId: user.id, // Profile owner
-                         authorId: currentUser.id, // Writer
-                         authorUsername: currentUser.user_metadata?.username || '방문자',
+                         hostId: user.id,
+                         authorId: currentUser.id,
+                         authorUsername: currentUser.user_metadata?.username || currentUser.name || '방문자',
                          authorAvatarUrl: currentUser.user_metadata?.avatar_url || '',
                          content: newComment,
                          isSecret: false,
@@ -246,339 +206,243 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                });
                setNewComment('');
           } catch (error) {
-               console.error("Guestbook error:", error);
-               alert("방명록 작성 실패");
+               console.error('Guestbook error:', error);
+               alert('방명록 작성 실패');
           }
      };
 
+     if (!user) {
+          return (
+               <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
+                    <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-2xl" onClick={event => event.stopPropagation()}>
+                         <UserRound className="mx-auto mb-4 h-12 w-12 text-brand-accent" />
+                         <h3 className="text-xl font-black text-brand-ink">로그인이 필요해요</h3>
+                         <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">나만의 미니홈피를 만들려면 먼저 로그인해주세요.</p>
+                         <button onClick={onClose} className="mt-6 w-full rounded-xl bg-brand px-4 py-3 text-sm font-black text-white">확인</button>
+                    </div>
+               </div>
+          );
+     }
+
      return (
-          <div
-               className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
-               onClick={onClose}
-          >
-
-               {/* Card Container */}
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-3 backdrop-blur-sm" onClick={onClose}>
                <div
-                    className="bg-white w-full max-w-[480px] max-h-[80vh] h-full rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col animate-in zoom-in-95 duration-300 border-4 border-gray-100/50 filter-drop-shadow"
-                    onClick={(e) => e.stopPropagation()}
+                    className="flex h-[min(86vh,760px)] w-full max-w-[900px] flex-col overflow-hidden rounded-[22px] border border-sky-200 bg-[#eaf6ff] shadow-2xl"
+                    onClick={(event) => event.stopPropagation()}
                >
-
-                    {/* Top Buttons (Close & Message) */}
-                    <div className="absolute top-4 right-4 z-20 flex gap-2">
-                         <button
-                              className="p-3 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors backdrop-blur-md border border-white/20 shadow-lg group"
-                              title="1:1 메시지 보내기"
-                         >
-                              <Mail className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                         </button>
-                         <button
-                              onClick={onClose}
-                              className="p-3 bg-black/20 hover:bg-black/40 text-white rounded-full transition-colors backdrop-blur-md border border-white/10"
-                         >
-                              <X className="w-5 h-5" />
-                         </button>
+                    <div className="flex h-12 shrink-0 items-center justify-between border-b border-sky-200 bg-[#f8fcff] px-4">
+                         <div className="min-w-0">
+                              <p className="truncate text-sm font-black text-sky-900">{displayName}님의 미니홈피</p>
+                              <p className="text-[11px] font-bold text-sky-500">TODAY {todayCount} | TOTAL {totalCount.toLocaleString()}</p>
+                         </div>
+                         <div className="flex items-center gap-2">
+                              <button type="button" className="rounded-full border border-sky-200 bg-white p-2 text-sky-700 hover:bg-sky-50" title="쪽지 보내기">
+                                   <Mail className="h-4 w-4" />
+                              </button>
+                              <button type="button" onClick={onClose} className="rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-50" title="닫기">
+                                   <X className="h-4 w-4" />
+                              </button>
+                         </div>
                     </div>
 
-                    {/* Scrollable Area */}
-                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide bg-white pb-6">
-
-                         {/* === 1. Header Section === */}
-                         <div className="relative">
-                              {/* Cover */}
-                              <div className="h-64 w-full bg-gradient-to-bl from-indigo-400 via-purple-400 to-pink-400 relative overflow-hidden">
-                                   <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]" />
-                                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="grid min-h-0 flex-1 gap-3 p-3 md:grid-cols-[250px_1fr]">
+                         <aside className="min-h-0 rounded-2xl border border-sky-200 bg-white p-4">
+                              <div className="mb-3 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 text-center">
+                                   <p className="text-[11px] font-black text-sky-700">TODAY</p>
+                                   <p className="text-2xl font-black text-brand-ink">{todayCount}</p>
                               </div>
 
-                              {/* Profile Info Overlay */}
-                              <div className="absolute bottom-0 left-0 w-full p-8 pb-10 text-white">
-                                   <div className="flex justify-between items-end mb-4">
-                                        <div
-                                             className="w-24 h-24 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white -mb-6 relative z-10 group cursor-pointer"
-                                             onClick={onOpenAvatarCustomizer}
-                                        >
-                                             <img
-                                                  src={profileData?.avatarUrl || user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
-                                                  alt="Profile"
-                                                  className="w-full h-full object-cover"
-                                             />
-                                             <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                  <Sparkles className="w-6 h-6 text-white" />
-                                             </div>
-                                        </div>
+                              <button type="button" onClick={isOwner ? onOpenAvatarCustomizer : undefined} className="group block w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                                   <img src={avatarUrl} alt="프로필" className="h-44 w-full object-cover transition-transform group-hover:scale-105" />
+                              </button>
 
-                                        {/* Visitor Stats */}
-                                        <div className="flex items-center gap-4 mb-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10">
-                                             <div className="text-center">
-                                                  <span className="text-orange-400 font-bold text-xl drop-shadow-sm">128</span>
-                                                  <span className="block text-[10px] text-gray-300 uppercase font-medium">Today</span>
-                                             </div>
-                                             <div className="w-[1px] h-6 bg-white/20"></div>
-                                             <div className="text-center">
-                                                  <span className="text-white font-bold text-xl drop-shadow-sm">12k</span>
-                                                  <span className="block text-[10px] text-gray-300 uppercase font-medium">Total</span>
-                                             </div>
-                                             <div className="w-[1px] h-6 bg-white/20"></div>
-                                             <div className="text-center">
-                                                  <span className="text-pink-400 font-bold text-xl drop-shadow-sm">{ilchonCount}</span>
-                                                  <span className="block text-[10px] text-gray-300 uppercase font-medium">일촌</span>
-                                             </div>
-                                        </div>
+                              <div className="mt-4">
+                                   <h2 className="text-xl font-black text-brand-ink">{displayName}</h2>
+                                   <p className="mt-1 text-xs font-bold text-slate-500">{displayLocation} · {profileData?.mbti || 'MBTI 미설정'}</p>
+                                   <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-600">{statusMessage}</p>
+                              </div>
+
+                              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                                   <div className="rounded-xl bg-sky-50 p-2">
+                                        <p className="text-sm font-black text-sky-900">{ilchonCount}</p>
+                                        <p className="text-[10px] font-bold text-sky-500">일촌</p>
                                    </div>
+                                   <div className="rounded-xl bg-amber-50 p-2">
+                                        <p className="text-sm font-black text-amber-800">{guestbookEntries.length}</p>
+                                        <p className="text-[10px] font-bold text-amber-600">방명록</p>
+                                   </div>
+                                   <div className="rounded-xl bg-rose-50 p-2">
+                                        <p className="text-sm font-black text-rose-800">BGM</p>
+                                        <p className="text-[10px] font-bold text-rose-500">{miniSettings.bgmVideoId ? 'ON' : 'OFF'}</p>
+                                   </div>
+                              </div>
+                         </aside>
 
-                                   {/* Name & Bio */}
-                                   <div className="mt-8">
-                                        <div className="flex items-center justify-between mb-2">
-                                             <h2 className="text-3xl font-black flex items-center gap-2">
-                                                  {profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '나의 강남 라이프'}
-                                             </h2>
-
-                                             {/* Edit Button (Only for Owner) */}
-                                             {isOwner && (
+                         <main className="min-h-0 overflow-hidden rounded-2xl border border-sky-200 bg-white">
+                              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                                   <div className="flex gap-1">
+                                        {panes.map((pane) => {
+                                             const Icon = pane.icon;
+                                             return (
                                                   <button
-                                                       onClick={() => {
-                                                            if (isEditing) handleSaveProfile();
-                                                            setIsEditing(!isEditing);
-                                                       }}
-                                                       className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-xs font-bold backdrop-blur-md border border-white/20 transition-all"
+                                                       key={pane.id}
+                                                       type="button"
+                                                       onClick={() => setActivePane(pane.id)}
+                                                       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black transition-colors ${activePane === pane.id ? 'bg-sky-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-sky-50'}`}
                                                   >
-                                                       {isEditing ? '저장 완료' : '프로필 편집'}
+                                                       <Icon className="h-3.5 w-3.5" />
+                                                       {pane.label}
                                                   </button>
-                                             )}
-                                        </div>
-
-                                        <div className="mb-4 rounded-2xl border border-white/15 bg-black/35 p-3 backdrop-blur-md">
-                                             <div className="flex items-center justify-between gap-3">
-                                                  <div className="flex min-w-0 items-center gap-2">
-                                                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white">
-                                                            <Music2 className="h-4 w-4" />
-                                                       </div>
-                                                       <div className="min-w-0">
-                                                            <p className="truncate text-xs font-black text-white">
-                                                                 {miniSettings.bgmVideoId ? miniSettings.bgmTitle : 'BGM을 연결해보세요'}
-                                                            </p>
-                                                            <p className="mt-0.5 truncate text-[10px] font-semibold text-white/60">
-                                                                 {miniSettings.bgmVideoId ? 'YouTube BGM 연결됨' : '유튜브 링크로 미니홈피 음악 설정'}
-                                                            </p>
-                                                       </div>
-                                                  </div>
-                                                  <div className="flex shrink-0 items-center gap-2">
-                                                       {miniSettings.bgmVideoId && (
-                                                            <button
-                                                                 type="button"
-                                                                 onClick={() => setIsBgmOpen(!isBgmOpen)}
-                                                                 className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[11px] font-black text-slate-900 transition-transform active:scale-95"
-                                                            >
-                                                                 <PlayCircle className="h-3.5 w-3.5" />
-                                                                 재생
-                                                            </button>
-                                                       )}
-                                                       {isOwner && (
-                                                            <button
-                                                                 type="button"
-                                                                 onClick={() => setIsBgmOpen(!isBgmOpen)}
-                                                                 className="rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-white/10"
-                                                            >
-                                                                 설정
-                                                            </button>
-                                                       )}
-                                                  </div>
-                                             </div>
-
-                                             {isBgmOpen && (
-                                                  <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/30">
-                                                       {miniSettings.bgmVideoId && (
-                                                            <iframe
-                                                                 title="Minihome YouTube BGM"
-                                                                 className="aspect-video w-full"
-                                                                 src={`https://www.youtube.com/embed/${miniSettings.bgmVideoId}?rel=0&modestbranding=1`}
-                                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                                                 allowFullScreen
-                                                            />
-                                                       )}
-                                                       {isOwner && (
-                                                            <div className="space-y-2 p-3">
-                                                                 <div className="flex items-center gap-2 text-[11px] font-bold text-white/70">
-                                                                      <Youtube className="h-3.5 w-3.5 text-red-300" />
-                                                                      유튜브 링크를 넣으면 미니홈피 BGM으로 표시됩니다.
-                                                                 </div>
-                                                                 <input
-                                                                      value={bgmDraft.bgmTitle}
-                                                                      onChange={(e) => setBgmDraft(prev => ({ ...prev, bgmTitle: e.target.value }))}
-                                                                      className="w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
-                                                                      placeholder="BGM 제목"
-                                                                 />
-                                                                 <div className="flex gap-2">
-                                                                      <div className="relative flex-1">
-                                                                           <Link2 className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
-                                                                           <input
-                                                                                value={bgmDraft.bgmUrl}
-                                                                                onChange={(e) => setBgmDraft(prev => ({ ...prev, bgmUrl: e.target.value }))}
-                                                                                className="w-full rounded-lg border border-white/10 bg-white/10 py-2 pl-8 pr-3 text-xs font-semibold text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
-                                                                                placeholder="https://youtube.com/watch?v=..."
-                                                                           />
-                                                                      </div>
-                                                                      <button
-                                                                           type="button"
-                                                                           onClick={handleSaveBgm}
-                                                                           className="rounded-lg bg-white px-3 py-2 text-xs font-black text-slate-900"
-                                                                      >
-                                                                           저장
-                                                                      </button>
-                                                                 </div>
-                                                            </div>
-                                                       )}
-                                                  </div>
-                                             )}
-                                        </div>
-
-                                        {isEditing ? (
-                                             <div className="bg-black/40 backdrop-blur-md p-4 rounded-xl border border-white/10 space-y-3 mb-4">
-                                                  <div className="grid grid-cols-2 gap-3">
-                                                       <input
-                                                            value={editForm.location}
-                                                            onChange={e => setEditForm(prev => ({ ...prev, location: e.target.value }))}
-                                                            className="bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400"
-                                                            placeholder="지역 (예: 강남 역삼)"
-                                                       />
-                                                       <input
-                                                            value={editForm.mbti}
-                                                            onChange={e => setEditForm(prev => ({ ...prev, mbti: e.target.value }))}
-                                                            className="bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400"
-                                                            placeholder="MBTI"
-                                                       />
-                                                       <input
-                                                            value={editForm.job}
-                                                            onChange={e => setEditForm(prev => ({ ...prev, job: e.target.value }))}
-                                                            className="bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400 col-span-2"
-                                                            placeholder="직업 / 하는 일"
-                                                       />
-                                                  </div>
-                                                  <textarea
-                                                       value={editForm.bio}
-                                                       onChange={e => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
-                                                       className="w-full bg-black/30 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400 h-20 resize-none"
-                                                       placeholder="자기소개를 입력하세요..."
-                                                  />
-                                             </div>
-                                        ) : (
-                                             <>
-                                                  <div className="flex items-center gap-1 text-sm text-gray-300 mb-4">
-                                                       <MapPin className="w-3.5 h-3.5" />
-                                                       {profileData?.location || user?.user_metadata?.location || '강남 미설정'}
-                                                       <span className="mx-1">·</span>
-                                                       {profileData?.mbti || 'MBTI 미설정'}
-                                                       <span className="mx-1">·</span>
-                                                       {profileData?.job || '직업 미설정'}
-                                                  </div>
-                                                  <p className="text-base text-gray-200 leading-relaxed font-light mb-6 whitespace-pre-wrap">
-                                                       {profileData?.statusMessage || profileData?.bio || "자기소개가 없습니다."}
-                                                  </p>
-                                             </>
-                                        )}
-
-                                        {/* Privacy Toggle & Incentive */}
-                                        <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 flex items-center justify-between">
-                                             <div>
-                                                  <div className="text-xs text-yellow-300 font-bold mb-0.5">✨ 전체공개 챌린지</div>
-                                                  <div className="text-[10px] text-gray-300">1개월 유지 시 <span className="text-white font-bold">+1,000온</span> 지급!</div>
-                                             </div>
-                                             <button
-                                                  onClick={() => setIsPublic(!isPublic)}
-                                                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isPublic
-                                                       ? 'bg-green-500 text-white shadow-[0_0_10px_rgba(34,197,94,0.5)]'
-                                                       : 'bg-gray-600 text-gray-300'
-                                                       }`}
-                                             >
-                                                  {isPublic ? '전체공개 ON' : '비공개'}
-                                             </button>
-                                        </div>
+                                             );
+                                        })}
                                    </div>
-                              </div>
-                         </div>
 
-                         {/* === 2. Gallery Section (Instagram Grid) === */}
-                         <div className="px-1 mt-10">
-                              <div className="flex items-center justify-between px-5 mb-4">
-                                   <h3 className="font-bold text-lg text-gray-900">Gallery</h3>
-                                   <span className="text-xs text-gray-400 cursor-pointer hover:text-purple-600 transition-colors">더보기 &gt;</span>
-                              </div>
-                              <div className="grid grid-cols-3 gap-1">
-                                   {galleryImages.map((img, i) => (
-                                        <div key={i} className="aspect-square bg-gray-100 overflow-hidden relative group cursor-pointer">
-                                             <img src={img} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={`feed-${i}`} />
-                                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </div>
-                                   ))}
-                              </div>
-                         </div>
-
-                         {/* === 3. Guestbook Section === */}
-                         <div className="mt-10 px-6 pb-8">
-                              <h3 className="font-bold text-lg text-gray-900 mb-5 flex items-center gap-2">
-                                   방명록 <span className="text-purple-600 text-sm font-normal">{guestbookEntries.length}</span>
-                              </h3>
-
-                              {/* Input */}
-                              <div className="flex items-center gap-3 mb-8">
-                                   <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100">
-                                        <img src={currentUser?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Visitor"} className="w-full h-full" alt="me" />
-                                   </div>
-                                   <div className="flex-1 bg-gray-50 rounded-full px-5 py-3 flex items-center border border-gray-200 focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-50 transition-all shadow-sm">
-                                        <input
-                                             type="text"
-                                             placeholder="따뜻한 한마디를 남겨주세요..."
-                                             className="flex-1 bg-transparent text-sm focus:outline-none min-w-0 mr-2"
-                                             value={newComment}
-                                             onChange={(e) => setNewComment(e.target.value)}
-                                             onKeyPress={(e) => e.key === 'Enter' && handlePostComment()}
-                                        />
+                                   {isOwner && (
                                         <button
-                                             onClick={handlePostComment}
-                                             className="text-white bg-purple-600 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-purple-700 transition-colors shrink-0 whitespace-nowrap shadow-md shadow-purple-200"
+                                             type="button"
+                                             onClick={() => {
+                                                  if (isEditing) handleSaveProfile();
+                                                  setIsEditing(!isEditing);
+                                             }}
+                                             className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-50"
                                         >
-                                             게시
+                                             <Settings className="h-3.5 w-3.5" />
+                                             {isEditing ? '저장' : '편집'}
                                         </button>
-                                   </div>
+                                   )}
                               </div>
 
-                              {/* Comments List */}
-                              <div className="space-y-4">
-                                   {guestbookEntries.map((entry) => (
-                                        <div key={entry.$id} className="flex gap-3 items-start group">
-                                             <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center border border-gray-100 shrink-0">
-                                                  <img
-                                                       src={entry.authorAvatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon"}
-                                                       className="w-full h-full object-cover"
-                                                       alt="author"
-                                                  />
-                                             </div>
-                                             <div className="flex-1">
-                                                  <div className="flex items-baseline gap-2 mb-0.5">
-                                                       <span className="font-bold text-sm text-gray-900">{entry.authorUsername || '익명'}</span>
-                                                       <span className="text-[10px] text-gray-400">{new Date(entry.$createdAt).toLocaleDateString()}</span>
+                              <div className="h-full overflow-y-auto p-4 pb-8">
+                                   {activePane === 'home' && (
+                                        <div className="space-y-4">
+                                             <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                                  <div className="mb-3 flex items-center justify-between gap-3">
+                                                       <div className="min-w-0">
+                                                            <p className="text-xs font-black text-sky-700">Mini BGM</p>
+                                                            <h3 className="truncate text-lg font-black text-brand-ink">{miniSettings.bgmVideoId ? miniSettings.bgmTitle : '유튜브 BGM을 연결해보세요'}</h3>
+                                                       </div>
+                                                       <button type="button" onClick={() => setIsBgmOpen(!isBgmOpen)} className="rounded-full bg-brand px-3 py-2 text-xs font-black text-white">
+                                                            {miniSettings.bgmVideoId ? '재생/설정' : 'BGM 설정'}
+                                                       </button>
                                                   </div>
-                                                  <p className="text-sm text-gray-700 leading-relaxed">{entry.content}</p>
 
-                                                  <div className="flex items-center gap-3 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                       <button className="text-[11px] font-bold text-gray-400 hover:text-red-500 flex items-center gap-1">
-                                                            <Heart className="w-3 h-3" /> 좋아요
-                                                       </button>
-                                                       <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600">
-                                                            답글달기
+                                                  {isBgmOpen && (
+                                                       <div className="space-y-3">
+                                                            {miniSettings.bgmVideoId && (
+                                                                 <iframe
+                                                                      title="Minihome YouTube BGM"
+                                                                      className="aspect-video w-full rounded-xl"
+                                                                      src={`https://www.youtube.com/embed/${miniSettings.bgmVideoId}?rel=0&modestbranding=1`}
+                                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                                      allowFullScreen
+                                                                 />
+                                                            )}
+                                                            {isOwner && (
+                                                                 <div className="grid gap-2 rounded-xl bg-white p-3">
+                                                                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                                                                           <Youtube className="h-4 w-4 text-red-500" />
+                                                                           유튜브 링크를 미니홈피 BGM으로 가져옵니다.
+                                                                      </div>
+                                                                      <input
+                                                                           value={bgmDraft.bgmTitle}
+                                                                           onChange={(event) => setBgmDraft(prev => ({ ...prev, bgmTitle: event.target.value }))}
+                                                                           className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
+                                                                           placeholder="BGM 제목"
+                                                                      />
+                                                                      <div className="flex gap-2">
+                                                                           <div className="relative flex-1">
+                                                                                <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
+                                                                                <input
+                                                                                     value={bgmDraft.bgmUrl}
+                                                                                     onChange={(event) => setBgmDraft(prev => ({ ...prev, bgmUrl: event.target.value }))}
+                                                                                     className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
+                                                                                     placeholder="https://youtube.com/watch?v=..."
+                                                                                />
+                                                                           </div>
+                                                                           <button type="button" onClick={handleSaveBgm} className="rounded-lg bg-sky-900 px-4 py-2 text-sm font-black text-white">저장</button>
+                                                                      </div>
+                                                                 </div>
+                                                            )}
+                                                       </div>
+                                                  )}
+                                             </section>
+
+                                             {isEditing ? (
+                                                  <section className="grid gap-2 rounded-2xl border border-slate-200 p-4">
+                                                       <input value={editForm.location} onChange={event => setEditForm(prev => ({ ...prev, location: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="지역" />
+                                                       <input value={editForm.mbti} onChange={event => setEditForm(prev => ({ ...prev, mbti: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="MBTI" />
+                                                       <input value={editForm.job} onChange={event => setEditForm(prev => ({ ...prev, job: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="직업 / 하는 일" />
+                                                       <textarea value={editForm.bio} onChange={event => setEditForm(prev => ({ ...prev, bio: event.target.value }))} className="min-h-24 rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="자기소개" />
+                                                  </section>
+                                             ) : (
+                                                  <section className="rounded-2xl border border-slate-200 p-4">
+                                                       <p className="text-xs font-black text-slate-400">Profile memo</p>
+                                                       <p className="mt-2 text-sm font-semibold leading-7 text-slate-600">{statusMessage}</p>
+                                                  </section>
+                                             )}
+                                        </div>
+                                   )}
+
+                                   {activePane === 'guestbook' && (
+                                        <div className="space-y-4">
+                                             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                                                  <div className="flex gap-2">
+                                                       <input
+                                                            type="text"
+                                                            value={newComment}
+                                                            onChange={(event) => setNewComment(event.target.value)}
+                                                            onKeyDown={(event) => event.key === 'Enter' && handlePostComment()}
+                                                            className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
+                                                            placeholder="방명록을 남겨주세요"
+                                                       />
+                                                       <button type="button" onClick={handlePostComment} className="rounded-xl bg-sky-900 px-4 text-sm font-black text-white">
+                                                            <Send className="h-4 w-4" />
                                                        </button>
                                                   </div>
+                                             </div>
+
+                                             <div className="space-y-3">
+                                                  {guestbookEntries.length === 0 && (
+                                                       <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-sm font-semibold text-slate-400">
+                                                            아직 방명록이 없습니다.
+                                                       </div>
+                                                  )}
+                                                  {guestbookEntries.map((entry) => (
+                                                       <article key={entry.$id} className="rounded-2xl border border-slate-200 p-4">
+                                                            <div className="mb-2 flex items-center justify-between">
+                                                                 <p className="text-sm font-black text-brand-ink">{entry.authorUsername || '익명'}</p>
+                                                                 <p className="text-[11px] font-bold text-slate-400">{new Date(entry.$createdAt).toLocaleDateString()}</p>
+                                                            </div>
+                                                            <p className="text-sm font-semibold leading-6 text-slate-600">{entry.content}</p>
+                                                            <button type="button" className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold text-slate-400">
+                                                                 <Heart className="h-3 w-3" />
+                                                                 공감
+                                                            </button>
+                                                       </article>
+                                                  ))}
                                              </div>
                                         </div>
-                                   ))}
-                              </div>
+                                   )}
 
-                              <div className="mt-6 text-center">
-                                   <button className="text-xs text-gray-400 font-medium hover:text-gray-600 border-b border-gray-200 pb-0.5">
-                                        이전 방명록 더보기
-                                   </button>
+                                   {activePane === 'surf' && (
+                                        <div className="space-y-3">
+                                             <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
+                                                  <h3 className="text-lg font-black text-sky-950">파도타기</h3>
+                                                  <p className="mt-1 text-sm font-semibold text-sky-700">일촌과 관심사가 이어진 강남 미니홈피를 둘러보세요.</p>
+                                             </div>
+                                             {surfLinks.map((link) => (
+                                                  <button key={link.name} type="button" className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-left hover:bg-slate-50">
+                                                       <div>
+                                                            <p className="text-sm font-black text-brand-ink">{link.name}</p>
+                                                            <p className="mt-1 text-xs font-bold text-slate-500">{link.status}</p>
+                                                       </div>
+                                                       <span className={`rounded-full px-3 py-1 text-[11px] font-black ${link.tone}`}>방문</span>
+                                                  </button>
+                                             ))}
+                                        </div>
+                                   )}
                               </div>
-                         </div>
+                         </main>
                     </div>
                </div>
           </div>

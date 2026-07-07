@@ -8,7 +8,7 @@ import Toast from './components/Toast'
 import KakaoMap from './components/KakaoMap'
 import GangnamNews from './components/GangnamNews'
 import './index.css'
-import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, Search, CalendarDays, MapPin, Music2, BookOpen } from 'lucide-react'
+import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, CalendarDays, MapPin, BookOpen, Newspaper, Utensils } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy Load Heavy Components
@@ -669,49 +669,55 @@ function App() {
                                         {/* 1. HOME TAB */}
                                         {activeTab === 'home' && (
                                              <>
-                                                  <section className="relative overflow-hidden rounded-card border border-surface-border bg-white shadow-soft">
-                                                       <div className="grid gap-5 p-5 md:grid-cols-[1fr_340px] md:p-6 xl:grid-cols-[1fr_400px]">
-                                                            <div className="flex min-h-[300px] flex-col justify-between">
-                                                                 <div>
-                                                                      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-xs font-bold text-brand-accent">
-                                                                           <MapPin className="h-3.5 w-3.5" />
-                                                                           강남 로컬 커뮤니티
-                                                                      </div>
-                                                                      <h1 className="max-w-2xl text-3xl font-black leading-tight text-brand-ink [word-break:keep-all] md:text-4xl">
-                                                                           강남에서 만나는 오늘의 모임과 소식
-                                                                      </h1>
-                                                                      <p className="mt-3 max-w-xl text-sm font-semibold leading-7 text-slate-500 [word-break:keep-all]">
-                                                                           강남역, 역삼, 선릉, 신논현 주변의 모임과 장소를 가볍게 둘러보고 바로 참여하세요.
-                                                                      </p>
+                                                  <section className="rounded-card border border-surface-border bg-white p-5 shadow-soft md:p-6">
+                                                       <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                                                            <div>
+                                                                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-xs font-black text-brand-accent">
+                                                                      <MapPin className="h-3.5 w-3.5" />
+                                                                      오늘의 강남온
                                                                  </div>
-                                                                 <div className="mt-7 grid gap-3 sm:grid-cols-[1fr_auto]">
-                                                                      <div className="flex min-h-[50px] items-center gap-3 rounded-xl border border-surface-border bg-surface-muted px-4 text-sm font-semibold text-slate-400">
-                                                                           <Search className="h-4 w-4 text-slate-400" />
-                                                                           강남역 점심 모임, 역삼 카페, 청담 이벤트
-                                                                      </div>
-                                                                      <button
-                                                                           onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
-                                                                           className="min-h-[50px] rounded-xl bg-brand px-5 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark active:scale-[0.98]"
-                                                                      >
-                                                                           모임 개설하기
-                                                                      </button>
-                                                                 </div>
-                                                                 <div className="mt-5 grid grid-cols-3 gap-2 text-slate-500">
-                                                                      <div className="rounded-xl border border-surface-border bg-white p-3">
-                                                                           <p className="text-lg font-black text-brand-ink">4개</p>
-                                                                           <p className="text-[11px] font-bold">주요 권역</p>
-                                                                      </div>
-                                                                      <div className="rounded-xl border border-surface-border bg-white p-3">
-                                                                           <p className="text-lg font-black text-brand-ink">6+</p>
-                                                                           <p className="text-[11px] font-bold">지하철 노선</p>
-                                                                      </div>
-                                                                      <div className="rounded-xl border border-surface-border bg-white p-3">
-                                                                           <p className="text-lg font-black text-brand-ink">길찾기</p>
-                                                                           <p className="text-[11px] font-bold">카카오 연동</p>
-                                                                      </div>
-                                                                 </div>
+                                                                 <h1 className="text-2xl font-black leading-tight text-brand-ink [word-break:keep-all] md:text-3xl">
+                                                                      오늘 강남에서 뭐 할까?
+                                                                 </h1>
+                                                                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
+                                                                      미니홈피, 동창 찾기, 모임, 로컬 소식을 한 화면에서 바로 시작하세요.
+                                                                 </p>
                                                             </div>
-                                                                      <div className="h-[260px] rounded-card border border-surface-border bg-surface-muted p-3 md:h-auto">
+                                                            <button
+                                                                 onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
+                                                                 className="min-h-[46px] rounded-xl bg-brand px-5 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark active:scale-[0.98]"
+                                                            >
+                                                                 모임 개설하기
+                                                            </button>
+                                                       </div>
+
+                                                       <div className="grid gap-3 lg:grid-cols-[1fr_280px]">
+                                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                                 {[
+                                                                      { title: '내 미니홈피', desc: 'BGM, 방명록, 파도타기', icon: User, action: () => handleOpenMinihome(), tone: 'bg-sky-50 text-sky-800' },
+                                                                      { title: '아이러브스쿨', desc: '학교와 동창 다시 찾기', icon: BookOpen, action: () => handleTabChange('school_find'), tone: 'bg-amber-50 text-amber-800' },
+                                                                      { title: '밥친구 찾기', desc: '강남역 근처 즉석 약속', icon: Utensils, action: () => handleTabChange('home'), tone: 'bg-rose-50 text-rose-800' },
+                                                                      { title: '강남구 소식', desc: '구청 이슈와 동네 뉴스', icon: Newspaper, action: () => handleTabChange('news'), tone: 'bg-emerald-50 text-emerald-800' },
+                                                                 ].map((item) => {
+                                                                      const Icon = item.icon;
+                                                                      return (
+                                                                           <button
+                                                                                key={item.title}
+                                                                                type="button"
+                                                                                onClick={item.action}
+                                                                                className="group rounded-2xl border border-surface-border bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-brand-gold/30 hover:shadow-soft"
+                                                                           >
+                                                                                <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-2xl ${item.tone}`}>
+                                                                                     <Icon className="h-5 w-5" />
+                                                                                </div>
+                                                                                <h2 className="text-lg font-black text-brand-ink">{item.title}</h2>
+                                                                                <p className="mt-1 text-sm font-semibold text-slate-500">{item.desc}</p>
+                                                                           </button>
+                                                                      );
+                                                                 })}
+                                                            </div>
+
+                                                            <div className="min-h-[240px] rounded-2xl border border-surface-border bg-surface-muted p-3">
                                                                  <KakaoMap
                                                                       latitude={37.4979}
                                                                       longitude={127.0276}
@@ -722,48 +728,6 @@ function App() {
                                                                  />
                                                             </div>
                                                        </div>
-                                                  </section>
-                                                  <section className="grid gap-4 md:grid-cols-2">
-                                                       <button
-                                                            type="button"
-                                                            onClick={() => handleOpenMinihome()}
-                                                            className="group rounded-card border border-surface-border bg-white p-5 text-left shadow-soft transition-all hover:-translate-y-0.5 hover:border-brand-gold/30 hover:shadow-soft-lg"
-                                                       >
-                                                            <div className="mb-5 flex items-center justify-between">
-                                                                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand text-white">
-                                                                      <User className="h-5 w-5" />
-                                                                 </div>
-                                                                 <span className="rounded-full bg-brand-light px-3 py-1 text-[11px] font-black text-brand-accent">핵심 기능</span>
-                                                            </div>
-                                                            <h2 className="text-xl font-black text-brand-ink">내 미니홈피</h2>
-                                                            <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-                                                                 프로필, 방명록, 갤러리, 유튜브 BGM까지 담는 나만의 강남 공간입니다.
-                                                            </p>
-                                                            <div className="mt-5 flex items-center gap-2 text-xs font-black text-brand-accent">
-                                                                 <Music2 className="h-4 w-4" />
-                                                                 유튜브 BGM 연결
-                                                            </div>
-                                                       </button>
-
-                                                       <button
-                                                            type="button"
-                                                            onClick={() => handleTabChange('school_find')}
-                                                            className="group rounded-card border border-surface-border bg-white p-5 text-left shadow-soft transition-all hover:-translate-y-0.5 hover:border-brand-gold/30 hover:shadow-soft-lg"
-                                                       >
-                                                            <div className="mb-5 flex items-center justify-between">
-                                                                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-light text-brand-accent">
-                                                                      <BookOpen className="h-5 w-5" />
-                                                                 </div>
-                                                                 <span className="rounded-full bg-surface-muted px-3 py-1 text-[11px] font-black text-slate-500">아이러브스쿨</span>
-                                                            </div>
-                                                            <h2 className="text-xl font-black text-brand-ink">동창과 다시 연결</h2>
-                                                            <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-                                                                 학교, 기수, 동네 친구를 기반으로 강남 커뮤니티의 관계를 확장합니다.
-                                                            </p>
-                                                            <div className="mt-5 text-xs font-black text-brand-accent">
-                                                                 학교 찾기 바로가기
-                                                            </div>
-                                                       </button>
                                                   </section>
                                                   <ILoveSchool />
                                                   <DiningCompanion />
