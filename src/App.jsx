@@ -8,7 +8,7 @@ import Toast from './components/Toast'
 import KakaoMap from './components/KakaoMap'
 import GangnamNews from './components/GangnamNews'
 import './index.css'
-import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, Search, CalendarDays, MapPin } from 'lucide-react'
+import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, Search, CalendarDays, MapPin, Music2, BookOpen } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy Load Heavy Components
@@ -384,6 +384,10 @@ function App() {
 
      // Handler for changing tabs
      const handleTabChange = (newTab) => {
+          if (newTab === 'minihome') {
+               handleOpenMinihome();
+               return;
+          }
           if (newTab === activeTab) return;
           const isHome = activeTab === 'home';
           if (!isHome && newTab !== 'home') {
@@ -718,6 +722,48 @@ function App() {
                                                                  />
                                                             </div>
                                                        </div>
+                                                  </section>
+                                                  <section className="grid gap-4 md:grid-cols-2">
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => handleOpenMinihome()}
+                                                            className="group rounded-card border border-surface-border bg-white p-5 text-left shadow-soft transition-all hover:-translate-y-0.5 hover:border-brand-gold/30 hover:shadow-soft-lg"
+                                                       >
+                                                            <div className="mb-5 flex items-center justify-between">
+                                                                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand text-white">
+                                                                      <User className="h-5 w-5" />
+                                                                 </div>
+                                                                 <span className="rounded-full bg-brand-light px-3 py-1 text-[11px] font-black text-brand-accent">핵심 기능</span>
+                                                            </div>
+                                                            <h2 className="text-xl font-black text-brand-ink">내 미니홈피</h2>
+                                                            <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
+                                                                 프로필, 방명록, 갤러리, 유튜브 BGM까지 담는 나만의 강남 공간입니다.
+                                                            </p>
+                                                            <div className="mt-5 flex items-center gap-2 text-xs font-black text-brand-accent">
+                                                                 <Music2 className="h-4 w-4" />
+                                                                 유튜브 BGM 연결
+                                                            </div>
+                                                       </button>
+
+                                                       <button
+                                                            type="button"
+                                                            onClick={() => handleTabChange('school_find')}
+                                                            className="group rounded-card border border-surface-border bg-white p-5 text-left shadow-soft transition-all hover:-translate-y-0.5 hover:border-brand-gold/30 hover:shadow-soft-lg"
+                                                       >
+                                                            <div className="mb-5 flex items-center justify-between">
+                                                                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-light text-brand-accent">
+                                                                      <BookOpen className="h-5 w-5" />
+                                                                 </div>
+                                                                 <span className="rounded-full bg-surface-muted px-3 py-1 text-[11px] font-black text-slate-500">아이러브스쿨</span>
+                                                            </div>
+                                                            <h2 className="text-xl font-black text-brand-ink">동창과 다시 연결</h2>
+                                                            <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
+                                                                 학교, 기수, 동네 친구를 기반으로 강남 커뮤니티의 관계를 확장합니다.
+                                                            </p>
+                                                            <div className="mt-5 text-xs font-black text-brand-accent">
+                                                                 학교 찾기 바로가기
+                                                            </div>
+                                                       </button>
                                                   </section>
                                                   <ILoveSchool />
                                                   <DiningCompanion />

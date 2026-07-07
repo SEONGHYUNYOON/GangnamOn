@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role } from '../lib/appwrite';
-import { X, Heart, MoreHorizontal, Send, Mail, MapPin, Sparkles } from 'lucide-react';
+import { X, Heart, Mail, MapPin, Sparkles, Music2, Youtube, Link2, PlayCircle } from 'lucide-react';
+
+const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
+
+const extractYoutubeId = (value = '') => {
+     const input = value.trim();
+     if (!input) return '';
+
+     const patterns = [
+          /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
+          /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{6,})/,
+          /youtube\.com\/embed\/([a-zA-Z0-9_-]{6,})/,
+          /youtube\.com\/shorts\/([a-zA-Z0-9_-]{6,})/,
+     ];
+
+     for (const pattern of patterns) {
+          const match = input.match(pattern);
+          if (match?.[1]) return match[1];
+     }
+
+     return /^[a-zA-Z0-9_-]{6,}$/.test(input) ? input : '';
+};
 
 const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) => {
      // Guestbook State
@@ -8,6 +29,16 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
      const [newComment, setNewComment] = useState('');
      const [isPublic, setIsPublic] = useState(false);
      const [ilchonCount] = useState(Math.floor(Math.random() * 50) + 10);
+     const [isBgmOpen, setIsBgmOpen] = useState(false);
+     const [miniSettings, setMiniSettings] = useState({
+          bgmUrl: '',
+          bgmTitle: '',
+          bgmVideoId: '',
+     });
+     const [bgmDraft, setBgmDraft] = useState({
+          bgmUrl: '',
+          bgmTitle: '',
+     });
 
      // Profile & Edit State
      const [profileData, setProfileData] = useState(null);
@@ -20,7 +51,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
      });
 
      // 🛑 Safeguard: If no user is logged in, show login prompt instead of crashing
-     if (!user || !user.id) {
+     if (!user) {
           return (
                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}>
                     <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full mx-4" onClick={e => e.stopPropagation()}>
@@ -36,6 +67,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                </div>
           );
      }
+
+     const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
 
      // Fetch Profile Data
      useEffect(() => {
@@ -61,9 +94,30 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           fetchProfile();
      }, [user?.id]);
 
+     useEffect(() => {
+          try {
+               const saved = window.localStorage.getItem(getMinihomeStorageKey(user));
+               if (!saved) return;
+
+               const parsed = JSON.parse(saved);
+               const next = {
+                    bgmUrl: parsed.bgmUrl || '',
+                    bgmTitle: parsed.bgmTitle || '',
+                    bgmVideoId: parsed.bgmVideoId || extractYoutubeId(parsed.bgmUrl || ''),
+               };
+               setMiniSettings(next);
+               setBgmDraft({
+                    bgmUrl: next.bgmUrl,
+                    bgmTitle: next.bgmTitle,
+               });
+          } catch (error) {
+               console.warn('미니홈피 설정 로딩 실패:', error);
+          }
+     }, [user?.id, user?.user_metadata?.username]);
+
      // Save Profile Data
      const handleSaveProfile = async () => {
-          if (!currentUser || currentUser.id !== user.id) return;
+          if (!isOwner) return;
 
           try {
                await databases.updateDocument({
@@ -91,6 +145,26 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                console.error("Profile update failed:", error);
                alert("프로필 저장 실패");
           }
+     };
+
+     const handleSaveBgm = () => {
+          if (!isOwner) return;
+
+          const videoId = extractYoutubeId(bgmDraft.bgmUrl);
+          if (bgmDraft.bgmUrl.trim() && !videoId) {
+               alert('유튜브 링크 또는 영상 ID를 확인해주세요.');
+               return;
+          }
+
+          const next = {
+               bgmUrl: bgmDraft.bgmUrl.trim(),
+               bgmTitle: bgmDraft.bgmTitle.trim() || '나의 미니홈피 BGM',
+               bgmVideoId: videoId,
+          };
+
+          setMiniSettings(next);
+          window.localStorage.setItem(getMinihomeStorageKey(user), JSON.stringify(next));
+          setIsBgmOpen(false);
      };
 
      // Mock Gallery Images (Keep for now, or fetch if we had a gallery table)
@@ -148,6 +222,10 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           }
 
           try {
+               if (!user?.id) {
+                    alert("이 미니홈피에는 방명록을 남길 수 없습니다.");
+                    return;
+               }
                await databases.createDocument({
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.guestbookEntries,
@@ -252,11 +330,11 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                    <div className="mt-8">
                                         <div className="flex items-center justify-between mb-2">
                                              <h2 className="text-3xl font-black flex items-center gap-2">
-                                                  {profileData?.fullName || profileData?.username || '나의 강남 라이프 🏡'}
+                                                  {profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '나의 강남 라이프'}
                                              </h2>
 
                                              {/* Edit Button (Only for Owner) */}
-                                             {currentUser?.id === user?.id && (
+                                             {isOwner && (
                                                   <button
                                                        onClick={() => {
                                                             if (isEditing) handleSaveProfile();
@@ -266,6 +344,91 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                                   >
                                                        {isEditing ? '저장 완료' : '프로필 편집'}
                                                   </button>
+                                             )}
+                                        </div>
+
+                                        <div className="mb-4 rounded-2xl border border-white/15 bg-black/35 p-3 backdrop-blur-md">
+                                             <div className="flex items-center justify-between gap-3">
+                                                  <div className="flex min-w-0 items-center gap-2">
+                                                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white">
+                                                            <Music2 className="h-4 w-4" />
+                                                       </div>
+                                                       <div className="min-w-0">
+                                                            <p className="truncate text-xs font-black text-white">
+                                                                 {miniSettings.bgmVideoId ? miniSettings.bgmTitle : 'BGM을 연결해보세요'}
+                                                            </p>
+                                                            <p className="mt-0.5 truncate text-[10px] font-semibold text-white/60">
+                                                                 {miniSettings.bgmVideoId ? 'YouTube BGM 연결됨' : '유튜브 링크로 미니홈피 음악 설정'}
+                                                            </p>
+                                                       </div>
+                                                  </div>
+                                                  <div className="flex shrink-0 items-center gap-2">
+                                                       {miniSettings.bgmVideoId && (
+                                                            <button
+                                                                 type="button"
+                                                                 onClick={() => setIsBgmOpen(!isBgmOpen)}
+                                                                 className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[11px] font-black text-slate-900 transition-transform active:scale-95"
+                                                            >
+                                                                 <PlayCircle className="h-3.5 w-3.5" />
+                                                                 재생
+                                                            </button>
+                                                       )}
+                                                       {isOwner && (
+                                                            <button
+                                                                 type="button"
+                                                                 onClick={() => setIsBgmOpen(!isBgmOpen)}
+                                                                 className="rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-white/10"
+                                                            >
+                                                                 설정
+                                                            </button>
+                                                       )}
+                                                  </div>
+                                             </div>
+
+                                             {isBgmOpen && (
+                                                  <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/30">
+                                                       {miniSettings.bgmVideoId && (
+                                                            <iframe
+                                                                 title="Minihome YouTube BGM"
+                                                                 className="aspect-video w-full"
+                                                                 src={`https://www.youtube.com/embed/${miniSettings.bgmVideoId}?rel=0&modestbranding=1`}
+                                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                                 allowFullScreen
+                                                            />
+                                                       )}
+                                                       {isOwner && (
+                                                            <div className="space-y-2 p-3">
+                                                                 <div className="flex items-center gap-2 text-[11px] font-bold text-white/70">
+                                                                      <Youtube className="h-3.5 w-3.5 text-red-300" />
+                                                                      유튜브 링크를 넣으면 미니홈피 BGM으로 표시됩니다.
+                                                                 </div>
+                                                                 <input
+                                                                      value={bgmDraft.bgmTitle}
+                                                                      onChange={(e) => setBgmDraft(prev => ({ ...prev, bgmTitle: e.target.value }))}
+                                                                      className="w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                                      placeholder="BGM 제목"
+                                                                 />
+                                                                 <div className="flex gap-2">
+                                                                      <div className="relative flex-1">
+                                                                           <Link2 className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+                                                                           <input
+                                                                                value={bgmDraft.bgmUrl}
+                                                                                onChange={(e) => setBgmDraft(prev => ({ ...prev, bgmUrl: e.target.value }))}
+                                                                                className="w-full rounded-lg border border-white/10 bg-white/10 py-2 pl-8 pr-3 text-xs font-semibold text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                                                                placeholder="https://youtube.com/watch?v=..."
+                                                                           />
+                                                                      </div>
+                                                                      <button
+                                                                           type="button"
+                                                                           onClick={handleSaveBgm}
+                                                                           className="rounded-lg bg-white px-3 py-2 text-xs font-black text-slate-900"
+                                                                      >
+                                                                           저장
+                                                                      </button>
+                                                                 </div>
+                                                            </div>
+                                                       )}
+                                                  </div>
                                              )}
                                         </div>
 
@@ -302,7 +465,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                              <>
                                                   <div className="flex items-center gap-1 text-sm text-gray-300 mb-4">
                                                        <MapPin className="w-3.5 h-3.5" />
-                                                       {profileData?.location || '강남 미설정'}
+                                                       {profileData?.location || user?.user_metadata?.location || '강남 미설정'}
                                                        <span className="mx-1">·</span>
                                                        {profileData?.mbti || 'MBTI 미설정'}
                                                        <span className="mx-1">·</span>

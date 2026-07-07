@@ -81,6 +81,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                id: 'my',
                tag: '마이 강남',
                items: [
+                    { id: 'minihome', label: '내 미니홈피', icon: User, subtext: 'BGM/방명록/갤러리' },
                     { id: 'badge', label: '나의 활동 뱃지', icon: Star, subtext: '강남토박이' },
                     { id: 'schedule', label: '나의 모임 일정', icon: Calendar, subtext: '일정관리' },
                     // 관리자 계정으로 로그인했을 때만 노출 (일반 사용자에게는 아예 보이지 않음)
@@ -147,7 +148,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
 
                          // 자동 펼침: 아직 수동으로 토글한 적 없다면, 현재 탭이 속한 그룹만 펼쳐진 상태로 시작
                          const containsActiveTab = group.items.some(item => item.id === activeTab);
-                         const isExpanded = expandedOverrides[group.id] ?? (containsActiveTab || group.id === 'life');
+                         const isExpanded = expandedOverrides[group.id] ?? (containsActiveTab || group.id === 'life' || group.id === 'my');
 
                          // Standard Accordion Group Rendering
                          return (
