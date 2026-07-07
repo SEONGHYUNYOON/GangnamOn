@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame, Lock } from 'lucide-react';
-import logo from '../assets/gangnam_on_logo.png';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
+import GangnamOnLogo from './GangnamOnLogo';
 
 const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
      // 그룹별 펼침 상태를 사용자가 직접 건드리기 전에는 저장하지 않습니다.
@@ -93,10 +93,8 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
           <div className="flex flex-col w-full h-full p-6 border-r border-surface-border bg-white/80 backdrop-blur-sm sticky top-0 overflow-y-auto scrollbar-hide">
                {/* Logo */}
                <div className="mb-8 px-2 flex items-center justify-center">
-                    <img
-                         src={logo}
-                         alt="Gangnam On"
-                         className="h-14 w-auto cursor-pointer object-contain hover:scale-105 transition-transform duration-200"
+                    <GangnamOnLogo
+                         className="h-14 w-auto cursor-pointer hover:scale-105 transition-transform duration-200"
                          onClick={() => setActiveTab('home')}
                     />
                </div>
