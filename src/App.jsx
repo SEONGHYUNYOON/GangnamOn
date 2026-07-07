@@ -669,55 +669,99 @@ function App() {
                                         {/* 1. HOME TAB */}
                                         {activeTab === 'home' && (
                                              <>
-                                                  <section className="rounded-card border border-surface-border bg-white p-5 shadow-soft md:p-6">
-                                                       <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                                                  <section className="rounded-card border border-surface-border bg-white p-4 shadow-soft md:p-5">
+                                                       <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
                                                             <div>
-                                                                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-xs font-black text-brand-accent">
+                                                                 <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-[11px] font-black text-brand-accent">
                                                                       <MapPin className="h-3.5 w-3.5" />
                                                                       오늘의 강남온
                                                                  </div>
-                                                                 <h1 className="text-2xl font-black leading-tight text-brand-ink [word-break:keep-all] md:text-3xl">
+                                                                 <h1 className="text-xl font-black leading-tight text-brand-ink [word-break:keep-all] md:text-2xl">
                                                                       오늘 강남에서 뭐 할까?
                                                                  </h1>
-                                                                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-                                                                      미니홈피, 동창 찾기, 모임, 로컬 소식을 한 화면에서 바로 시작하세요.
+                                                                 <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                                                      지금 필요한 강남 생활 정보를 빠르게 고르세요.
                                                                  </p>
                                                             </div>
                                                             <button
                                                                  onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
-                                                                 className="min-h-[46px] rounded-xl bg-brand px-5 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark active:scale-[0.98]"
+                                                                 className="min-h-[40px] rounded-xl bg-brand px-4 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark active:scale-[0.98]"
                                                             >
                                                                  모임 개설하기
                                                             </button>
                                                        </div>
 
-                                                       <div className="grid gap-3 lg:grid-cols-[1fr_280px]">
-                                                            <div className="grid gap-3 sm:grid-cols-2">
-                                                                 {[
-                                                                      { title: '내 미니홈피', desc: 'BGM, 방명록, 파도타기', icon: User, action: () => handleOpenMinihome(), tone: 'bg-sky-50 text-sky-800' },
-                                                                      { title: '아이러브스쿨', desc: '학교와 동창 다시 찾기', icon: BookOpen, action: () => handleTabChange('school_find'), tone: 'bg-amber-50 text-amber-800' },
-                                                                      { title: '밥친구 찾기', desc: '강남역 근처 즉석 약속', icon: Utensils, action: () => handleTabChange('home'), tone: 'bg-rose-50 text-rose-800' },
-                                                                      { title: '강남구 소식', desc: '구청 이슈와 동네 뉴스', icon: Newspaper, action: () => handleTabChange('news'), tone: 'bg-emerald-50 text-emerald-800' },
-                                                                 ].map((item) => {
-                                                                      const Icon = item.icon;
-                                                                      return (
-                                                                           <button
-                                                                                key={item.title}
-                                                                                type="button"
-                                                                                onClick={item.action}
-                                                                                className="group rounded-2xl border border-surface-border bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-brand-gold/30 hover:shadow-soft"
-                                                                           >
-                                                                                <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-2xl ${item.tone}`}>
-                                                                                     <Icon className="h-5 w-5" />
-                                                                                </div>
-                                                                                <h2 className="text-lg font-black text-brand-ink">{item.title}</h2>
-                                                                                <p className="mt-1 text-sm font-semibold text-slate-500">{item.desc}</p>
-                                                                           </button>
-                                                                      );
-                                                                 })}
+                                                       <div className="grid gap-3 lg:grid-cols-[1fr_260px]">
+                                                            <div className="space-y-3">
+                                                                 <div className="grid gap-2 sm:grid-cols-4">
+                                                                      {[
+                                                                           { title: '미니홈피', desc: 'BGM/방명록', icon: User, action: () => handleOpenMinihome(), tone: 'bg-sky-50 text-sky-800' },
+                                                                           { title: '동창 찾기', desc: '아이러브스쿨', icon: BookOpen, action: () => handleTabChange('school_find'), tone: 'bg-amber-50 text-amber-800' },
+                                                                           { title: '밥친구', desc: '근처 약속', icon: Utensils, action: () => handleTabChange('home'), tone: 'bg-rose-50 text-rose-800' },
+                                                                           { title: '강남소식', desc: '구청 이슈', icon: Newspaper, action: () => handleTabChange('news'), tone: 'bg-emerald-50 text-emerald-800' },
+                                                                      ].map((item) => {
+                                                                           const Icon = item.icon;
+                                                                           return (
+                                                                                <button
+                                                                                     key={item.title}
+                                                                                     type="button"
+                                                                                     onClick={item.action}
+                                                                                     className="rounded-xl border border-surface-border bg-white p-3 text-left transition-all hover:border-brand-gold/30 hover:bg-surface-muted"
+                                                                                >
+                                                                                     <div className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg ${item.tone}`}>
+                                                                                          <Icon className="h-4 w-4" />
+                                                                                     </div>
+                                                                                     <h2 className="text-sm font-black text-brand-ink">{item.title}</h2>
+                                                                                     <p className="mt-0.5 text-[11px] font-bold text-slate-400">{item.desc}</p>
+                                                                                </button>
+                                                                           );
+                                                                      })}
+                                                                 </div>
+
+                                                                 <div className="grid gap-3 md:grid-cols-2">
+                                                                      <div className="rounded-2xl border border-surface-border bg-surface-muted p-4">
+                                                                           <div className="mb-3 flex items-center justify-between">
+                                                                                <h3 className="text-sm font-black text-brand-ink">오늘 뜨는 모임</h3>
+                                                                                <button onClick={() => handleTabChange('wine')} className="text-[11px] font-black text-brand-accent">더보기</button>
+                                                                           </div>
+                                                                           <div className="space-y-2">
+                                                                                {meetingItems.slice(0, 3).map((item) => (
+                                                                                     <button key={item.id} type="button" onClick={() => handleTabChange(item.originalType || 'wine')} className="flex w-full items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-left">
+                                                                                          <div className="min-w-0">
+                                                                                               <p className="truncate text-xs font-black text-brand-ink">{item.title}</p>
+                                                                                               <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-400">{item.location}</p>
+                                                                                          </div>
+                                                                                          <span className="shrink-0 text-[11px] font-black text-brand-accent">{item.participants}/{item.maxParticipants}</span>
+                                                                                     </button>
+                                                                                ))}
+                                                                           </div>
+                                                                      </div>
+
+                                                                      <div className="rounded-2xl border border-surface-border bg-white p-4">
+                                                                           <h3 className="mb-3 text-sm font-black text-brand-ink">내 커뮤니티</h3>
+                                                                           <div className="grid grid-cols-3 gap-2">
+                                                                                <button onClick={() => handleOpenMinihome()} className="rounded-xl bg-sky-50 p-3 text-center">
+                                                                                     <p className="text-base font-black text-sky-900">BGM</p>
+                                                                                     <p className="text-[10px] font-bold text-sky-500">미니홈피</p>
+                                                                                </button>
+                                                                                <button onClick={() => handleTabChange('school_find')} className="rounded-xl bg-amber-50 p-3 text-center">
+                                                                                     <p className="text-base font-black text-amber-900">동창</p>
+                                                                                     <p className="text-[10px] font-bold text-amber-600">찾기</p>
+                                                                                </button>
+                                                                                <button onClick={() => handleTabChange('news')} className="rounded-xl bg-emerald-50 p-3 text-center">
+                                                                                     <p className="text-base font-black text-emerald-900">소식</p>
+                                                                                     <p className="text-[10px] font-bold text-emerald-600">강남구</p>
+                                                                                </button>
+                                                                           </div>
+                                                                           <div className="mt-3 rounded-xl bg-surface-muted px-3 py-2">
+                                                                                <p className="text-[11px] font-bold text-slate-400">추천 동선</p>
+                                                                                <p className="mt-1 text-xs font-black text-brand-ink">미니홈피 꾸미기 → 파도타기 → 방명록 남기기</p>
+                                                                           </div>
+                                                                      </div>
+                                                                 </div>
                                                             </div>
 
-                                                            <div className="min-h-[240px] rounded-2xl border border-surface-border bg-surface-muted p-3">
+                                                            <div className="min-h-[250px] rounded-2xl border border-surface-border bg-surface-muted p-3">
                                                                  <KakaoMap
                                                                       latitude={37.4979}
                                                                       longitude={127.0276}
