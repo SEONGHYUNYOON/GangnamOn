@@ -6,6 +6,7 @@ import RightPanel from './components/RightPanel'
 import ChatWidget from './components/ChatWidget'
 import Toast from './components/Toast'
 import KakaoMap from './components/KakaoMap'
+import GangnamNews from './components/GangnamNews'
 import './index.css'
 import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, Search, CalendarDays, MapPin } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -665,21 +666,21 @@ function App() {
                                         {activeTab === 'home' && (
                                              <>
                                                   <section className="relative overflow-hidden rounded-card border border-surface-border bg-white shadow-soft">
-                                                       <div className="grid gap-6 p-5 md:grid-cols-[1fr_360px] md:p-7 xl:grid-cols-[1fr_420px]">
-                                                            <div className="flex min-h-[330px] flex-col justify-between">
+                                                       <div className="grid gap-5 p-5 md:grid-cols-[1fr_340px] md:p-6 xl:grid-cols-[1fr_400px]">
+                                                            <div className="flex min-h-[300px] flex-col justify-between">
                                                                  <div>
-                                                                      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-xs font-bold text-brand-accent">
+                                                                      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-xs font-bold text-brand-accent">
                                                                            <MapPin className="h-3.5 w-3.5" />
-                                                                           Gangnam local operating system
+                                                                           강남 로컬 커뮤니티
                                                                       </div>
-                                                                      <h1 className="max-w-3xl text-3xl font-black leading-tight text-brand-ink [word-break:keep-all] md:text-5xl">
-                                                                           강남 생활을 위치, 이동, 모임 기준으로 정리합니다.
+                                                                      <h1 className="max-w-2xl text-3xl font-black leading-tight text-brand-ink [word-break:keep-all] md:text-4xl">
+                                                                           강남에서 만나는 오늘의 모임과 소식
                                                                       </h1>
-                                                                      <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-slate-500 [word-break:keep-all]">
-                                                                           강남역, 역삼, 선릉, 신논현 일대의 모임과 장소를 지도 기반으로 보고 바로 길찾기까지 이어갑니다.
+                                                                      <p className="mt-3 max-w-xl text-sm font-semibold leading-7 text-slate-500 [word-break:keep-all]">
+                                                                           강남역, 역삼, 선릉, 신논현 주변의 모임과 장소를 가볍게 둘러보고 바로 참여하세요.
                                                                       </p>
                                                                  </div>
-                                                                 <div className="mt-8 grid gap-3 sm:grid-cols-[1fr_auto]">
+                                                                 <div className="mt-7 grid gap-3 sm:grid-cols-[1fr_auto]">
                                                                       <div className="flex min-h-[50px] items-center gap-3 rounded-xl border border-surface-border bg-surface-muted px-4 text-sm font-semibold text-slate-400">
                                                                            <Search className="h-4 w-4 text-slate-400" />
                                                                            강남역 점심 모임, 역삼 카페, 청담 이벤트
@@ -706,7 +707,7 @@ function App() {
                                                                       </div>
                                                                  </div>
                                                             </div>
-                                                            <div className="h-[280px] rounded-card border border-surface-border bg-surface-muted p-3 md:h-auto">
+                                                                      <div className="h-[260px] rounded-card border border-surface-border bg-surface-muted p-3 md:h-auto">
                                                                  <KakaoMap
                                                                       latitude={37.4979}
                                                                       longitude={127.0276}
@@ -724,6 +725,8 @@ function App() {
                                                   <UsedMarket items={marketItems} />
                                              </>
                                         )}
+
+                                        {activeTab === 'news' && <GangnamNews />}
 
                                         {/* NEW: OWNER'S NOTE TAB (Previously Local Biz) */}
                                         {activeTab === 'local_biz' && (
@@ -853,7 +856,7 @@ function App() {
                     </main>
 
                     {/* === Right Column (Fixed Width) === */}
-                    <div className="w-[320px] 2xl:w-[350px] h-screen sticky top-0 hidden 2xl:block overflow-y-auto no-scrollbar shrink-0 pt-5">
+                    <div className="w-[320px] 2xl:w-[350px] h-screen sticky top-0 hidden 2xl:block overflow-y-auto overscroll-contain no-scrollbar shrink-0 pt-5">
                          {/* Pass bean stats and dark mode flag */}
                          <RightPanel
                               onOpenMinihome={() => handleOpenMinihome()}

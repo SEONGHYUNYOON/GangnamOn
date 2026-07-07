@@ -9,6 +9,7 @@ import {
      ExternalLink,
      MapPin,
      Navigation,
+     Star,
      Train,
      X,
 } from 'lucide-react';
@@ -44,8 +45,8 @@ const subwayStations = [
                     color: 'bg-red-500',
                     label: '신분당선',
                     directions: [
-                         { toward: '신논현 · 논현 · 신사 방면', destination: '신사행', eta: '3분', next: '8분', platform: '상행 승강장' },
-                         { toward: '양재 · 판교 · 광교 방면', destination: '광교행', eta: '5분', next: '11분', platform: '하행 승강장' },
+                         { toward: '신논현역 · 교보타워 · 신사역 방면', destination: '신사행', eta: '3분', next: '8분', platform: '상행 승강장', landmark: '10번 출구·교보타워 쪽 이동에 유리' },
+                         { toward: '양재역 · 판교역 · 광교역 방면', destination: '광교행', eta: '5분', next: '11분', platform: '하행 승강장', landmark: '5번 출구·삼성전자 서초사옥 쪽 이동에 유리' },
                     ],
                     transfer: '2호선 환승 및 강남대로 출구 이동 수요가 많음',
                },
@@ -75,10 +76,10 @@ const subwayStations = [
                     color: 'bg-red-500',
                     label: '신분당선',
                     directions: [
-                         { toward: '논현 · 신사 방면', destination: '신사행', eta: '4분', next: '9분', platform: '상행 승강장' },
-                         { toward: '강남 · 양재 · 판교 · 광교 방면', destination: '광교행', eta: '5분', next: '10분', platform: '하행 승강장' },
+                         { toward: '논현역 · 신사역 · 가로수길 방면', destination: '신사행', eta: '4분', next: '9분', platform: '상행 승강장', landmark: '3번 출구·교보타워 사거리 쪽' },
+                         { toward: '강남역 · 양재역 · 판교역 방면', destination: '광교행', eta: '5분', next: '10분', platform: '하행 승강장', landmark: '6번 출구·강남대로 남측 이동에 유리' },
                     ],
-                    transfer: '강남역보다 북쪽 이동 시 신논현 승차가 유리',
+                    transfer: '교보타워·논현역·신사역 쪽이면 신논현역 승차가 더 단순합니다',
                },
           ],
           stops: ['사평', '신논현', '언주', '선정릉', '삼성중앙'],
@@ -168,6 +169,7 @@ const busRoutes = [
           stopId: '22011',
           direction: '역삼역 · 선릉역 방면',
           opposite: '신논현역 · 논현역 방면',
+          oppositeStop: '강남역 10번출구 중앙차로',
           eta: '6분',
           next: '14분',
           route: ['강남역', '역삼역', '선릉역', '삼성역'],
@@ -181,6 +183,7 @@ const busRoutes = [
           stopId: '22173',
           direction: '양재역 · 도곡동 방면',
           opposite: '신논현역 · 논현역 방면',
+          oppositeStop: '강남역 10번출구 앞',
           eta: '9분',
           next: '17분',
           route: ['강남역', '양재역', '매봉역', '도곡동'],
@@ -194,6 +197,7 @@ const busRoutes = [
           stopId: '23285',
           direction: '강남역 · 신논현역 방면',
           opposite: '선릉역 · 삼성역 방면',
+          oppositeStop: '역삼역 GS타워 맞은편',
           eta: '5분',
           next: '12분',
           route: ['역삼역', '강남역', '신논현역', '고속터미널'],
@@ -207,6 +211,7 @@ const busRoutes = [
           stopId: '22009',
           direction: '판교 · 분당 방면',
           opposite: '신논현 · 논현 방면',
+          oppositeStop: '강남역 중앙차로 신논현 방향',
           eta: '8분',
           next: '18분',
           route: ['강남역', '양재역', '판교역', '서현역'],
@@ -220,9 +225,52 @@ const busRoutes = [
           stopId: '22793',
           direction: '인천공항 제1·2터미널 방면',
           opposite: '강남역 · 역삼동 방면',
+          oppositeStop: '신논현역 5번출구 방면',
           eta: '21분',
           next: '42분',
           route: ['신논현역', '논현역', '인천공항T1', '인천공항T2'],
+     },
+     {
+          id: '740',
+          name: '740',
+          type: '간선',
+          description: '덕은동 ↔ 삼성역',
+          stop: '강남역 12번출구 앞',
+          stopId: '22012',
+          direction: '역삼역 · 선릉역 · 삼성역 방면',
+          opposite: '신논현역 · 고속터미널 방면',
+          oppositeStop: '강남역 11번출구 맞은편',
+          eta: '7분',
+          next: '15분',
+          route: ['강남역', '역삼역', '선릉역', '삼성역'],
+     },
+     {
+          id: '441',
+          name: '441',
+          type: '간선',
+          description: '월암공영차고지 ↔ 신사역',
+          stop: '강남역 5번출구 우리은행 앞',
+          stopId: '22013',
+          direction: '양재역 · 시민의숲 방면',
+          opposite: '신논현역 · 논현역 · 신사역 방면',
+          oppositeStop: '강남역 6번출구 중앙차로',
+          eta: '11분',
+          next: '19분',
+          route: ['강남역', '뱅뱅사거리', '양재역', '시민의숲'],
+     },
+     {
+          id: '145',
+          name: '145',
+          type: '간선',
+          description: '번동 ↔ 강남역',
+          stop: '신논현역 교보타워 사거리',
+          stopId: '22190',
+          direction: '강남역 · 역삼역 방면',
+          opposite: '논현역 · 압구정 방면',
+          oppositeStop: '신논현역 5번출구 교보타워 맞은편',
+          eta: '4분',
+          next: '13분',
+          route: ['신논현역', '강남역', '역삼역', '선릉역'],
      },
 ];
 
@@ -325,6 +373,15 @@ const DetailOverlay = ({ title, subtitle, children, onClose, mapQuery }) => (
 const GangnamTraffic = ({ embedded = false }) => {
      const [stationId, setStationId] = useState('gangnam');
      const [busId, setBusId] = useState('146');
+     const [favoriteBusIds, setFavoriteBusIds] = useState(() => {
+          try {
+               const saved = window.localStorage.getItem('gangnam:on:fav-buses');
+               const parsed = saved ? JSON.parse(saved) : ['146', '341'];
+               return Array.isArray(parsed) ? parsed : ['146', '341'];
+          } catch {
+               return ['146', '341'];
+          }
+     });
      const [isStationOpen, setIsStationOpen] = useState(false);
      const [isBusOpen, setIsBusOpen] = useState(false);
      const [lineDetail, setLineDetail] = useState(null);
@@ -333,6 +390,24 @@ const GangnamTraffic = ({ embedded = false }) => {
 
      const station = subwayStations.find((item) => item.id === stationId) || subwayStations[0];
      const bus = busRoutes.find((item) => item.id === busId) || busRoutes[0];
+     const favoriteBuses = favoriteBusIds
+          .map((id) => busRoutes.find((item) => item.id === id))
+          .filter(Boolean);
+     const isFavoriteBus = favoriteBusIds.includes(bus.id);
+
+     const toggleFavoriteBus = () => {
+          setFavoriteBusIds((current) => {
+               const next = current.includes(bus.id)
+                    ? current.filter((id) => id !== bus.id)
+                    : [bus.id, ...current].slice(0, 6);
+               try {
+                    window.localStorage.setItem('gangnam:on:fav-buses', JSON.stringify(next));
+               } catch {
+                    // localStorage may be blocked in private browsing.
+               }
+               return next;
+          });
+     };
 
      const fastest = useMemo(() => {
           const allDirections = station.lines.flatMap((line) => line.directions.map((direction) => ({ line, direction })));
@@ -375,6 +450,9 @@ const GangnamTraffic = ({ embedded = false }) => {
                                              <div>
                                                   <p className="text-sm font-black text-brand-ink">{direction.toward}</p>
                                                   <p className="mt-1 text-xs font-semibold text-slate-500">{direction.platform} · {direction.destination}</p>
+                                                  {direction.landmark && (
+                                                       <p className="mt-1 text-xs font-bold text-brand-accent">{direction.landmark}</p>
+                                                  )}
                                              </div>
                                              <div className="text-right">
                                                   <p className="text-lg font-black text-brand-accent">{direction.eta}</p>
@@ -406,7 +484,7 @@ const GangnamTraffic = ({ embedded = false }) => {
                                    <div className="rounded-xl border border-surface-border bg-white p-4">
                                         <p className="text-[11px] font-black text-slate-400">반대 방향</p>
                                         <p className="mt-1 text-sm font-black text-brand-ink">{bus.opposite}</p>
-                                        <p className="mt-2 text-xs font-bold text-slate-500">정류장 위치 확인 필요</p>
+                                        <p className="mt-2 text-xs font-bold text-slate-500">{bus.oppositeStop}</p>
                                    </div>
                               </div>
                               <div className="rounded-xl border border-surface-border bg-white p-4">
@@ -541,16 +619,49 @@ const GangnamTraffic = ({ embedded = false }) => {
                     </div>
 
                     <div className="rounded-xl border border-surface-border bg-surface-muted p-3">
-                         <button type="button" onClick={() => setIsBusOpen(true)} className="mb-3 flex w-full items-start justify-between gap-3 text-left">
+                         {favoriteBuses.length > 0 && (
+                              <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                                   {favoriteBuses.map((favorite) => (
+                                        <button
+                                             key={favorite.id}
+                                             type="button"
+                                             onClick={() => setBusId(favorite.id)}
+                                             className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-black transition-colors ${favorite.id === bus.id
+                                                  ? 'border-brand bg-brand text-white'
+                                                  : 'border-surface-border bg-white text-slate-500 hover:bg-brand-light'
+                                                  }`}
+                                        >
+                                             {favorite.name}
+                                        </button>
+                                   ))}
+                              </div>
+                         )}
+
+                         <div className="mb-3 flex items-start justify-between gap-3">
                               <div className="flex min-w-0 items-start gap-3">
                                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-brand shadow-sm">
                                         <Bus className="h-4 w-4" />
                                    </div>
                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-2">
                                              <span className="rounded-md bg-brand px-1.5 py-0.5 text-[10px] font-black text-white">{bus.type}</span>
                                              <p className="text-sm font-black text-brand-ink">{bus.name}</p>
-                                             <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                                             <button
+                                                  type="button"
+                                                  onClick={toggleFavoriteBus}
+                                                  className={`rounded-full p-1 transition-colors ${isFavoriteBus ? 'text-brand-accent' : 'text-slate-300 hover:text-brand-accent'}`}
+                                                  aria-label={`${bus.name} 즐겨찾기`}
+                                             >
+                                                  <Star className={`h-3.5 w-3.5 ${isFavoriteBus ? 'fill-current' : ''}`} />
+                                             </button>
+                                             <button
+                                                  type="button"
+                                                  onClick={() => setIsBusOpen(true)}
+                                                  className="inline-flex items-center gap-1 rounded-full border border-surface-border bg-white px-2 py-1 text-[10px] font-black text-slate-500 hover:bg-brand-light"
+                                             >
+                                                  노선 변경
+                                                  <ChevronDown className="h-3 w-3" />
+                                             </button>
                                         </div>
                                         <p className="mt-1 truncate text-[11px] font-semibold text-slate-500">{bus.description}</p>
                                    </div>
@@ -559,7 +670,7 @@ const GangnamTraffic = ({ embedded = false }) => {
                                    <p className="text-[10px] font-bold text-slate-400">도착 예정</p>
                                    <p className="mt-1 text-lg font-black text-brand-accent">{bus.eta}</p>
                               </div>
-                         </button>
+                         </div>
                          <button type="button" onClick={() => setBusDetail(true)} className="w-full rounded-lg bg-white px-3 py-2 text-left transition-colors hover:bg-brand-light">
                               <div className="mb-1 flex items-center gap-1 text-[11px] font-bold text-slate-600">
                                    <MapPin className="h-3 w-3 text-brand-accent" />

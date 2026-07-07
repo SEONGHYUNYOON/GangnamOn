@@ -64,7 +64,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                subtitle: '찐 로컬들의 정보 공유',
                items: [
                     { id: 'qna', label: '무엇이든 물어보세요', icon: HelpCircle, subtext: 'Q&A' },
-                    { id: 'news', label: '우리 동네 소식통', icon: Bell, subtext: '소식/교통' },
+                    { id: 'news', label: '강남구 소식', icon: Bell, subtext: '구청 뉴스/RSS' },
                     { id: 'share', label: '당근보다 가까운 나눔', icon: Heart, subtext: '중고/나눔' },
                ]
           },
@@ -147,7 +147,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
 
                          // 자동 펼침: 아직 수동으로 토글한 적 없다면, 현재 탭이 속한 그룹만 펼쳐진 상태로 시작
                          const containsActiveTab = group.items.some(item => item.id === activeTab);
-                         const isExpanded = expandedOverrides[group.id] ?? containsActiveTab;
+                         const isExpanded = expandedOverrides[group.id] ?? (containsActiveTab || group.id === 'life');
 
                          // Standard Accordion Group Rendering
                          return (

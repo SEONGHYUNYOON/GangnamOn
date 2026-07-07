@@ -3,6 +3,7 @@ import { Sun, Zap, MapPin, Star, Heart, Cloud, Sparkles, ExternalLink } from 'lu
 import { callEconomy } from '../lib/appwrite';
 import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
+import GangnamNews from './GangnamNews';
 
 const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount, user = null, onLoginSuccess, onLogout }) => {
      const [onlineCount, setOnlineCount] = useState(1204);
@@ -281,7 +282,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      // === STANDARD RENDER ===
      return (
           // Modified: Removed sticky top-0, h-full, hidden lg:block
-          <div className="w-full p-5 transition-colors duration-500">
+          <div className="w-full p-5 transition-colors duration-500 overscroll-contain">
 
                {/* 1. Login Widget OR My Mini-Homepage Widget */}
                {user ? (
@@ -435,6 +436,10 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
                     <GangnamTraffic embedded />
                </section>
+
+               <div className="mb-5">
+                    <GangnamNews compact />
+               </div>
 
                {/* 3. Real-time Users Widget */}
                <div className="bg-white rounded-card p-6 shadow-soft border border-surface-border">
