@@ -26,6 +26,33 @@
                 "documents.write"
             ],
             "path": "functions/economy"
+        },
+        {
+            "$id": "blogFeed",
+            "name": "blogFeed",
+            "runtime": "node-22",
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "schedule": "0 */2 * * *",
+            "timeout": 60,
+            "enabled": true,
+            "logging": true,
+            "deploymentRetention": 0,
+            "buildSpecification": "s-2vcpu-2gb",
+            "runtimeSpecification": "s-0.5vcpu-512mb",
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write",
+                "documents.read",
+                "documents.write",
+                "files.read",
+                "files.write"
+            ],
+            "path": "functions/blogFeed"
         }
     ],
     "databases": [
@@ -305,6 +332,12 @@
                     "type": "integer",
                     "required": false,
                     "default": 0
+                },
+                {
+                    "key": "sourceUrl",
+                    "type": "string",
+                    "size": 512,
+                    "required": false
                 }
             ],
             "indexes": [
@@ -320,6 +353,13 @@
                     "type": "key",
                     "attributes": [
                         "authorId"
+                    ]
+                },
+                {
+                    "key": "source_url_idx",
+                    "type": "key",
+                    "attributes": [
+                        "sourceUrl"
                     ]
                 }
             ]
