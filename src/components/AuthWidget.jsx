@@ -380,7 +380,8 @@ const AuthWidget = ({ onLoginSuccess }) => {
                     <div className="mt-6 pt-4 border-t border-gray-50 text-center">
                          <button
                               type="button"
-                              onClick={() => {
+                              onClick={(e) => {
+                                   e.stopPropagation();
                                    setIsSignUpMode(!isSignUpMode);
                                    setIsForgotMode(false);
                                    setAuthError(null);
@@ -389,7 +390,11 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    setUsername('');
                                    setAgreedToTerms(false);
                               }}
-                              className="inline-flex min-h-10 items-center justify-center gap-1 rounded-full px-4 text-xs font-bold text-gray-400 transition-colors hover:bg-brand-light hover:text-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+                              onPointerDown={(e) => {
+                                   // 모바일 터치에서 클릭 타이밍 이슈가 있을 수 있어 포인터 다운에서도 먼저 상태를 준비합니다.
+                                   e.stopPropagation();
+                              }}
+                              className="w-full inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 text-[13px] font-bold text-gray-600 bg-brand-light/70 transition-colors hover:bg-brand-light hover:text-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
                          >
                               <span>{isSignUpMode ? '이미 계정이 있으신가요?' : '아직 계정이 없으신가요?'}</span>
                               <span className="text-brand-accent">{isSignUpMode ? '로그인' : '회원가입'}</span>
