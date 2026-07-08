@@ -6,6 +6,13 @@ import GangnamWhackAMole from './GangnamWhackAMole';
 import GangnamBrickBreaker from './GangnamBrickBreaker';
 import GangnamReactionTest from './GangnamReactionTest';
 import GangnamTypingGame from './GangnamTypingGame';
+import GangnamGame2048 from './GangnamGame2048';
+import GangnamFlapOn from './GangnamFlapOn';
+import GangnamMemoryMatch from './GangnamMemoryMatch';
+import GangnamDartGame from './GangnamDartGame';
+import GangnamSpinRoulette from './GangnamSpinRoulette';
+import GangnamNunchiGame from './GangnamNunchiGame';
+import GangnamCompatibility from './GangnamCompatibility';
 import TowerDefense from './TowerDefense';
 import GangnamTarot from './GangnamTarot';
 import { getRankTop10 } from '../lib/gameRank';
@@ -59,7 +66,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
      };
 
      // 유료 콘텐츠(블록 게임, 밸런스, MBTI, 타로): 1온 소모 + 확인 후 진입
-     const paidFeatures = ['block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'towerdefense', 'balance', 'mbti', 'tarot'];
+     const paidFeatures = ['block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'towerdefense', 'game2048', 'flapon', 'memory', 'dart', 'nunchi', 'compatibility', 'balance', 'mbti', 'tarot'];
      const handleLoungeEntry = (feature) => {
           if (paidFeatures.includes(feature)) {
                if (!user?.id) {
@@ -203,6 +210,34 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
 
           if (activeFeature === 'towerdefense') {
                return <TowerDefense onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'game2048') {
+               return <GangnamGame2048 onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'flapon') {
+               return <GangnamFlapOn onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'memory') {
+               return <GangnamMemoryMatch onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'dart') {
+               return <GangnamDartGame onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'spinroulette') {
+               return <GangnamSpinRoulette onClose={handleCloseFeature} user={user} beanCount={beanCount} updateBeanCount={updateBeanCount} />;
+          }
+
+          if (activeFeature === 'nunchi') {
+               return <GangnamNunchiGame onClose={handleCloseFeature} user={user} />;
+          }
+
+          if (activeFeature === 'compatibility') {
+               return <GangnamCompatibility onClose={handleCloseFeature} user={user} />;
           }
 
           if (activeFeature === 'tarot') {
@@ -628,6 +663,69 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                               </div>
                          </div>
 
+                         {/* 2048 + FlapOn + Memory + Dart — 4col */}
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div onClick={() => handleLoungeEntry('game2048')} className="bg-[#111520] rounded-2xl border border-violet-500/20 hover:border-violet-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-violet-500 to-purple-500 opacity-60" />
+                                   <div className="p-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                             <span className="text-xl">🔢</span>
+                                             <div>
+                                                  <div className="text-white font-bold text-sm">2048</div>
+                                                  <div className="text-slate-600 text-[10px]">숫자 합치기</div>
+                                             </div>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]"><MiniRank gameId="game2048" /></div>
+                                        <button className="w-full py-1.5 bg-violet-600/15 hover:bg-violet-600/25 text-violet-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
+                                   </div>
+                              </div>
+
+                              <div onClick={() => handleLoungeEntry('flapon')} className="bg-[#111520] rounded-2xl border border-amber-500/20 hover:border-amber-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-amber-500 to-yellow-500 opacity-60" />
+                                   <div className="p-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                             <span className="text-xl">🪙</span>
+                                             <div>
+                                                  <div className="text-white font-bold text-sm">온 점프</div>
+                                                  <div className="text-slate-600 text-[10px]">플래피 스타일</div>
+                                             </div>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]"><MiniRank gameId="flapon" /></div>
+                                        <button className="w-full py-1.5 bg-amber-600/15 hover:bg-amber-600/25 text-amber-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
+                                   </div>
+                              </div>
+
+                              <div onClick={() => handleLoungeEntry('memory')} className="bg-[#111520] rounded-2xl border border-pink-500/20 hover:border-pink-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-pink-500 to-rose-500 opacity-60" />
+                                   <div className="p-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                             <span className="text-xl">🃏</span>
+                                             <div>
+                                                  <div className="text-white font-bold text-sm">짝맞추기</div>
+                                                  <div className="text-slate-600 text-[10px]">메모리 카드</div>
+                                             </div>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]"><MiniRank gameId="memory" /></div>
+                                        <button className="w-full py-1.5 bg-pink-600/15 hover:bg-pink-600/25 text-pink-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
+                                   </div>
+                              </div>
+
+                              <div onClick={() => handleLoungeEntry('dart')} className="bg-[#111520] rounded-2xl border border-orange-500/20 hover:border-orange-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5">
+                                   <div className="h-px bg-gradient-to-r from-orange-500 to-red-500 opacity-60" />
+                                   <div className="p-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                             <span className="text-xl">🎯</span>
+                                             <div>
+                                                  <div className="text-white font-bold text-sm">골드 다트</div>
+                                                  <div className="text-slate-600 text-[10px]">조준 게임</div>
+                                             </div>
+                                        </div>
+                                        <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]"><MiniRank gameId="dart" /></div>
+                                        <button className="w-full py-1.5 bg-orange-600/15 hover:bg-orange-600/25 text-orange-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
+                                   </div>
+                              </div>
+                         </div>
+
                          {/* Tower Defense — Hero */}
                          <div
                               onClick={() => handleLoungeEntry('towerdefense')}
@@ -715,6 +813,39 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                         <div className="text-slate-500 text-xs mb-4">연애 · 금전 · 오늘의 운세</div>
                                         <div className="text-pink-400 text-xs font-bold">카드 뽑기 ✨</div>
                                    </div>
+                              </div>
+                         </div>
+
+                         {/* Roulette + Nunchi + Compatibility */}
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              <div onClick={() => handleOpenFeature('spinroulette')} className="bg-[#111520] rounded-2xl border border-amber-500/20 hover:border-amber-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 p-5">
+                                   <div className="flex items-start justify-between mb-4">
+                                        <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center text-xl border border-amber-500/10">🎰</div>
+                                        <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 font-bold">무료입장</span>
+                                   </div>
+                                   <div className="text-white font-bold mb-1 text-sm">온 룰렛</div>
+                                   <div className="text-slate-600 text-xs mb-4">돌릴 때 1온 · 최대 +50온!</div>
+                                   <div className="text-amber-400 text-xs font-bold">룰렛 돌리기 →</div>
+                              </div>
+
+                              <div onClick={() => handleLoungeEntry('nunchi')} className="bg-[#111520] rounded-2xl border border-teal-500/20 hover:border-teal-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 p-5">
+                                   <div className="flex items-start justify-between mb-4">
+                                        <div className="w-10 h-10 bg-teal-500/10 rounded-xl flex items-center justify-center text-xl border border-teal-500/10">👀</div>
+                                        <span className="flex items-center gap-0.5 text-slate-700 text-[10px]"><Zap className="w-2.5 h-2.5 text-amber-600" />1</span>
+                                   </div>
+                                   <div className="text-white font-bold mb-1 text-sm">눈치게임</div>
+                                   <div className="text-slate-600 text-xs mb-4">AI와 숫자 눈치싸움 · 1인용</div>
+                                   <div className="text-teal-400 text-xs font-bold">도전하기 →</div>
+                              </div>
+
+                              <div onClick={() => handleLoungeEntry('compatibility')} className="bg-[#111520] rounded-2xl border border-rose-500/20 hover:border-rose-500/40 overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 p-5">
+                                   <div className="flex items-start justify-between mb-4">
+                                        <div className="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center text-xl border border-rose-500/10">💕</div>
+                                        <span className="flex items-center gap-0.5 text-slate-700 text-[10px]"><Zap className="w-2.5 h-2.5 text-amber-600" />1</span>
+                                   </div>
+                                   <div className="text-white font-bold mb-1 text-sm">궁합 테스트</div>
+                                   <div className="text-slate-600 text-xs mb-4">이름으로 궁합 · 강남 드립</div>
+                                   <div className="text-rose-400 text-xs font-bold">테스트 시작 →</div>
                               </div>
                          </div>
 
