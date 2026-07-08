@@ -8,7 +8,7 @@ import * as cheerio from 'cheerio';
 // 2시간마다(cron: 0 */2 * * *) 자동 실행되어:
 //   1) 네이버 블로그 검색 오픈API로 "강남 맛집/카페" 관련 블로그 글을 찾고
 //   2) 이미 올린 적 없는 글 하나를 골라
-//   3) 모바일 블로그 페이지(m.blog.naver.com)에서 본문 텍스트 + 사진 최대 3장을 가져오고
+//   3) 모바일 블로그 페이지(m.blog.naver.com)에서 본문 텍스트 + 사진 최대 5장을 가져오고
 //   4) Gemini(Google AI)로 소개 문구를 정리하고
 //   5) 네이버 지역(플레이스) 검색 API로 실제 주소/전화번호/업종을 찾아 붙이고
 //   6) "posts" 컬렉션에 type: 'gangnam_pick' 게시글로 자동 등록합니다.
@@ -66,19 +66,30 @@ async function fetchNaverBlogPosts(keyword, clientId, clientSecret) {
     }));
 }
 
-// 모바일 블로그 페이지에서 본문 텍스트 + 대표 사진들을 가져옵니다.
+// 블로그 링크에서 blogId/logNo를 뽑아냅니다 (경로형 링크 + 쿼리파라미터형 링크 둘 다 지원)
+function parseBlogIdLogNo(link) {
+    const pathMatch = link.match(/blog\.naver\.com\/([^/?]+)\/(\d+)/);
+    if (pathMatch) return { blogId: pathMatch[1], logNo: pathMatch[2] };
+
+    const blogIdMatch = link.match(/[?&]blogId=([^&]+)/);
+    const logNoMatch = link.match(/[?&]logNo=(\d+)/);
+    if (blogIdMatch && logNoMatch) return { blogId: blogIdMatch[1], logNo: logNoMatch[1] };
+
+    return null;
+}
+
+// 모바일 블로그 페이지에서 본문 텍스트 + 대표 사진들(최대 5장)을 가져옵니다.
 // (PC 버전은 본문이 iframe 안에 있어서 못 읽지만, 모바일 버전은 본문이 그대로 HTML에 있음)
 async function fetchBlogDetail(link) {
-    const match = link.match(/blog\.naver\.com\/([^/?]+)\/(\d+)/);
-    if (!match) return { text: '', images: [] };
-    const [, blogId, logNo] = match;
-    const mobileUrl = `https://m.blog.naver.com/${blogId}/${logNo}`;
+    const parsed = parseBlogIdLogNo(link);
+    if (!parsed) return { text: '', images: [], mobileUrl: null };
+    const mobileUrl = `https://m.blog.naver.com/${parsed.blogId}/${parsed.logNo}`;
 
     try {
         const res = await fetch(mobileUrl, {
             headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GangnamOnBot/1.0)' },
         });
-        if (!res.ok) return { text: '', images: [] };
+        if (!res.ok) return { text: '', images: [], mobileUrl };
         const html = await res.text();
         const $ = cheerio.load(html);
 
@@ -91,15 +102,15 @@ async function fetchBlogDetail(link) {
         container.find('img').each((_, el) => {
             const src = $(el).attr('src') || $(el).attr('data-lazy-src') || $(el).attr('data-src');
             if (!src) return;
-            if (!src.includes('pstatic.net')) return;
-            if (src.includes('sticker') || src.includes('icon')) return;
+            if (!/(pstatic\.net|naver\.net)/.test(src)) return;
+            if (src.includes('sticker')) return;
             const normalized = src.startsWith('//') ? `https:${src}` : src;
             if (!images.includes(normalized)) images.push(normalized);
         });
 
-        return { text, images: images.slice(0, 3) };
+        return { text, images: images.slice(0, 5), mobileUrl };
     } catch {
-        return { text: '', images: [] };
+        return { text: '', images: [], mobileUrl };
     }
 }
 
@@ -258,7 +269,7 @@ export default async ({ req, res, log, error }) => {
             return res.json({ success: false, message: '새로운 후보가 없습니다 (모두 이미 게시됨).' });
         }
 
-        // 본문 텍스트 + 사진 최대 3장 확보
+        // 본문 텍스트 + 사진 최대 5장 확보
         const detail = await fetchBlogDetail(fresh.link);
         log(`본문 확보: ${detail.text.length}자, 이미지 ${detail.images.length}장`);
 
@@ -270,14 +281,14 @@ export default async ({ req, res, log, error }) => {
         const localInfo = await fetchLocalInfo(localQuery, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET);
         if (localInfo) log(`지역 정보 매칭: ${localInfo.name} / ${localInfo.address}`);
 
-        // 이미지 업로드 (본문에서 찾은 사진 우선, 없으면 og:image 1장으로 대체)
+        // 이미지 업로드 (본문에서 찾은 사진 우선, 없으면 PC/모바일 og:image로 대체)
         let candidateImages = detail.images;
         if (candidateImages.length === 0) {
-            const og = await fetchOgImage(fresh.link);
+            const og = (await fetchOgImage(fresh.link)) || (detail.mobileUrl ? await fetchOgImage(detail.mobileUrl) : null);
             if (og) candidateImages = [og];
         }
         const imageUrls = [];
-        for (const imgUrl of candidateImages.slice(0, 3)) {
+        for (const imgUrl of candidateImages.slice(0, 5)) {
             const uploaded = await downloadAndUploadImage(imgUrl, storage);
             if (uploaded) imageUrls.push(uploaded);
         }

@@ -1,22 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2 } from 'lucide-react';
+import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2, X, Map } from 'lucide-react';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
 
 const REGIONS = ['강남 전체', '역삼동', '신사동', '청담동', '삼성동', '논현동', '압구정', '강남역'];
 
-const PlaceholderThumb = () => (
-     <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-brand-light via-[#f3ead9] to-[#ecdfc4] text-brand-accent/70">
+const PlaceholderThumb = ({ className = '' }) => (
+     <div className={`flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-brand-light via-[#f3ead9] to-[#ecdfc4] text-brand-accent/70 ${className}`}>
           <Coffee className="h-9 w-9" strokeWidth={1.5} />
           <span className="text-[11px] font-bold tracking-wide">사진 준비중</span>
      </div>
 );
 
-const PickCard = ({ post }) => {
+const LikeButton = ({ initialCount }) => {
+     const [isLiked, setIsLiked] = useState(false);
+     const [count, setCount] = useState(initialCount);
+
+     return (
+          <button
+               onClick={(e) => {
+                    e.stopPropagation();
+                    setIsLiked((prev) => !prev);
+                    setCount((prev) => (isLiked ? prev - 1 : prev + 1));
+               }}
+               className={`flex items-center gap-1 transition-colors ${isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-400'}`}
+          >
+               <Heart className={`h-3.5 w-3.5 ${isLiked ? 'fill-rose-500' : ''}`} />
+               {count}
+          </button>
+     );
+};
+
+const PickCard = ({ post, onOpen }) => {
      const thumb = post.imageUrls?.[0];
      const extraCount = Math.max(0, (post.imageUrls?.length || 0) - 1);
 
      return (
-          <div className="group overflow-hidden rounded-2xl border border-brand-gold/15 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-soft-lg">
+          <div
+               onClick={() => onOpen(post)}
+               className="group cursor-pointer overflow-hidden rounded-2xl border border-brand-gold/15 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-soft-lg"
+          >
                {/* Image */}
                <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-light">
                     {thumb ? (
@@ -62,6 +84,7 @@ const PickCard = ({ post }) => {
                          {post.placePhone && (
                               <a
                                    href={`tel:${post.placePhone}`}
+                                   onClick={(e) => e.stopPropagation()}
                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-brand-accent"
                               >
                                    <Phone className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
@@ -76,7 +99,7 @@ const PickCard = ({ post }) => {
 
                     <div className="mt-3 flex items-center justify-between border-t border-surface-border pt-3">
                          <div className="flex items-center gap-3 text-[11px] font-semibold text-slate-400">
-                              <span className="flex items-center gap-1"><Heart className="h-3.5 w-3.5" />{post.likesCount || 0}</span>
+                              <LikeButton initialCount={post.likesCount} />
                               <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{post.views || 0}</span>
                               <span>{post.time}</span>
                          </div>
@@ -86,6 +109,7 @@ const PickCard = ({ post }) => {
                                    href={post.sourceUrl}
                                    target="_blank"
                                    rel="noopener noreferrer"
+                                   onClick={(e) => e.stopPropagation()}
                                    className="flex items-center gap-1 text-[11px] font-black text-brand-accent hover:text-brand-ink"
                               >
                                    원문 보기
@@ -98,10 +122,116 @@ const PickCard = ({ post }) => {
      );
 };
 
+const PickDetailModal = ({ post, onClose }) => {
+     const [activeImg, setActiveImg] = useState(0);
+     const images = post.imageUrls?.length ? post.imageUrls : [];
+     const mapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(post.placeAddress || post.title)}`;
+
+     return (
+          <div
+               className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+               onClick={onClose}
+          >
+               <div
+                    className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-soft-lg"
+                    onClick={(e) => e.stopPropagation()}
+               >
+                    {/* Gallery */}
+                    <div className="relative aspect-[4/3] w-full bg-brand-light">
+                         {images.length > 0 ? (
+                              <img src={images[activeImg]} alt={post.title} className="h-full w-full object-cover" />
+                         ) : (
+                              <PlaceholderThumb />
+                         )}
+                         <button
+                              onClick={onClose}
+                              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
+                         >
+                              <X className="h-4 w-4" />
+                         </button>
+
+                         {images.length > 1 && (
+                              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                                   {images.map((_, i) => (
+                                        <button
+                                             key={i}
+                                             onClick={() => setActiveImg(i)}
+                                             className={`h-1.5 rounded-full transition-all ${i === activeImg ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
+                                        />
+                                   ))}
+                              </div>
+                         )}
+                    </div>
+
+                    {/* Body */}
+                    <div className="p-5">
+                         <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                              <span className="flex items-center gap-1 rounded-full bg-brand-ink px-2.5 py-1 text-[10px] font-black text-brand-gold">
+                                   <Sparkles className="h-3 w-3" />
+                                   AI 추천
+                              </span>
+                              {post.placeCategory && (
+                                   <span className="rounded-full bg-brand-light px-2.5 py-1 text-[10px] font-bold text-brand-accent">
+                                        {post.placeCategory}
+                                   </span>
+                              )}
+                         </div>
+
+                         <h2 className="text-xl font-black leading-snug text-brand-ink [word-break:keep-all]">
+                              {post.title}
+                         </h2>
+
+                         <div className="mt-3 space-y-2 rounded-xl bg-surface-muted p-3">
+                              <a
+                                   href={mapUrl}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   className="flex items-start gap-2 text-sm font-semibold text-slate-600 hover:text-brand-accent"
+                              >
+                                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" />
+                                   <span className="[word-break:keep-all]">{post.placeAddress || post.locationName || '강남'}</span>
+                                   <Map className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-accent/60" />
+                              </a>
+                              {post.placePhone && (
+                                   <a href={`tel:${post.placePhone}`} className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-brand-accent">
+                                        <Phone className="h-4 w-4 shrink-0 text-brand-accent" />
+                                        {post.placePhone}
+                                   </a>
+                              )}
+                         </div>
+
+                         <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-700 [word-break:keep-all]">
+                              {post.content}
+                         </p>
+
+                         <div className="mt-5 flex items-center gap-2">
+                              {post.sourceUrl && (
+                                   <a
+                                        href={post.sourceUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand py-3 text-sm font-black text-white shadow-soft hover:bg-brand-dark"
+                                   >
+                                        원문 블로그에서 자세히 보기
+                                        <ExternalLink className="h-3.5 w-3.5" />
+                                   </a>
+                              )}
+                         </div>
+
+                         <p className="mt-3 text-center text-[11px] font-medium text-slate-400">
+                              AI가 네이버 블로그 후기를 바탕으로 자동으로 정리한 소개예요. 실제 방문 전 원문과 최신 정보를 확인해주세요.
+                         </p>
+                    </div>
+               </div>
+          </div>
+     );
+};
+
 const GangnamPickBoard = () => {
      const [posts, setPosts] = useState([]);
      const [loading, setLoading] = useState(true);
      const [region, setRegion] = useState('강남 전체');
+     const [selectedPost, setSelectedPost] = useState(null);
 
      useEffect(() => {
           const fetchPicks = async () => {
@@ -155,7 +285,7 @@ const GangnamPickBoard = () => {
                          </div>
                          <h2 className="text-xl font-black text-brand-ink">👍 강남 픽</h2>
                          <p className="mt-1 text-xs font-semibold text-slate-500">
-                              AI가 네이버 블로그 후기를 분석해 2시간마다 새로운 장소를 소개해요. 방문 전 원문 블로그도 꼭 확인해보세요.
+                              AI가 네이버 블로그 후기를 분석해 2시간마다 새로운 장소를 소개해요. 카드를 눌러보면 주소·전화번호·사진을 더 볼 수 있어요.
                          </p>
                     </div>
                </div>
@@ -191,9 +321,13 @@ const GangnamPickBoard = () => {
                ) : (
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                          {filtered.map((post) => (
-                              <PickCard key={post.id} post={post} />
+                              <PickCard key={post.id} post={post} onOpen={setSelectedPost} />
                          ))}
                     </div>
+               )}
+
+               {selectedPost && (
+                    <PickDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />
                )}
           </div>
      );
