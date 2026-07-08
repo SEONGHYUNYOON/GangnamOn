@@ -315,7 +315,7 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                     </button>
                )}
 
-               <div className={`pointer-events-auto relative z-[61] bg-white rounded-card shadow-2xl border border-surface-border w-[min(520px,calc(100vw-32px))] h-[min(620px,calc(100vh-120px))] mb-4 origin-bottom-right transition-all duration-300 transform ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-24'} overflow-hidden flex flex-col`}>
+               <div className={`relative z-[61] bg-white rounded-card shadow-2xl border border-surface-border w-[min(520px,calc(100vw-32px))] h-[min(620px,calc(100vh-120px))] mb-4 origin-bottom-right transition-all duration-300 transform overflow-hidden flex flex-col ${isOpen ? 'pointer-events-auto scale-100 opacity-100 translate-y-0' : 'pointer-events-none scale-50 opacity-0 translate-y-24'}`}>
                     <div className="bg-white p-4 border-b border-gray-100 flex items-center justify-between shadow-sm z-10">
                          <div className="min-w-0">
                               <h3 className="break-words font-black text-gray-900 text-sm">{activePeer ? displayNameOf(activePeer) : '강남온 채팅'}</h3>
