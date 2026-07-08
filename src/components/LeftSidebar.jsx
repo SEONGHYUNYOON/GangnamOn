@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame, Lock, Home } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame, Lock, Home, EyeOff } from 'lucide-react';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 import GangnamOnLogo from './GangnamOnLogo';
 
@@ -48,6 +48,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                     { id: 'town_story', label: '타운 스토리', icon: MessageCircle, subtext: '일상/잡담' },
                     { id: 'gangnam_pick', label: '강남 픽', icon: ThumbsUp, subtext: '맛집/핫플' },
                     { id: 'daily_photo', label: '데일리 포토', icon: Camera, subtext: '사진 갤러리' },
+                    { id: 'anonymous', label: '익명 게시판', icon: EyeOff, subtext: '속마음 털어놓기' },
                ]
           },
           {

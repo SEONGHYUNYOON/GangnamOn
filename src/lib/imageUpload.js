@@ -53,3 +53,17 @@ export const uploadProfileAvatar = async (userId, file) => {
 
      return avatarUrl;
 };
+
+export const uploadPostImage = async (file, maxSize = 1200) => {
+     if (!file) throw new Error('이미지 파일이 필요합니다.');
+
+     const resized = await resizeImageFile(file, maxSize);
+     const uploaded = await storage.createFile({
+          bucketId: BUCKET_ID,
+          fileId: ID.unique(),
+          file: resized,
+          permissions: [Permission.read(Role.any())],
+     });
+
+     return getFileUrl(uploaded.$id);
+};

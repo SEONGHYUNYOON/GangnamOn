@@ -19,6 +19,7 @@ const MeetingFeed = lazy(() => import('./components/MeetingFeed'))
 const MiniHomepage = lazy(() => import('./components/MiniHomepage'))
 const CreatePostModal = lazy(() => import('./components/CreatePostModal'))
 const NeighborhoodLife = lazy(() => import('./components/NeighborhoodLife'))
+const AnonymousBoard = lazy(() => import('./components/AnonymousBoard'))
 const GangnamRomance = lazy(() => import('./components/GangnamRomance'))
 const ActivityRewardCenter = lazy(() => import('./components/ActivityRewardCenter'))
 const AuthWidget = lazy(() => import('./components/AuthWidget'))
@@ -927,6 +928,15 @@ function App() {
                                         {/* 3. LIFE TAB & COMMUNITY TAB */}
                                         {activeTab === 'notice' && <NoticeBoard />}
 
+                                        {activeTab === 'anonymous' && (
+                                             <>
+                                                  <div className="mb-2 flex items-center justify-between">
+                                                       <h2 className="text-xl font-bold text-gray-900">🕶️ 익명 게시판</h2>
+                                                  </div>
+                                                  <AnonymousBoard user={user} />
+                                             </>
+                                        )}
+
                                         {(['qna', 'news', 'share', 'town_story', 'gangnam_pick', 'daily_photo'].includes(activeTab)) && (
                                              <>
                                                   <div className="flex items-center justify-between mb-2">
@@ -1134,6 +1144,7 @@ function App() {
                                    currentUser={user}
                                    onClose={() => setIsMiniHomeOpen(false)}
                                    onOpenProfile={handleOpenMinihome}
+                                   onProfileUpdate={refreshUser}
                                    onOpenAvatarCustomizer={() => {
                                         setIsMiniHomeOpen(false);
                                         setIsAvatarModalOpen(true);

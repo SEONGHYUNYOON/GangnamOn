@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, callEconomy, AVATAR_STYLE_PRICES } from '../lib/appwrite';
-import { uploadProfileAvatar } from '../lib/imageUpload';
+import { uploadProfileAvatar, uploadPostImage } from '../lib/imageUpload';
 import { getActivityRank } from '../lib/activityRank';
-import { BookOpen, Camera, ChevronRight, Heart, Home, Link2, Loader2, Mail, Music2, Send, Settings, ShoppingBag, UserRound, X, Youtube } from 'lucide-react';
+import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Send, Settings, ShoppingBag, Sparkles, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
 
@@ -25,7 +25,7 @@ const extractYoutubeId = (value = '') => {
      return /^[a-zA-Z0-9_-]{6,}$/.test(input) ? input : '';
 };
 
-const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOpenProfile }) => {
+const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOpenProfile, onProfileUpdate }) => {
      const [guestbookEntries, setGuestbookEntries] = useState([]);
      const [newComment, setNewComment] = useState('');
      const [profileData, setProfileData] = useState(null);
@@ -41,6 +41,12 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const [surfProfiles, setSurfProfiles] = useState([]);
      const [friendIds, setFriendIds] = useState(new Set());
      const [shopLoading, setShopLoading] = useState('');
+     const [homePosts, setHomePosts] = useState([]);
+     const [homePostsLoading, setHomePostsLoading] = useState(false);
+     const [photoUploading, setPhotoUploading] = useState(false);
+     const [photoCaption, setPhotoCaption] = useState('');
+     const [isPhotoComposerOpen, setIsPhotoComposerOpen] = useState(false);
+     const photoInputRef = useRef(null);
 
      const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
      const displayName = profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '강남 이웃';
@@ -237,6 +243,32 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           return () => unsubscribe();
      }, [user?.id]);
 
+     useEffect(() => {
+          const fetchHomePosts = async () => {
+               if (!user?.id) return;
+               setHomePostsLoading(true);
+               try {
+                    const res = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.posts,
+                         queries: [
+                              Query.equal('authorId', user.id),
+                              Query.equal('type', ['minihome_post']),
+                              Query.orderDesc('$createdAt'),
+                              Query.limit(30),
+                         ],
+                    });
+                    setHomePosts(res.documents);
+               } catch (error) {
+                    console.warn('미니홈피 피드 로딩 실패:', error);
+               } finally {
+                    setHomePostsLoading(false);
+               }
+          };
+
+          if (activePane === 'home') fetchHomePosts();
+     }, [user?.id, activePane]);
+
      const handleSaveProfile = async () => {
           if (!isOwner) return;
           try {
@@ -279,11 +311,74 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           try {
                const avatarUrl = await uploadProfileAvatar(user.id, file);
                setProfileData(prev => ({ ...prev, avatarUrl }));
+               if (onProfileUpdate) await onProfileUpdate();
           } catch (error) {
                console.error('프로필 사진 업로드 실패:', error);
                alert('프로필 사진 업로드에 실패했습니다.');
           } finally {
                setAvatarUploading(false);
+          }
+     };
+
+     const handlePhotoFile = async (event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (!file || !isOwner) return;
+
+          if (!file.type.startsWith('image/')) {
+               alert('이미지 파일만 등록할 수 있습니다.');
+               return;
+          }
+          if (file.size > 8 * 1024 * 1024) {
+               alert('파일 크기는 8MB 이하여야 합니다.');
+               return;
+          }
+
+          setPhotoUploading(true);
+          try {
+               const imageUrl = await uploadPostImage(file);
+               const caption = photoCaption.trim() || '오늘의 일상';
+               await databases.createDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.posts,
+                    documentId: ID.unique(),
+                    data: {
+                         authorId: user.id,
+                         authorUsername: displayName,
+                         authorAvatarUrl: avatarUrl,
+                         type: 'minihome_post',
+                         title: caption.slice(0, 60),
+                         content: caption,
+                         locationName: profileData?.location || displayLocation,
+                         imageUrls: [imageUrl],
+                         likesCount: 0,
+                         commentsCount: 0,
+                         views: 0,
+                    },
+                    permissions: [
+                         Permission.read(Role.any()),
+                         Permission.update(Role.user(user.id)),
+                         Permission.delete(Role.user(user.id)),
+                    ],
+               });
+               setPhotoCaption('');
+               setIsPhotoComposerOpen(false);
+               const res = await databases.listDocuments({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.posts,
+                    queries: [
+                         Query.equal('authorId', user.id),
+                         Query.equal('type', ['minihome_post']),
+                         Query.orderDesc('$createdAt'),
+                         Query.limit(30),
+                    ],
+               });
+               setHomePosts(res.documents);
+          } catch (error) {
+               console.error('일상 사진 업로드 실패:', error);
+               alert('사진 업로드에 실패했습니다.');
+          } finally {
+               setPhotoUploading(false);
           }
      };
 
@@ -475,10 +570,11 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
 
                               <label className="group relative block w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
                                    {isOwner && <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />}
-                                   <img src={avatarUrl} alt="프로필" className="h-44 w-full object-cover transition-transform group-hover:scale-105" />
+                                   <img src={avatarUrl} alt="프로필" className="h-44 w-full object-cover transition-transform group-hover:scale-[1.02]" />
                                    {isOwner && (
-                                        <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-0 transition-opacity group-hover:opacity-100">
-                                             {avatarUploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Camera className="h-6 w-6" />}
+                                        <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                             {avatarUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+                                             사진 변경
                                         </span>
                                    )}
                               </label>
@@ -486,6 +582,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                               <div className="mt-4">
                                    <h2 className="text-xl font-black text-brand-ink">{displayName}</h2>
                                    <p className="mt-1 text-xs font-bold text-slate-500">{displayLocation} · {profileData?.mbti || 'MBTI 미설정'}</p>
+                                   {profileData?.job && <p className="mt-1 text-xs font-bold text-amber-700">{profileData.job}</p>}
                                    <p className="mt-2 inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-black text-amber-800">{rank.badge} {rank.title}</p>
                                    <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-600">{statusMessage}</p>
                               </div>
@@ -500,8 +597,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                         <p className="text-[10px] font-bold text-amber-600">방명록</p>
                                    </div>
                                    <div className="rounded-xl bg-rose-50 p-2">
-                                        <p className="text-sm font-black text-rose-800">BGM</p>
-                                        <p className="text-[10px] font-bold text-rose-500">{bgmIds.length ? `${bgmIds.length}곡` : 'OFF'}</p>
+                                        <p className="text-sm font-black text-rose-800">{homePosts.length}</p>
+                                        <p className="text-[10px] font-bold text-rose-500">일상</p>
                                    </div>
                               </div>
                          </aside>
@@ -543,6 +640,105 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                               <div className="h-full overflow-y-auto p-4 pb-8">
                                    {activePane === 'home' && (
                                         <div className="space-y-4">
+                                             <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
+
+                                             <section className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-sky-50 p-4">
+                                                  <div className="mb-3 flex items-center gap-2">
+                                                       <Sparkles className="h-4 w-4 text-amber-500" />
+                                                       <h3 className="text-sm font-black text-brand-ink">나를 어필하는 공간</h3>
+                                                  </div>
+                                                  {isEditing ? (
+                                                       <div className="grid gap-2">
+                                                            <input value={editForm.location} onChange={event => setEditForm(prev => ({ ...prev, location: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="지역 (예: 역삼동)" />
+                                                            <input value={editForm.mbti} onChange={event => setEditForm(prev => ({ ...prev, mbti: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="MBTI (예: ENFP)" />
+                                                            <input value={editForm.job} onChange={event => setEditForm(prev => ({ ...prev, job: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="직업 / 하는 일 (예: 디자이너)" />
+                                                            <textarea value={editForm.bio} onChange={event => setEditForm(prev => ({ ...prev, bio: event.target.value }))} className="min-h-24 rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="나를 소개하는 한마디" />
+                                                       </div>
+                                                  ) : (
+                                                       <>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                 <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-sky-700">📍 {displayLocation}</span>
+                                                                 {profileData?.mbti && <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-violet-700">🧠 {profileData.mbti}</span>}
+                                                                 {profileData?.job && <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-amber-700">💼 {profileData.job}</span>}
+                                                                 <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-emerald-700">{rank.badge} {rank.title}</span>
+                                                            </div>
+                                                            <p className="mt-3 text-sm font-semibold leading-7 text-slate-700">{statusMessage}</p>
+                                                       </>
+                                                  )}
+                                             </section>
+
+                                             <section className="rounded-2xl border border-slate-200 bg-white p-4">
+                                                  <div className="mb-3 flex items-center justify-between gap-3">
+                                                       <div>
+                                                            <p className="text-xs font-black text-rose-600">Daily Feed</p>
+                                                            <h3 className="text-lg font-black text-brand-ink">일상 사진</h3>
+                                                       </div>
+                                                       {isOwner && (
+                                                            <button
+                                                                 type="button"
+                                                                 disabled={photoUploading}
+                                                                 onClick={() => {
+                                                                      setIsPhotoComposerOpen(!isPhotoComposerOpen);
+                                                                      if (!isPhotoComposerOpen) setPhotoCaption('');
+                                                                 }}
+                                                                 className="inline-flex items-center gap-1.5 rounded-full bg-rose-500 px-3 py-2 text-xs font-black text-white hover:bg-rose-600 disabled:opacity-50"
+                                                            >
+                                                                 {photoUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+                                                                 사진 올리기
+                                                            </button>
+                                                       )}
+                                                  </div>
+
+                                                  {isOwner && isPhotoComposerOpen && (
+                                                       <div className="mb-4 rounded-xl border border-rose-100 bg-rose-50/60 p-3">
+                                                            <textarea
+                                                                 value={photoCaption}
+                                                                 onChange={(event) => setPhotoCaption(event.target.value)}
+                                                                 placeholder="오늘의 일상을 한 줄로 남겨보세요 (선택)"
+                                                                 className="mb-2 min-h-16 w-full resize-none rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-100"
+                                                                 maxLength={120}
+                                                            />
+                                                            <button
+                                                                 type="button"
+                                                                 disabled={photoUploading}
+                                                                 onClick={() => photoInputRef.current?.click()}
+                                                                 className="w-full rounded-lg bg-white py-2.5 text-xs font-black text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50 disabled:opacity-50"
+                                                            >
+                                                                 {photoUploading ? '업로드 중...' : '갤러리에서 사진 선택'}
+                                                            </button>
+                                                       </div>
+                                                  )}
+
+                                                  {homePostsLoading ? (
+                                                       <div className="flex justify-center py-10">
+                                                            <Loader2 className="h-6 w-6 animate-spin text-rose-400" />
+                                                       </div>
+                                                  ) : homePosts.length === 0 ? (
+                                                       <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 py-10 text-center">
+                                                            <ImagePlus className="mx-auto mb-2 h-8 w-8 text-slate-300" />
+                                                            <p className="text-sm font-bold text-slate-500">
+                                                                 {isOwner ? '첫 일상 사진을 올려 나를 어필해보세요!' : '아직 올라온 일상 사진이 없어요.'}
+                                                            </p>
+                                                       </div>
+                                                  ) : (
+                                                       <div className="grid gap-3 sm:grid-cols-2">
+                                                            {homePosts.map((post) => (
+                                                                 <article key={post.$id} className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                                                                      {post.imageUrls?.[0] && (
+                                                                           <img src={post.imageUrls[0]} alt={post.title || '일상 사진'} className="aspect-square w-full object-cover" />
+                                                                      )}
+                                                                      <div className="p-3">
+                                                                           <p className="text-sm font-bold text-slate-700">{post.content || post.title || '오늘의 일상'}</p>
+                                                                           <p className="mt-1 text-[10px] font-bold text-slate-400">
+                                                                                {new Date(post.$createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                                           </p>
+                                                                      </div>
+                                                                 </article>
+                                                            ))}
+                                                       </div>
+                                                  )}
+                                             </section>
+
                                              <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                                   <div className="mb-3 flex items-center justify-between gap-3">
                                                        <div className="min-w-0">
@@ -615,20 +811,6 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                        </div>
                                                   )}
                                              </section>
-
-                                             {isEditing ? (
-                                                  <section className="grid gap-2 rounded-2xl border border-slate-200 p-4">
-                                                       <input value={editForm.location} onChange={event => setEditForm(prev => ({ ...prev, location: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="지역" />
-                                                       <input value={editForm.mbti} onChange={event => setEditForm(prev => ({ ...prev, mbti: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="MBTI" />
-                                                       <input value={editForm.job} onChange={event => setEditForm(prev => ({ ...prev, job: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="직업 / 하는 일" />
-                                                       <textarea value={editForm.bio} onChange={event => setEditForm(prev => ({ ...prev, bio: event.target.value }))} className="min-h-24 rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="자기소개" />
-                                                  </section>
-                                             ) : (
-                                                  <section className="rounded-2xl border border-slate-200 p-4">
-                                                       <p className="text-xs font-black text-slate-400">Profile memo</p>
-                                                       <p className="mt-2 text-sm font-semibold leading-7 text-slate-600">{statusMessage}</p>
-                                                  </section>
-                                             )}
                                         </div>
                                    )}
 

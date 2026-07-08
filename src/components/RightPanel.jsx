@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink, Camera, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink } from 'lucide-react';
 import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role } from '../lib/appwrite';
-import { uploadProfileAvatar } from '../lib/imageUpload';
 import { getActivityRank } from '../lib/activityRank';
 import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
@@ -10,9 +9,7 @@ import GangnamNews from './GangnamNews';
 const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount, user = null, onLoginSuccess, onLogout }) => {
      const [onlineCount, setOnlineCount] = useState(1204);
      const [onlineUsers, setOnlineUsers] = useState([]);
-     const [avatarUploading, setAvatarUploading] = useState(false);
      const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
-     const avatarInputRef = useRef(null);
      const [trafficStatus, setTrafficStatus] = useState({
           jayuro: 'smooth',
           secondJayuro: 'slow',
@@ -258,28 +255,6 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           }
      };
 
-     const handleAvatarFile = async (event) => {
-          const file = event.target.files?.[0];
-          event.target.value = '';
-          if (!file || !user?.id) return;
-
-          if (!file.type.startsWith('image/')) {
-               alert('이미지 파일만 등록할 수 있습니다.');
-               return;
-          }
-
-          setAvatarUploading(true);
-          try {
-               await uploadProfileAvatar(user.id, file);
-               if (onLoginSuccess) await onLoginSuccess();
-          } catch (error) {
-               console.error('프로필 사진 업로드 실패:', error);
-               alert('프로필 사진 업로드에 실패했습니다.');
-          } finally {
-               setAvatarUploading(false);
-          }
-     };
-
      const getTrafficColor = (status) => {
           switch (status) {
                case 'smooth': return 'bg-green-500';
@@ -423,15 +398,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                          </div>
 
                          <div className="flex flex-col items-center relative z-10">
-                              <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
-                              <button
-                                   type="button"
-                                   onClick={(e) => {
-                                        e.stopPropagation();
-                                        avatarInputRef.current?.click();
-                                   }}
-                                   className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-slate-700 p-[2px] mb-2 group-hover:scale-105 transition-transform duration-300 relative cursor-pointer"
-                              >
+                              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-slate-700 p-[2px] mb-2 group-hover:scale-105 transition-transform duration-300">
                                    <div className="w-full h-full rounded-full bg-white p-[2px]">
                                         <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-400 overflow-hidden">
                                              <img
@@ -441,13 +408,8 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                              />
                                         </div>
                                    </div>
-                                   {/* Edit Overlay */}
-                                   <div className="absolute inset-0 bg-black/35 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                        {avatarUploading ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Camera className="w-6 h-6 text-white" />}
-                                   </div>
-                              </button>
-
-                              {/* Name Display / Edit Mode */}
+                              </div>
+                              <p className="text-[10px] text-gray-400 font-semibold">프로필 사진은 미니홈피에서 변경</p>
                               {isEditingName ? (
                                    <div className="flex items-center gap-2 mb-1" onClick={(e) => e.stopPropagation()}>
                                         <input
