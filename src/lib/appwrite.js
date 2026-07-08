@@ -120,4 +120,15 @@ export async function callEconomy(payload) {
      }
 }
 
+export const AVATAR_STYLE_PRICES = {
+     lorelei: 0,
+     avataaars: 0,
+     micah: 300,
+     miniavs: 150,
+     'open-peeps': 200,
+     adventurer: 100,
+     'big-smile': 150,
+     personas: 250,
+};
+
 export { ID, Query, Permission, Role, OAuthProvider };

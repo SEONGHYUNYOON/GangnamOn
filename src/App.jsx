@@ -32,6 +32,7 @@ const OwnersNote = lazy(() => import('./components/OwnersNote'))
 const DbPresentation = lazy(() => import('./components/DbPresentation'))
 const ResetPasswordModal = lazy(() => import('./components/ResetPasswordModal'))
 const MyMeetingSchedule = lazy(() => import('./components/MyMeetingSchedule'))
+const NoticeBoard = lazy(() => import('./components/NoticeBoard'))
 
 // 가상 모임 게시물 (홈 + 비즈니스 네트워크 탭에 노출)
 const VIRTUAL_MEETING_ITEMS = [
@@ -456,7 +457,7 @@ function App() {
                return;
           }
 
-          // 글 작성 보상(+10온)은 서버(economy Function)에서 지급합니다.
+          // 글 작성 보상은 서버(economy Function)에서 ON과 활동 점수를 함께 지급합니다.
           // 실패해도 글 자체는 이미 등록됐으므로 화면은 그대로 진행시키고
           // 보상만 성공 시 잔액에 반영합니다.
           callEconomy({ action: 'earn', type: 'post_created' }).then(result => {
@@ -476,12 +477,12 @@ function App() {
                     seller: savedPost.authorUsername
                };
                setMarketItems(prev => [newItem, ...prev]);
-               setToastMessage("중고 물품 등록! +10 온 획득! ⚡");
+               setToastMessage("중고 물품 등록! +20 ON · 활동점수 +12 ⚡");
           } else if (category === 'event') {
                // Owner's Note는 자체적으로 posts(type='event')를 다시 불러오므로
                // refreshKey를 올려서 새 이벤트가 바로 보이도록 함
                setOwnersNoteRefreshKey(prev => prev + 1);
-               setToastMessage("이벤트 등록 완료! Owner's Note에 노출됩니다 🎉 (+10 온)");
+               setToastMessage("이벤트 등록 완료! Owner's Note에 노출됩니다 🎉 (+20 ON · 활동점수 +12)");
           } else {
                const newItem = {
                     id: savedPost.$id,
@@ -500,7 +501,7 @@ function App() {
                     image: savedPost.imageUrls?.[0]
                };
                setMeetingItems(prev => [newItem, ...prev]);
-               setToastMessage("모임 개설! +10 온 획득! 🎉");
+               setToastMessage("게시글 등록! +20 ON · 활동점수 +12 🎉");
           }
 
           setIsCreateModalOpen(false);
@@ -924,6 +925,8 @@ function App() {
                                         )}
 
                                         {/* 3. LIFE TAB & COMMUNITY TAB */}
+                                        {activeTab === 'notice' && <NoticeBoard />}
+
                                         {(['qna', 'news', 'share', 'town_story', 'gangnam_pick', 'daily_photo'].includes(activeTab)) && (
                                              <>
                                                   <div className="flex items-center justify-between mb-2">

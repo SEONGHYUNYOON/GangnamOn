@@ -64,6 +64,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                subtitle: '찐 로컬들의 정보 공유',
                items: [
                     { id: 'qna', label: '무엇이든 물어보세요', icon: HelpCircle, subtext: 'Q&A' },
+                    { id: 'notice', label: '공지사항', icon: Bell, subtext: '운영 안내' },
                     { id: 'news', label: '강남구 소식', icon: Bell, subtext: '구청 뉴스/RSS' },
                     { id: 'housing_trade', label: '월세·전세 직거래', icon: Home, subtext: '부동산/룸메이트' },
                     { id: 'share', label: '당근보다 가까운 나눔', icon: Heart, subtext: '중고/나눔' },

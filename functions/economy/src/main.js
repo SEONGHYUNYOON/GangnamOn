@@ -43,7 +43,8 @@ const SPEND_COSTS = {
 // 악용 방지가 필요하다면 posts 컬렉션에 실제 글이 생성됐는지 조회해서
 // 확인하는 절차를 추가해야 합니다.
 const EARN_REWARDS = {
-     post_created: 10,
+     post_created: { beans: 20, score: 12 },
+     notice_created: { beans: 30, score: 18 },
 };
 
 const NICKNAME_COST = 1000;
@@ -210,10 +211,14 @@ export default async ({ req, res, log, error }) => {
                          return res.json({ success: false, message: '알 수 없는 보상 유형입니다.' }, 400);
                     }
 
-                    const newBeans = currentBeans + reward;
-                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, { beans: newBeans }));
+                    const newBeans = currentBeans + reward.beans;
+                    const newActivityScore = (profile.activityScore || 0) + reward.score;
+                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, {
+                         beans: newBeans,
+                         activityScore: newActivityScore,
+                    }));
 
-                    return res.json({ success: true, beans: newBeans, earned: reward });
+                    return res.json({ success: true, beans: newBeans, activityScore: newActivityScore, earned: reward.beans, scoreEarned: reward.score });
                }
 
                default:

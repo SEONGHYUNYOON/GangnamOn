@@ -11,6 +11,7 @@ import {
      Navigation,
      Star,
      Train,
+     Video,
      X,
 } from 'lucide-react';
 
@@ -389,6 +390,13 @@ const roadSegments = [
      },
 ];
 
+const cctvSpots = [
+     { id: 'gangnam-daero', name: '강남대로', description: '신논현역 · 강남역 · 뱅뱅사거리 축', query: '강남대로 CCTV' },
+     { id: 'teheran-ro', name: '테헤란로', description: '강남역 · 역삼역 · 선릉역 · 삼성역 축', query: '테헤란로 CCTV' },
+     { id: 'olympic-daero', name: '올림픽대로', description: '청담대교 · 반포대교 강남 접근 축', query: '올림픽대로 CCTV' },
+     { id: 'yeongdong-daero', name: '영동대로', description: '코엑스 · 삼성역 · 청담 접근 축', query: '영동대로 CCTV' },
+];
+
 const openBusLocation = (routeName) => {
      const url = `https://map.kakao.com/link/search/${encodeURIComponent(`${routeName} 버스 현재 위치 강남`)}`;
      window.open(url, '_blank', 'noopener,noreferrer');
@@ -483,6 +491,16 @@ const GangnamTraffic = ({ embedded = false }) => {
      const [lineDetail, setLineDetail] = useState(null);
      const [busDetail, setBusDetail] = useState(false);
      const [roadDetail, setRoadDetail] = useState(null);
+     const [selectedCctvId, setSelectedCctvId] = useState('gangnam-daero');
+     const [favoriteCctvIds, setFavoriteCctvIds] = useState(() => {
+          try {
+               const saved = window.localStorage.getItem('gangnam:on:fav-cctv');
+               const parsed = saved ? JSON.parse(saved) : ['gangnam-daero'];
+               return Array.isArray(parsed) ? parsed : ['gangnam-daero'];
+          } catch {
+               return ['gangnam-daero'];
+          }
+     });
 
      const station = subwayStations.find((item) => item.id === stationId) || subwayStations[0];
      const bus = busRoutes.find((item) => item.id === busId) || busRoutes[0];
@@ -490,6 +508,8 @@ const GangnamTraffic = ({ embedded = false }) => {
           .map((id) => busRoutes.find((item) => item.id === id))
           .filter(Boolean);
      const isFavoriteBus = favoriteBusIds.includes(bus.id);
+     const selectedCctv = cctvSpots.find((item) => item.id === selectedCctvId) || cctvSpots[0];
+     const isFavoriteCctv = favoriteCctvIds.includes(selectedCctv.id);
 
      const toggleFavoriteBus = () => {
           setFavoriteBusIds((current) => {
@@ -500,6 +520,20 @@ const GangnamTraffic = ({ embedded = false }) => {
                     window.localStorage.setItem('gangnam:on:fav-buses', JSON.stringify(next));
                } catch {
                     // localStorage may be blocked in private browsing.
+               }
+               return next;
+          });
+     };
+
+     const toggleFavoriteCctv = () => {
+          setFavoriteCctvIds((current) => {
+               const next = current.includes(selectedCctv.id)
+                    ? current.filter((id) => id !== selectedCctv.id)
+                    : [selectedCctv.id, ...current].slice(0, 6);
+               try {
+                    window.localStorage.setItem('gangnam:on:fav-cctv', JSON.stringify(next));
+               } catch {
+                    // localStorage may be blocked.
                }
                return next;
           });
@@ -711,6 +745,65 @@ const GangnamTraffic = ({ embedded = false }) => {
                                         </button>
                                    );
                               })}
+                         </div>
+                    </div>
+
+                    <div className="rounded-xl border border-surface-border bg-white p-3">
+                         <div className="mb-3 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2">
+                                   <Video className="h-4 w-4 text-brand-accent" />
+                                   <p className="text-xs font-black text-brand-ink">도로 CCTV</p>
+                              </div>
+                              <button
+                                   type="button"
+                                   onClick={toggleFavoriteCctv}
+                                   className={`rounded-full p-1 ${isFavoriteCctv ? 'text-brand-accent' : 'text-slate-300 hover:text-brand-accent'}`}
+                                   aria-label={`${selectedCctv.name} CCTV 즐겨찾기`}
+                              >
+                                   <Star className={`h-3.5 w-3.5 ${isFavoriteCctv ? 'fill-current' : ''}`} />
+                              </button>
+                         </div>
+                         {favoriteCctvIds.length > 0 && (
+                              <div className="mb-2 flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                                   {favoriteCctvIds.map((id) => cctvSpots.find((spot) => spot.id === id)).filter(Boolean).map((spot) => (
+                                        <button
+                                             key={spot.id}
+                                             type="button"
+                                             onClick={() => setSelectedCctvId(spot.id)}
+                                             className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-black ${spot.id === selectedCctvId ? 'border-brand bg-brand text-white' : 'border-surface-border bg-slate-50 text-slate-500'}`}
+                                        >
+                                             {spot.name}
+                                        </button>
+                                   ))}
+                              </div>
+                         )}
+                         <div className="mb-3 grid grid-cols-2 gap-1.5">
+                              {cctvSpots.map((spot) => (
+                                   <button
+                                        key={spot.id}
+                                        type="button"
+                                        onClick={() => setSelectedCctvId(spot.id)}
+                                        className={`rounded-lg px-2 py-2 text-left text-[11px] font-black transition-colors ${spot.id === selectedCctvId ? 'bg-brand text-white' : 'bg-surface-muted text-slate-600 hover:bg-brand-light'}`}
+                                   >
+                                        {spot.name}
+                                   </button>
+                              ))}
+                         </div>
+                         <div className="overflow-hidden rounded-xl border border-surface-border bg-slate-100">
+                              <div className="flex items-center justify-between border-b border-surface-border bg-white px-3 py-2">
+                                   <div>
+                                        <p className="text-xs font-black text-brand-ink">{selectedCctv.name} CCTV</p>
+                                        <p className="text-[10px] font-semibold text-slate-400">{selectedCctv.description}</p>
+                                   </div>
+                                   <a href={`https://map.kakao.com/link/search/${encodeURIComponent(selectedCctv.query)}`} target="_blank" rel="noreferrer" className="text-[10px] font-black text-brand-accent">
+                                        카카오
+                                   </a>
+                              </div>
+                              <iframe
+                                   title={`${selectedCctv.name} TOPIS CCTV`}
+                                   src="https://topis.seoul.go.kr/map/openCctvMap.do"
+                                   className="h-52 w-full bg-white"
+                              />
                          </div>
                     </div>
 

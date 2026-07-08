@@ -1,6 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { X, Image as ImageIcon, MapPin, Calendar, Users, DollarSign, Tag, ArrowLeft, Loader2, Megaphone, Clock } from 'lucide-react';
 import { databases, storage, DATABASE_ID, COLLECTIONS, BUCKET_ID, ID, Permission, Role, getFileUrl } from '../lib/appwrite';
+import KakaoMap from './KakaoMap';
+
+const gangnamPlacePresets = [
+     { label: '강남구청역', address: '서울 강남구 학동로 지하346', lat: 37.5172, lng: 127.0413 },
+     { label: '강남역 11번출구', address: '서울 강남구 강남대로 396', lat: 37.4981, lng: 127.0276 },
+     { label: '선릉역', address: '서울 강남구 테헤란로 지하340', lat: 37.5045, lng: 127.0490 },
+     { label: '코엑스', address: '서울 강남구 영동대로 513', lat: 37.5118, lng: 127.0592 },
+];
 
 const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering' }) => {
      const [selectedCategory, setSelectedCategory] = useState(initialCategory);
@@ -8,6 +16,7 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
      const [previewImage, setPreviewImage] = useState(null);
      const [selectedFile, setSelectedFile] = useState(null);
      const [isSubmitting, setIsSubmitting] = useState(false);
+     const [selectedMapPlace, setSelectedMapPlace] = useState(gangnamPlacePresets[0]);
      const fileInputRef = useRef(null);
 
      // 이벤트 마감 시간 기본값: 지금부터 24시간 뒤 (datetime-local 입력용 문자열)
@@ -412,6 +421,32 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                                        className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold w-full placeholder-gray-400 text-gray-700"
                                                        placeholder="장소를 입력하거나 지도에서 선택"
                                                   />
+                                             </div>
+                                             <div className="mt-3 rounded-2xl border border-gray-100 bg-gray-50 p-3">
+                                                  <KakaoMap
+                                                       latitude={selectedMapPlace.lat}
+                                                       longitude={selectedMapPlace.lng}
+                                                       level={4}
+                                                       label={selectedMapPlace.label}
+                                                       address={selectedMapPlace.address}
+                                                       style={{ width: '100%', height: '180px' }}
+                                                       showActions={false}
+                                                  />
+                                                  <div className="mt-3 grid grid-cols-2 gap-2">
+                                                       {gangnamPlacePresets.map((place) => (
+                                                            <button
+                                                                 key={place.label}
+                                                                 type="button"
+                                                                 onClick={() => {
+                                                                      setSelectedMapPlace(place);
+                                                                      setFormData({ ...formData, location: `${place.label} · ${place.address}` });
+                                                                 }}
+                                                                 className={`rounded-xl border px-3 py-2 text-left text-xs font-black ${selectedMapPlace.label === place.label ? 'border-purple-400 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-500'}`}
+                                                            >
+                                                                 {place.label}
+                                                            </button>
+                                                       ))}
+                                                  </div>
                                              </div>
                                         </div>
 

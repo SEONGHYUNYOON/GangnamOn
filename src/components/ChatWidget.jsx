@@ -204,18 +204,33 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
           setMessageDraft('');
           setErrorText('');
           try {
-               await databases.createDocument({
-                    databaseId: DATABASE_ID,
-                    collectionId: COLLECTIONS.chatMessages,
-                    documentId: ID.unique(),
-                    data: { roomId: activeRoom.roomId, senderId: user.id, content },
-                    permissions: [
-                         Permission.read(Role.user(user.id)),
-                         Permission.read(Role.user(activePeer.$id)),
-                         Permission.update(Role.user(user.id)),
-                         Permission.delete(Role.user(user.id)),
-                    ],
-               });
+               const data = { roomId: activeRoom.roomId, senderId: user.id, content };
+               try {
+                    await databases.createDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.chatMessages,
+                         documentId: ID.unique(),
+                         data,
+                         permissions: [
+                              Permission.read(Role.user(user.id)),
+                              Permission.read(Role.user(activePeer.$id)),
+                              Permission.update(Role.user(user.id)),
+                              Permission.delete(Role.user(user.id)),
+                         ],
+                    });
+               } catch (permissionError) {
+                    await databases.createDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.chatMessages,
+                         documentId: ID.unique(),
+                         data,
+                         permissions: [
+                              Permission.read(Role.users()),
+                              Permission.update(Role.user(user.id)),
+                              Permission.delete(Role.user(user.id)),
+                         ],
+                    });
+               }
                await fetchMessages();
           } catch (error) {
                console.error('메시지 전송 실패:', error);
@@ -292,6 +307,7 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
 
      return (
           <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end pointer-events-none">
+               {isOpen && <button type="button" aria-label="채팅 닫기" onClick={() => setIsOpen(false)} className="fixed inset-0 z-[59] cursor-default bg-transparent" />}
                {notice && (
                     <button type="button" onClick={() => setIsOpen(true)} className="pointer-events-auto mb-3 flex items-center gap-2 rounded-full border border-amber-200 bg-white px-4 py-2 text-xs font-black text-brand-ink shadow-2xl animate-[chat-pop_0.45s_ease-out]">
                          <Bell className="h-4 w-4 text-brand-accent" />
@@ -299,7 +315,7 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                     </button>
                )}
 
-               <div className={`pointer-events-auto bg-white rounded-card shadow-2xl border border-surface-border w-[min(520px,calc(100vw-32px))] h-[min(620px,calc(100vh-120px))] mb-4 origin-bottom-right transition-all duration-300 transform ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-24'} overflow-hidden flex flex-col`}>
+               <div className={`pointer-events-auto relative z-[61] bg-white rounded-card shadow-2xl border border-surface-border w-[min(520px,calc(100vw-32px))] h-[min(620px,calc(100vh-120px))] mb-4 origin-bottom-right transition-all duration-300 transform ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-24'} overflow-hidden flex flex-col`}>
                     <div className="bg-white p-4 border-b border-gray-100 flex items-center justify-between shadow-sm z-10">
                          <div className="min-w-0">
                               <h3 className="break-words font-black text-gray-900 text-sm">{activePeer ? displayNameOf(activePeer) : '강남온 채팅'}</h3>

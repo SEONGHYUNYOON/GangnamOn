@@ -14,6 +14,9 @@
             "timeout": 15,
             "enabled": true,
             "logging": true,
+            "deploymentRetention": 0,
+            "buildSpecification": "s-2vcpu-2gb",
+            "runtimeSpecification": "s-0.5vcpu-512mb",
             "entrypoint": "src/main.js",
             "commands": "npm install",
             "scopes": [
@@ -159,6 +162,33 @@
                     "type": "string",
                     "size": 64,
                     "required": false
+                },
+                {
+                    "key": "bgmPlaylistUrls",
+                    "type": "string",
+                    "size": 512,
+                    "required": false,
+                    "array": true
+                },
+                {
+                    "key": "bgmPlaylistTitles",
+                    "type": "string",
+                    "size": 128,
+                    "required": false,
+                    "array": true
+                },
+                {
+                    "key": "bgmPlaylistIds",
+                    "type": "string",
+                    "size": 64,
+                    "required": false,
+                    "array": true
+                },
+                {
+                    "key": "activityScore",
+                    "type": "integer",
+                    "required": false,
+                    "default": 0
                 }
             ],
             "indexes": [

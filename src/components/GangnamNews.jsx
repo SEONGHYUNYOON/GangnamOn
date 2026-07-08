@@ -22,6 +22,27 @@ const FALLBACK_NEWS = [
      },
 ];
 
+const LOCAL_INFO = [
+     {
+          title: '비짓강남 관광·전시 정보',
+          date: '상시',
+          link: 'https://www.visitgangnam.net/',
+          description: '강남구 문화·관광·전시 정보를 확인합니다.',
+     },
+     {
+          title: '강남구 공지·고시공고',
+          date: '상시',
+          link: 'https://www.gangnam.go.kr/board/B_000001/list.do?mid=ID05_0401',
+          description: '생활에 필요한 행정 공지와 고시공고를 확인합니다.',
+     },
+     {
+          title: '강남구 보건소 안내',
+          date: '상시',
+          link: 'https://health.gangnam.go.kr/',
+          description: '보건, 예방접종, 건강검진 안내를 확인합니다.',
+     },
+];
+
 const formatDate = (value) => {
      if (!value) return '';
      const date = new Date(value);
@@ -70,17 +91,18 @@ const GangnamNews = ({ compact = false }) => {
      const { news, loading, source } = useGangnamNews(compact ? 3 : 6);
 
      if (compact) {
+          const compactItems = LOCAL_INFO;
           return (
                <section className="rounded-card border border-surface-border bg-white p-4 shadow-soft">
                     <div className="mb-3 flex items-center justify-between">
                          <div className="flex items-center gap-2">
                               <Newspaper className="h-4 w-4 text-brand-accent" />
-                              <h3 className="text-xs font-black text-brand-ink">강남 소식</h3>
+                              <h3 className="text-xs font-black text-brand-ink">강남 생활 정보</h3>
                          </div>
                          {loading && <RefreshCw className="h-3.5 w-3.5 animate-spin text-slate-300" />}
                     </div>
                     <div className="space-y-2">
-                         {news.map((item) => (
+                         {compactItems.map((item) => (
                               <a
                                    key={`${item.title}-${item.date}`}
                                    href={item.link || 'https://www.gangnam.go.kr/'}
