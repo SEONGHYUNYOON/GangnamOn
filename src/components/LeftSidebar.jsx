@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame, Lock, Home, EyeOff } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, Palette, MessageCircle, Sparkles, Camera, Shield, Store, Zap, Flame, Lock, Home, EyeOff } from 'lucide-react';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 import GangnamOnLogo from './GangnamOnLogo';
 
@@ -46,7 +46,6 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                subtitle: '우리끼리 속닥속닥',
                items: [
                     { id: 'town_story', label: '타운 스토리', icon: MessageCircle, subtext: '일상/잡담' },
-                    { id: 'gangnam_pick', label: '강남 픽', icon: ThumbsUp, subtext: '맛집/핫플' },
                     { id: 'daily_photo', label: '데일리 포토', icon: Camera, subtext: '사진 갤러리' },
                     { id: 'anonymous', label: '익명 게시판', icon: EyeOff, subtext: '속마음 털어놓기' },
                ]
@@ -141,6 +140,27 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                                    강남 라운지
                               </div>
                               <div className={`text-xs font-medium ${activeTab === 'gangnam_lounge' ? 'text-amber-500/60' : 'text-gray-500'}`}>게임 · 경쟁 · 수다</div>
+                         </div>
+                    </button>
+               </div>
+
+               {/* Special: Gangnam Pick (AI 추천 맛집/카페) */}
+               <div className="mb-6 px-0">
+                    <button
+                         onClick={() => setActiveTab('gangnam_pick')}
+                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === 'gangnam_pick'
+                              ? 'bg-brand-ink border border-brand-gold/40 shadow-[0_2px_16px_rgba(200,155,60,0.10)]'
+                              : 'bg-white border border-brand-gold/20 hover:border-brand-gold/40 hover:bg-brand-light/40'
+                              }`}
+                    >
+                         <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${activeTab === 'gangnam_pick' ? 'bg-brand-gold/15' : 'bg-brand-light'}`}>
+                              <Sparkles className={`w-4 h-4 ${activeTab === 'gangnam_pick' ? 'text-brand-gold' : 'text-brand-accent'}`} />
+                         </div>
+                         <div className="text-left min-w-0">
+                              <div className={`text-sm font-bold truncate ${activeTab === 'gangnam_pick' ? 'text-brand-gold' : 'text-brand-ink'}`}>
+                                   강남 픽
+                              </div>
+                              <div className={`text-xs font-medium ${activeTab === 'gangnam_pick' ? 'text-brand-gold/60' : 'text-gray-500'}`}>AI가 추천하는 맛집·카페</div>
                          </div>
                     </button>
                </div>

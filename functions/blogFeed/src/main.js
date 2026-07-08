@@ -1,18 +1,21 @@
 import { Client, Databases, Storage, ID, Query, Permission, Role } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
+import * as cheerio from 'cheerio';
 
 // ────────────────────────────────────────────────────────────────
-// 강남 픽 자동 큐레이션 Function ("blogFeed")
+// 강남 픽 자동 큐레이션 Function ("blogFeed") — v2
 //
 // 2시간마다(cron: 0 */2 * * *) 자동 실행되어:
 //   1) 네이버 블로그 검색 오픈API로 "강남 맛집/카페" 관련 블로그 글을 찾고
 //   2) 이미 올린 적 없는 글 하나를 골라
-//   3) 블로그 대표 이미지를 가져와 Appwrite Storage에 재업로드하고
-//   4) Gemini(Google AI) API로 소개 문구를 짧게 정리해서
-//   5) "posts" 컬렉션에 type: 'gangnam_pick' 게시글로 자동 등록합니다.
+//   3) 모바일 블로그 페이지(m.blog.naver.com)에서 본문 텍스트 + 사진 최대 3장을 가져오고
+//   4) Gemini(Google AI)로 소개 문구를 정리하고
+//   5) 네이버 지역(플레이스) 검색 API로 실제 주소/전화번호/업종을 찾아 붙이고
+//   6) "posts" 컬렉션에 type: 'gangnam_pick' 게시글로 자동 등록합니다.
 //
 // 필요한 환경변수 (Appwrite 콘솔 > Functions > blogFeed > Settings > Variables):
-//   - NAVER_CLIENT_ID / NAVER_CLIENT_SECRET  (developers.naver.com 에서 발급)
+//   - NAVER_CLIENT_ID / NAVER_CLIENT_SECRET  (developers.naver.com 에서 발급, "검색" API 하나로
+//     블로그 검색 + 지역 검색 둘 다 사용 가능 — 추가 신청 필요 없음)
 //   - GEMINI_API_KEY                          (aistudio.google.com/apikey 에서 발급, 완전 무료)
 // ────────────────────────────────────────────────────────────────
 
@@ -63,26 +66,64 @@ async function fetchNaverBlogPosts(keyword, clientId, clientSecret) {
     }));
 }
 
-function extractMetaContent(html, property) {
-    const patterns = [
-        new RegExp(`<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
-        new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${property}["']`, 'i'),
-    ];
-    for (const pattern of patterns) {
-        const match = html.match(pattern);
-        if (match) return match[1];
-    }
-    return null;
-}
+// 모바일 블로그 페이지에서 본문 텍스트 + 대표 사진들을 가져옵니다.
+// (PC 버전은 본문이 iframe 안에 있어서 못 읽지만, 모바일 버전은 본문이 그대로 HTML에 있음)
+async function fetchBlogDetail(link) {
+    const match = link.match(/blog\.naver\.com\/([^/?]+)\/(\d+)/);
+    if (!match) return { text: '', images: [] };
+    const [, blogId, logNo] = match;
+    const mobileUrl = `https://m.blog.naver.com/${blogId}/${logNo}`;
 
-async function fetchOgImage(pageUrl) {
     try {
-        const res = await fetch(pageUrl, {
+        const res = await fetch(mobileUrl, {
             headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GangnamOnBot/1.0)' },
         });
-        if (!res.ok) return null;
+        if (!res.ok) return { text: '', images: [] };
         const html = await res.text();
-        return extractMetaContent(html, 'og:image');
+        const $ = cheerio.load(html);
+
+        let container = $('.se-main-container');
+        if (container.length === 0) container = $('body');
+
+        const text = container.text().replace(/\s+/g, ' ').trim().slice(0, 3000);
+
+        const images = [];
+        container.find('img').each((_, el) => {
+            const src = $(el).attr('src') || $(el).attr('data-lazy-src') || $(el).attr('data-src');
+            if (!src) return;
+            if (!src.includes('pstatic.net')) return;
+            if (src.includes('sticker') || src.includes('icon')) return;
+            const normalized = src.startsWith('//') ? `https:${src}` : src;
+            if (!images.includes(normalized)) images.push(normalized);
+        });
+
+        return { text, images: images.slice(0, 3) };
+    } catch {
+        return { text: '', images: [] };
+    }
+}
+
+// 네이버 지역(플레이스) 검색으로 실제 주소/전화번호/업종을 찾습니다.
+async function fetchLocalInfo(query, clientId, clientSecret) {
+    if (!query || !query.trim()) return null;
+    try {
+        const url = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=1`;
+        const res = await fetch(url, {
+            headers: {
+                'X-Naver-Client-Id': clientId,
+                'X-Naver-Client-Secret': clientSecret,
+            },
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        const item = data.items?.[0];
+        if (!item) return null;
+        return {
+            name: stripHtml(item.title),
+            address: item.roadAddress || item.address || '',
+            phone: item.telephone || '',
+            category: (item.category || '').split('>').pop()?.trim() || '',
+        };
     } catch {
         return null;
     }
@@ -105,20 +146,50 @@ async function downloadImageBuffer(imageUrl) {
     }
 }
 
-async function summarizeWithGemini(post, apiKey) {
-    const prompt = `아래는 네이버 블로그 맛집/카페 후기 글의 제목과 요약이야.
-이 정보를 바탕으로 강남On 서비스의 "강남 픽" 게시판에 올릴 짧은 소개 게시글을 만들어줘.
+async function downloadAndUploadImage(imageUrl, storage) {
+    const buffer = await downloadImageBuffer(imageUrl);
+    if (!buffer) return null;
+    try {
+        const rawExt = (imageUrl.split('?')[0].split('.').pop() || 'jpg').toLowerCase();
+        const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
+        const filename = `blogfeed_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${ext}`;
+        const file = await storage.createFile(IMAGE_BUCKET, ID.unique(), InputFile.fromBuffer(buffer, filename));
+        return `${process.env.APPWRITE_FUNCTION_API_ENDPOINT}/storage/buckets/${IMAGE_BUCKET}/files/${file.$id}/view?project=${process.env.APPWRITE_FUNCTION_PROJECT_ID}`;
+    } catch {
+        return null;
+    }
+}
+
+async function fetchOgImage(pageUrl) {
+    try {
+        const res = await fetch(pageUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GangnamOnBot/1.0)' },
+        });
+        if (!res.ok) return null;
+        const html = await res.text();
+        const $ = cheerio.load(html);
+        return $('meta[property="og:image"]').attr('content') || null;
+    } catch {
+        return null;
+    }
+}
+
+async function summarizeWithGemini(post, bodyExcerpt, apiKey) {
+    const prompt = `아래는 네이버 블로그 맛집/카페 후기 글이야.
+이 정보를 바탕으로 강남On 서비스의 "강남 픽" 게시판에 올릴 소개 게시글을 만들어줘.
 실제로 방문한 것처럼 과장하지 말고, 블로그 후기를 소개하는 톤으로 써줘.
+블로그에 대표 메뉴, 가격, 분위기에 대한 언급이 있으면 content에 자연스럽게 녹여줘.
 
 블로그 제목: ${post.title}
 블로그 요약: ${post.description}
+${bodyExcerpt ? `블로그 본문 일부: ${bodyExcerpt}` : ''}
 
 아래 JSON 형식으로만 답변해 (다른 설명 없이, 코드블록 없이):
 {
   "placeName": "가게 이름 (알 수 없으면 블로그 제목에서 추정)",
   "location": "강남구 내 동네 이름 (예: 역삼동, 신사동 등. 모르면 강남)",
   "title": "게시글 제목 (20자 이내, 이모지 1개 정도 사용 가능)",
-  "content": "2~3문장짜리 소개 (존댓말, 강남On 커뮤니티 말투)"
+  "content": "3~4문장짜리 소개 (존댓말, 대표 메뉴/분위기 언급, 강남On 커뮤니티 말투)"
 }`;
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
@@ -187,26 +258,29 @@ export default async ({ req, res, log, error }) => {
             return res.json({ success: false, message: '새로운 후보가 없습니다 (모두 이미 게시됨).' });
         }
 
-        // 대표 이미지 추출 → 다운로드 → Appwrite Storage 재업로드
-        let imageUrl = null;
-        const ogImage = await fetchOgImage(fresh.link);
-        if (ogImage) {
-            const buffer = await downloadImageBuffer(ogImage);
-            if (buffer) {
-                const rawExt = (ogImage.split('?')[0].split('.').pop() || 'jpg').toLowerCase();
-                const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
-                const file = await storage.createFile(
-                    IMAGE_BUCKET,
-                    ID.unique(),
-                    InputFile.fromBuffer(buffer, `blogfeed_${Date.now()}.${ext}`)
-                );
-                imageUrl = `${process.env.APPWRITE_FUNCTION_API_ENDPOINT}/storage/buckets/${IMAGE_BUCKET}/files/${file.$id}/view?project=${process.env.APPWRITE_FUNCTION_PROJECT_ID}`;
-            }
-        }
+        // 본문 텍스트 + 사진 최대 3장 확보
+        const detail = await fetchBlogDetail(fresh.link);
+        log(`본문 확보: ${detail.text.length}자, 이미지 ${detail.images.length}장`);
 
-        // Gemini로 소개 문구 생성
-        const summary = await summarizeWithGemini(fresh, GEMINI_API_KEY);
-        const content = `${summary.content || fresh.description}\n\n📎 출처: 네이버 블로그 (${fresh.bloggername || '블로거'})`;
+        // AI로 소개 문구 생성 (본문이 있으면 더 풍부한 내용으로)
+        const summary = await summarizeWithGemini(fresh, detail.text, GEMINI_API_KEY);
+
+        // 네이버 지역 검색으로 실제 주소/전화번호/업종 확인
+        const localQuery = `${summary.location || ''} ${summary.placeName || ''}`.trim();
+        const localInfo = await fetchLocalInfo(localQuery, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET);
+        if (localInfo) log(`지역 정보 매칭: ${localInfo.name} / ${localInfo.address}`);
+
+        // 이미지 업로드 (본문에서 찾은 사진 우선, 없으면 og:image 1장으로 대체)
+        let candidateImages = detail.images;
+        if (candidateImages.length === 0) {
+            const og = await fetchOgImage(fresh.link);
+            if (og) candidateImages = [og];
+        }
+        const imageUrls = [];
+        for (const imgUrl of candidateImages.slice(0, 3)) {
+            const uploaded = await downloadAndUploadImage(imgUrl, storage);
+            if (uploaded) imageUrls.push(uploaded);
+        }
 
         const doc = await databases.createDocument(
             DATABASE_ID,
@@ -217,16 +291,19 @@ export default async ({ req, res, log, error }) => {
                 authorUsername: BOT_AUTHOR_NAME,
                 type: 'gangnam_pick',
                 title: summary.title || summary.placeName || fresh.title,
-                content,
+                content: summary.content || fresh.description,
                 locationName: summary.location || '강남',
-                imageUrls: imageUrl ? [imageUrl] : [],
+                imageUrls,
                 sourceUrl: fresh.link,
+                placeAddress: localInfo?.address || '',
+                placePhone: localInfo?.phone || '',
+                placeCategory: localInfo?.category || '',
             },
             [Permission.read(Role.any())]
         );
 
         log(`게시 완료: ${doc.$id} (${fresh.link})`);
-        return res.json({ success: true, postId: doc.$id, title: doc.title, hasImage: !!imageUrl });
+        return res.json({ success: true, postId: doc.$id, title: doc.title, imageCount: imageUrls.length, hasAddress: !!localInfo?.address });
     } catch (err) {
         error(err.message || String(err));
         return res.json({ success: false, message: '자동 게시 중 오류가 발생했습니다.' }, 500);

@@ -338,6 +338,24 @@
                     "type": "string",
                     "size": 512,
                     "required": false
+                },
+                {
+                    "key": "placeAddress",
+                    "type": "string",
+                    "size": 256,
+                    "required": false
+                },
+                {
+                    "key": "placePhone",
+                    "type": "string",
+                    "size": 32,
+                    "required": false
+                },
+                {
+                    "key": "placeCategory",
+                    "type": "string",
+                    "size": 64,
+                    "required": false
                 }
             ],
             "indexes": [

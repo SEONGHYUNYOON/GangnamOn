@@ -19,6 +19,7 @@ const MeetingFeed = lazy(() => import('./components/MeetingFeed'))
 const MiniHomepage = lazy(() => import('./components/MiniHomepage'))
 const CreatePostModal = lazy(() => import('./components/CreatePostModal'))
 const NeighborhoodLife = lazy(() => import('./components/NeighborhoodLife'))
+const GangnamPickBoard = lazy(() => import('./components/GangnamPickBoard'))
 const AnonymousBoard = lazy(() => import('./components/AnonymousBoard'))
 const GangnamRomance = lazy(() => import('./components/GangnamRomance'))
 const ActivityRewardCenter = lazy(() => import('./components/ActivityRewardCenter'))
@@ -730,6 +731,9 @@ function App() {
                                              />
                                         )}
 
+                                        {/* NEW: GANGNAM PICK (AI 추천 맛집/카페) — 독립 메뉴 */}
+                                        {activeTab === 'gangnam_pick' && <GangnamPickBoard />}
+
                                         {/* 1. HOME TAB */}
                                         {activeTab === 'home' && (
                                              <>
@@ -937,7 +941,7 @@ function App() {
                                              </>
                                         )}
 
-                                        {(['qna', 'news', 'share', 'town_story', 'gangnam_pick', 'daily_photo'].includes(activeTab)) && (
+                                        {(['qna', 'news', 'share', 'town_story', 'daily_photo'].includes(activeTab)) && (
                                              <>
                                                   <div className="flex items-center justify-between mb-2">
                                                        <h2 className="text-xl font-bold text-gray-900">
@@ -945,7 +949,6 @@ function App() {
                                                             {activeTab === 'news' && '📢 우리 동네 소식통'}
                                                             {activeTab === 'share' && '🎁 당근보다 가까운 나눔'}
                                                             {activeTab === 'town_story' && '💬 타운 스토리'}
-                                                            {activeTab === 'gangnam_pick' && '👍 강남 픽'}
                                                             {activeTab === 'daily_photo' && '📸 데일리 포토'}
                                                        </h2>
                                                   </div>
