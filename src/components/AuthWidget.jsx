@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ChevronRight, User, MapPin, Smile } from 'lucide-react';
-import { account, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role } from '../lib/appwrite';
+import { account, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role, OAuthProvider } from '../lib/appwrite';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 
 const AuthWidget = ({ onLoginSuccess }) => {
@@ -34,6 +34,37 @@ const AuthWidget = ({ onLoginSuccess }) => {
           '개포동',
           '세곡동'
      ];
+
+     const getOAuthRedirectUrl = (status) => {
+          const redirectUrl = new URL(window.location.href);
+          redirectUrl.search = '';
+          redirectUrl.searchParams.set('oauth', status);
+          return redirectUrl.toString();
+     };
+
+     const handleOAuthLogin = async (provider, scopes = []) => {
+          setAuthLoading(true);
+          setAuthError(null);
+
+          const providerLabel = provider === OAuthProvider.Google ? '구글' : '카카오톡';
+
+          try {
+               const oauthUrl = account.createOAuth2Session(
+                    provider,
+                    getOAuthRedirectUrl('success'),
+                    getOAuthRedirectUrl('failure'),
+                    scopes
+               );
+
+               if (typeof oauthUrl === 'string') {
+                    window.location.href = oauthUrl;
+               }
+          } catch (error) {
+               console.error(`${providerLabel} OAuth login error:`, error);
+               setAuthError(`${providerLabel} 로그인 연결에 실패했습니다. 관리자 설정을 확인해주세요.`);
+               setAuthLoading(false);
+          }
+     };
 
      const handleLogin = async (e) => {
           e.preventDefault();
@@ -166,6 +197,36 @@ const AuthWidget = ({ onLoginSuccess }) => {
                     </div>
 
                     <form onSubmit={isForgotMode ? handleForgotPassword : (isSignUpMode ? handleSignUp : handleLogin)} className="space-y-3">
+                         {!isForgotMode && (
+                              <>
+                                   <div className="grid grid-cols-1 gap-2">
+                                        <button
+                                             type="button"
+                                             onClick={() => handleOAuthLogin(OAuthProvider.Google)}
+                                             disabled={authLoading}
+                                             className="w-full h-11 rounded-xl border border-surface-border bg-white text-sm font-black text-brand-ink hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                                        >
+                                             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[15px] font-black text-[#4285F4]">G</span>
+                                             구글로 계속하기
+                                        </button>
+                                        <button
+                                             type="button"
+                                             onClick={() => handleOAuthLogin(OAuthProvider.Oidc, ['openid'])}
+                                             disabled={authLoading}
+                                             className="w-full h-11 rounded-xl bg-[#FEE500] text-sm font-black text-[#191600] hover:bg-[#f7dc00] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                                        >
+                                             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#191600] text-[10px] font-black text-[#FEE500]">톡</span>
+                                             카카오톡으로 계속하기
+                                        </button>
+                                   </div>
+
+                                   <div className="flex items-center gap-3 py-1">
+                                        <div className="h-px flex-1 bg-gray-100" />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-300">or</span>
+                                        <div className="h-px flex-1 bg-gray-100" />
+                                   </div>
+                              </>
+                         )}
 
                          {/* Signup Extra Fields */}
                          {isSignUpMode && !isForgotMode && (

@@ -198,6 +198,18 @@ function App() {
      // AuthWidget에서 재설정 링크에는 flow=recovery를 붙여서 구분합니다.)
      const handleEmailVerificationCallback = async () => {
           const params = new URLSearchParams(window.location.search);
+          const oauth = params.get('oauth');
+          if (oauth) {
+               if (oauth === 'success') {
+                    await refreshUser();
+                    setToastMessage('소셜 로그인이 완료됐어요.');
+               } else {
+                    setToastMessage('소셜 로그인에 실패했어요. 구글/카카오 OAuth 설정을 확인해주세요.');
+               }
+               window.history.replaceState({}, '', window.location.pathname);
+               return;
+          }
+
           const userId = params.get('userId');
           const secret = params.get('secret');
           const flow = params.get('flow');

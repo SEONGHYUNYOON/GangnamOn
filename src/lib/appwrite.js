@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role, ExecutionMethod } from 'appwrite';
+import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role, ExecutionMethod, OAuthProvider } from 'appwrite';
 
 // ⚠️ 아래 두 값은 Appwrite 콘솔(프로젝트 Settings > General)에서 확인 가능합니다.
 // .env.local 파일에 아래처럼 넣어주세요:
@@ -115,4 +115,4 @@ export async function callEconomy(payload) {
      }
 }
 
-export { ID, Query, Permission, Role };
+export { ID, Query, Permission, Role, OAuthProvider };
