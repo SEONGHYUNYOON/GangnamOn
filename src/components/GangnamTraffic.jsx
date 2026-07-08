@@ -402,6 +402,8 @@ const openBusLocation = (routeName) => {
      window.open(url, '_blank', 'noopener,noreferrer');
 };
 
+const TOPIS_CCTV_URL = 'https://topis.seoul.go.kr/map/openCctvMap.do';
+
 const SelectionOverlay = ({ title, items, currentId, onSelect, onClose, icon: Icon }) => (
      <Portal>
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
@@ -799,11 +801,48 @@ const GangnamTraffic = ({ embedded = false }) => {
                                         카카오
                                    </a>
                               </div>
-                              <iframe
-                                   title={`${selectedCctv.name} TOPIS CCTV`}
-                                   src="https://topis.seoul.go.kr/map/openCctvMap.do"
-                                   className="h-52 w-full bg-white"
-                              />
+                              <div className="relative overflow-hidden bg-slate-950 px-4 py-5 text-white">
+                                   <div className="pointer-events-none absolute inset-0 opacity-55">
+                                        <div className="absolute left-4 top-4 h-24 w-24 rounded-full bg-brand-accent/30 blur-2xl" />
+                                        <div className="absolute bottom-3 right-4 h-20 w-20 rounded-full bg-sky-500/20 blur-2xl" />
+                                        <div className="absolute inset-x-0 top-1/2 h-px bg-white/10" />
+                                        <div className="absolute inset-y-0 left-1/3 w-px bg-white/10" />
+                                        <div className="absolute inset-y-0 right-1/4 w-px bg-white/10" />
+                                   </div>
+                                   <div className="relative flex min-h-40 flex-col justify-between rounded-xl border border-white/10 bg-white/10 p-4 shadow-inner">
+                                        <div className="flex items-start justify-between gap-3">
+                                             <div>
+                                                  <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-black text-white">
+                                                       <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                                                       LIVE CCTV
+                                                  </span>
+                                                  <p className="mt-3 text-base font-black">{selectedCctv.name}</p>
+                                                  <p className="mt-1 text-xs font-semibold text-white/65">{selectedCctv.description}</p>
+                                             </div>
+                                             <Video className="h-5 w-5 text-brand-gold" />
+                                        </div>
+                                        <div className="mt-5 grid gap-2">
+                                             <a
+                                                  href={TOPIS_CCTV_URL}
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                  className="flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-black text-brand-ink transition-colors hover:bg-brand-light"
+                                             >
+                                                  TOPIS 실시간 CCTV 열기
+                                                  <ExternalLink className="h-3.5 w-3.5" />
+                                             </a>
+                                             <a
+                                                  href={`https://map.kakao.com/link/search/${encodeURIComponent(selectedCctv.query)}`}
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                  className="flex items-center justify-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-white/10"
+                                             >
+                                                  카카오맵에서 주변 CCTV 검색
+                                                  <Navigation className="h-3.5 w-3.5" />
+                                             </a>
+                                        </div>
+                                   </div>
+                              </div>
                          </div>
                     </div>
 
