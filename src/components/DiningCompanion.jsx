@@ -167,23 +167,23 @@ const DiningCompanion = () => {
             </div>
 
             {/* Horizontal Scroll List */}
-            <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide px-1 snap-x">
+            <div className="grid grid-cols-1 gap-3 px-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {filteredList.map((item) => (
                     <div
                         key={item.id}
-                        className="snap-center min-w-[280px] md:min-w-[300px] bg-white rounded-card p-5 shadow-soft border border-surface-border relative group hover:-translate-y-0.5 hover:shadow-soft-lg transition-all duration-300"
+                        className="bg-white rounded-card p-3 shadow-soft border border-surface-border relative group hover:-translate-y-0.5 hover:shadow-soft-lg transition-all duration-300"
                     >
                         {/* 3D Icon Area */}
-                        <div className={`h-32 rounded-xl ${item.bg} mb-4 flex items-center justify-center relative overflow-hidden`}>
-                            <div className="text-[5rem] drop-shadow-xl transform group-hover:scale-110 transition-transform duration-500 filter hover:brightness-110">
+                        <div className={`h-24 rounded-xl ${item.bg} mb-3 flex items-center justify-center relative overflow-hidden`}>
+                            <div className="text-[3.6rem] drop-shadow-xl transform group-hover:scale-110 transition-transform duration-500 filter hover:brightness-110">
                                 {item.foodIcon}
                             </div>
-                            <div className="absolute top-3 right-3 bg-white/60 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-gray-600 flex items-center gap-1">
+                            <div className="absolute top-2 right-2 bg-white/70 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-gray-600 flex items-center gap-1">
                                 <MapPin className="w-3 h-3 text-purple-500" /> {item.location}
                             </div>
 
                             {/* Gender Badge on Card */}
-                            <div className={`absolute bottom-3 right-3 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 ${item.gender === 'female' ? 'bg-pink-100 text-pink-600'
+                            <div className={`absolute bottom-2 right-2 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 ${item.gender === 'female' ? 'bg-pink-100 text-pink-600'
                                 : item.gender === 'male' ? 'bg-blue-100 text-blue-600'
                                     : 'bg-purple-100 text-purple-600'
                                 }`}>
@@ -196,12 +196,12 @@ const DiningCompanion = () => {
                         {/* Content */}
                         <div className="text-center">
                             {/* User Info */}
-                            <div className="flex justify-center -mt-10 mb-2 relative z-10">
+                            <div className="flex justify-center -mt-8 mb-1 relative z-10">
                                 <div className="relative">
                                     <img
                                         src={item.userImage}
                                         alt={item.user}
-                                        className="w-12 h-12 rounded-full border-4 border-white shadow-md bg-white"
+                                        className="w-10 h-10 rounded-full border-4 border-white shadow-md bg-white"
                                     />
                                     <div className="absolute -bottom-1 -right-4 bg-white px-1.5 py-0.5 rounded-full border border-purple-100 shadow-sm flex items-center gap-1">
                                         <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></div>
@@ -210,13 +210,13 @@ const DiningCompanion = () => {
                                 </div>
                             </div>
 
-                            <p className="text-xs text-gray-400 font-bold mb-1">{item.user}</p>
-                            <h3 className="text-lg font-black text-gray-900 leading-tight mb-3">
+                            <p className="text-[11px] text-gray-400 font-bold mb-1">{item.user}</p>
+                            <h3 className="text-base font-black text-gray-900 leading-tight mb-2">
                                 {item.title}
                             </h3>
 
                             {/* Tags */}
-                            <div className="flex flex-wrap justify-center gap-1.5 mb-5">
+                            <div className="flex flex-wrap justify-center gap-1.5 mb-3">
                                 {item.tags.map((tag, i) => (
                                     <span key={i} className="px-2 py-1 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-lg group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
                                         {tag}
@@ -246,7 +246,7 @@ const DiningCompanion = () => {
                             ) : (
                                 <button
                                     onClick={() => setActiveMapId(item.id)}
-                                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2 group-hover:shadow-md ${item.category === 'cafe'
+                                    className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 group-hover:shadow-md ${item.category === 'cafe'
                                         ? 'bg-brand-light text-brand-accent hover:bg-brand-gold hover:text-white'
                                         : 'bg-brand text-white hover:bg-brand-dark'
                                         }`}>

@@ -37,7 +37,7 @@ const EventTimer = ({ expiresAt }) => {
      );
 };
 
-const MeetingFeed = ({ items, onStartChat }) => {
+const MeetingFeed = ({ items, onStartChat, user }) => {
      const [selectedMeeting, setSelectedMeeting] = useState(null);
      const [likedItems, setLikedItems] = useState(new Set());
      const [animatingHearts, setAnimatingHearts] = useState(new Set());
@@ -233,6 +233,7 @@ const MeetingFeed = ({ items, onStartChat }) => {
                     <MeetingDetail
                          meeting={selectedMeeting}
                          onClose={() => setSelectedMeeting(null)}
+                         user={user}
                     />
                )}
           </>

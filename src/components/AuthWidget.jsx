@@ -140,7 +140,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                     console.error('인증 메일 발송 실패:', verifyError);
                }
 
-               if (onLoginSuccess) onLoginSuccess();
+               if (onLoginSuccess) onLoginSuccess({ isNewUser: true, username });
           } catch (error) {
                console.error("Signup error:", error);
                if (error.code === 409) {

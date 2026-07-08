@@ -414,6 +414,54 @@
             ]
         },
         {
+            "$id": "meeting_participants",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "meeting_participants",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "meetingId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "size": 24,
+                    "required": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "meeting_user_idx",
+                    "type": "unique",
+                    "attributes": [
+                        "meetingId",
+                        "userId"
+                    ]
+                },
+                {
+                    "key": "user_idx",
+                    "type": "key",
+                    "attributes": [
+                        "userId"
+                    ]
+                }
+            ]
+        },
+        {
             "$id": "presence",
             "$permissions": [
                 "read(\"any\")",

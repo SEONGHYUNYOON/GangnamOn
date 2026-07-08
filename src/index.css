@@ -131,6 +131,29 @@
      animation-iteration-count: infinite;
 }
 
+@keyframes welcomeConfettiPop {
+     0% {
+          opacity: 0;
+          transform: translate3d(0, 24px, 0) rotate(0deg) scale(0.4);
+     }
+     18% {
+          opacity: 1;
+     }
+     100% {
+          opacity: 0;
+          transform: translate3d(-42px, -170px, 0) rotate(var(--confetti-rotate)) scale(1);
+     }
+}
+
+.welcome-confetti-piece {
+     position: absolute;
+     bottom: 16px;
+     width: 7px;
+     height: 12px;
+     border-radius: 2px;
+     animation: welcomeConfettiPop 1.3s ease-out infinite;
+}
+
 .animation-delay-2000 {
      animation-delay: 2s;
 }

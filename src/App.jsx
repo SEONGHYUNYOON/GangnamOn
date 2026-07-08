@@ -5,6 +5,7 @@ import LeftSidebar from './components/LeftSidebar'
 import RightPanel from './components/RightPanel'
 import ChatWidget from './components/ChatWidget'
 import Toast from './components/Toast'
+import WelcomeConfetti from './components/WelcomeConfetti'
 import KakaoMap from './components/KakaoMap'
 import GangnamNews from './components/GangnamNews'
 import './index.css'
@@ -30,6 +31,7 @@ const GangnamLounge = lazy(() => import('./components/GangnamLounge'))
 const OwnersNote = lazy(() => import('./components/OwnersNote'))
 const DbPresentation = lazy(() => import('./components/DbPresentation'))
 const ResetPasswordModal = lazy(() => import('./components/ResetPasswordModal'))
+const MyMeetingSchedule = lazy(() => import('./components/MyMeetingSchedule'))
 
 // 가상 모임 게시물 (홈 + 비즈니스 네트워크 탭에 노출)
 const VIRTUAL_MEETING_ITEMS = [
@@ -74,6 +76,7 @@ function App() {
      const [isBannerModalOpen, setIsBannerModalOpen] = useState(false); // New Toggle
      const [ownersNoteRefreshKey, setOwnersNoteRefreshKey] = useState(0); // 새 이벤트 등록 시 Owner's Note 재조회 트리거
      const [toastMessage, setToastMessage] = useState(null);
+     const [welcomeConfetti, setWelcomeConfetti] = useState(null);
      const [beanCount, setBeanCount] = useState(1250); // 온(가상 화폐)
      const [unlockedStyles, setUnlockedStyles] = useState(['lorelei', 'avataaars']); // Default free styles
 
@@ -195,6 +198,17 @@ function App() {
           setUser(null);
      };
 
+     const handleAuthSuccess = async (meta = {}) => {
+          await refreshUser();
+          if (meta?.isNewUser) {
+               setWelcomeConfetti({ name: meta.username || '강남 이웃', key: Date.now() });
+          }
+     };
+
+     const reloadHome = () => {
+          window.location.href = `${window.location.origin}${window.location.pathname}?v=home-${Date.now()}`;
+     };
+
      // 인증 메일의 "이메일 인증하기" 링크를 클릭하면 ?userId=...&secret=... 파라미터와 함께
      // 이 페이지로 돌아오는데, 그걸 감지해서 실제 인증 완료 처리를 해줍니다.
      // (비밀번호 재설정 메일도 동일한 userId/secret 파라미터를 쓰기 때문에,
@@ -276,7 +290,7 @@ function App() {
                          databaseId: DATABASE_ID,
                          collectionId: COLLECTIONS.posts,
                          queries: [
-                              Query.equal('type', ['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'office_rent']),
+                              Query.equal('type', ['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'office_rent', 'housing_trade']),
                               Query.orderDesc('$createdAt'),
                               Query.limit(100),
                          ],
@@ -293,6 +307,7 @@ function App() {
                                                        : g.type === 'lunch_networking' ? '☕ 런치미팅'
                                                             : g.type === 'recruit_proposal' ? '👥 구인/협업'
                                                                  : g.type === 'office_rent' ? '🏢 사무실'
+                                                                      : g.type === 'housing_trade' ? '🏠 부동산'
                                                                       : g.type,
                          originalType: g.type,
                          isEvent: g.type === 'event',
@@ -432,6 +447,7 @@ function App() {
           lunch_networking: '☕ 런치미팅',
           recruit_proposal: '👥 구인/협업',
           office_rent: '🏢 사무실',
+          housing_trade: '🏠 부동산',
      };
 
      const handleShare = (category, savedPost) => {
@@ -603,6 +619,13 @@ function App() {
 
                {/* Toast Notification */}
                {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
+               {welcomeConfetti && (
+                    <WelcomeConfetti
+                         key={welcomeConfetti.key}
+                         name={welcomeConfetti.name}
+                         onDone={() => setWelcomeConfetti(null)}
+                    />
+               )}
 
 
                {/* Central Container */}
@@ -610,7 +633,7 @@ function App() {
 
                     {/* === Left Column (Fixed Width) === */}
                     <div className="w-[240px] xl:w-[280px] h-screen sticky top-0 hidden md:block overflow-y-auto no-scrollbar shrink-0 pt-5">
-                         <LeftSidebar activeTab={activeTab} setActiveTab={handleTabChange} isAdmin={isAdmin} />
+                         <LeftSidebar activeTab={activeTab} setActiveTab={handleTabChange} onLogoClick={reloadHome} isAdmin={isAdmin} />
                     </div>
 
                     {/* === Center Column (Flexible) === */}
@@ -802,7 +825,7 @@ function App() {
                                                   </section>
                                                   <ILoveSchool />
                                                   <DiningCompanion />
-                                                  <MeetingFeed items={meetingItems.slice(0, 6)} onStartChat={handleStartChat} />
+                                                  <MeetingFeed items={meetingItems.slice(0, 6)} onStartChat={handleStartChat} user={user} />
                                                   <UsedMarket items={marketItems} />
                                              </>
                                         )}
@@ -835,7 +858,22 @@ function App() {
                                                             + 글쓰기
                                                        </button>
                                                   </div>
-                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} onStartChat={handleStartChat} />
+                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} onStartChat={handleStartChat} user={user} />
+                                             </>
+                                        )}
+
+                                        {activeTab === 'housing_trade' && (
+                                             <>
+                                                  <div className="flex items-center justify-between mb-2">
+                                                       <div>
+                                                            <h2 className="text-xl font-bold text-gray-900">🏠 월세·전세 직거래</h2>
+                                                            <p className="mt-1 text-sm font-semibold text-slate-400">강남권 실거주 매물과 룸메이트 정보를 직접 공유합니다.</p>
+                                                       </div>
+                                                       <button onClick={() => { setCreateModalCategory('housing_trade'); setIsCreateModalOpen(true); }} className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-colors">
+                                                            + 매물 올리기
+                                                       </button>
+                                                  </div>
+                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === 'housing_trade')} onStartChat={handleStartChat} user={user} />
                                              </>
                                         )}
 
@@ -853,7 +891,7 @@ function App() {
                                                             + 모임 만들기
                                                        </button>
                                                   </div>
-                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} onStartChat={handleStartChat} />
+                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} onStartChat={handleStartChat} user={user} />
                                              </>
                                         )}
 
@@ -916,7 +954,11 @@ function App() {
                                         )}
 
                                         {/* 7. MY TAB */}
-                                        {(['badge', 'schedule'].includes(activeTab)) && (
+                                        {activeTab === 'schedule' && (
+                                             <MyMeetingSchedule user={user} />
+                                        )}
+
+                                        {activeTab === 'badge' && (
                                              <div className="flex flex-col items-center justify-center h-[50vh] text-gray-400">
                                                   <div className="text-center space-y-4">
                                                        <div className="text-6xl animate-bounce">🏆</div>
@@ -947,7 +989,7 @@ function App() {
                               beanCount={beanCount}
                               setBeanCount={setBeanCount}
                               user={user}
-                              onLoginSuccess={refreshUser}
+                              onLoginSuccess={handleAuthSuccess}
                               onLogout={handleLogout}
                          />
                     </div>
@@ -959,7 +1001,7 @@ function App() {
                          <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-500 hover:text-gray-900 active:bg-gray-100 rounded-full">
                               <Menu className="w-6 h-6" />
                          </button>
-                         <div className="flex items-center gap-1" onClick={() => handleTabChange('home')}>
+                         <div className="flex items-center gap-1" onClick={reloadHome}>
                               <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-amber-400 font-black text-xs">G</div>
                               <span className="font-bold text-gray-900 text-lg">Gangnam On</span>
                          </div>
@@ -1001,7 +1043,7 @@ function App() {
                                         >
                                              <X className="w-8 h-8" />
                                         </button>
-                                        <AuthWidget onLoginSuccess={() => { refreshUser(); setIsMobileLoginOpen(false); }} />
+                                        <AuthWidget onLoginSuccess={async (meta) => { await handleAuthSuccess(meta); setIsMobileLoginOpen(false); }} />
                                    </div>
                               </div>
                          </Suspense>
@@ -1034,6 +1076,7 @@ function App() {
                                                   handleTabChange(tab);
                                                   setIsMobileMenuOpen(false);
                                              }}
+                                             onLogoClick={reloadHome}
                                              isAdmin={isAdmin}
                                         />
                                    </div>

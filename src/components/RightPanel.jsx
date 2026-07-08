@@ -400,9 +400,9 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                {user ? (
                     <div
                          onClick={onOpenMinihome}
-                         className="bg-white rounded-card p-6 shadow-soft border border-surface-border mb-5 cursor-pointer hover:border-brand-gold/30 hover:shadow-soft-lg transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
+                         className="bg-white rounded-card p-4 shadow-soft border border-surface-border mb-4 cursor-pointer hover:border-brand-gold/30 hover:shadow-soft-lg transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
                     >
-                         <div className="flex justify-between items-center mb-6 relative z-10">
+                         <div className="flex justify-between items-center mb-3 relative z-10">
                               <div className="flex items-center gap-2">
                                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-wider group-hover:text-brand-accent transition-colors">내 미니홈피</h3>
                                    <span className="bg-green-100 text-green-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ONLINE</span>
@@ -428,7 +428,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                         e.stopPropagation();
                                         avatarInputRef.current?.click();
                                    }}
-                                   className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-slate-700 p-[2px] mb-3 group-hover:scale-105 transition-transform duration-300 relative cursor-pointer"
+                                   className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-slate-700 p-[2px] mb-2 group-hover:scale-105 transition-transform duration-300 relative cursor-pointer"
                               >
                                    <div className="w-full h-full rounded-full bg-white p-[2px]">
                                         <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-400 overflow-hidden">
@@ -452,7 +452,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                              type="text"
                                              value={editName}
                                              onChange={(e) => setEditName(e.target.value)}
-                                             className="w-32 text-center border-b-2 border-purple-300 focus:outline-none font-bold text-gray-900 text-lg bg-transparent"
+                                             className="w-28 text-center border-b-2 border-purple-300 focus:outline-none font-bold text-gray-900 text-base bg-transparent"
                                              autoFocus
                                         />
                                         <button
@@ -464,7 +464,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    </div>
                               ) : (
                                    <div className="flex items-center gap-2 group/name cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsEditingName(true); }}>
-                                        <h4 className="font-bold text-gray-900 text-lg group-hover:text-purple-600 transition-colors">
+                                        <h4 className="font-bold text-gray-900 text-base group-hover:text-purple-600 transition-colors">
                                              {user.user_metadata?.nickname || user.user_metadata?.display_name || user.user_metadata?.username || user.user_metadata?.full_name || user.user_metadata?.name || '닉네임을 설정해주세요'}
                                         </h4>
                                         <svg className="w-4 h-4 text-gray-300 opacity-0 group-hover/name:opacity-100 transition-opacity hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -477,19 +477,19 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                         e.stopPropagation();
                                         onOpenRewardCenter();
                                    }}
-                                   className="flex items-center gap-1.5 bg-brand-light px-3 py-1 rounded-full border border-brand-gold/20 mt-2 mb-4 cursor-pointer hover:bg-white transition-colors hover:scale-110 transform"
+                                   className="flex items-center gap-1.5 bg-brand-light px-3 py-1 rounded-full border border-brand-gold/20 mt-2 mb-3 cursor-pointer hover:bg-white transition-colors hover:scale-105 transform"
                               >
                                    <span className="text-sm">⚡</span>
                                    <span className="text-xs font-black text-brand-accent">{beanCount.toLocaleString()} 온</span>
                               </div>
 
-                              <div className="flex gap-8 w-full justify-center border-t border-gray-50 pt-4">
+                              <div className="flex gap-7 w-full justify-center border-t border-gray-50 pt-3">
                                    <div className="text-center group-hover:text-gray-900 transition-colors">
-                                        <span className="block text-lg font-bold text-gray-900">{visitorStats.today.toLocaleString()}</span>
+                                        <span className="block text-base font-bold text-gray-900">{visitorStats.today.toLocaleString()}</span>
                                         <span className="text-[10px] text-gray-400 uppercase">Today</span>
                                    </div>
                                    <div className="text-center">
-                                        <span className="block text-lg font-bold text-gray-900">{visitorStats.total.toLocaleString()}</span>
+                                        <span className="block text-base font-bold text-gray-900">{visitorStats.total.toLocaleString()}</span>
                                         <span className="text-[10px] text-gray-400 uppercase">Total</span>
                                    </div>
                               </div>

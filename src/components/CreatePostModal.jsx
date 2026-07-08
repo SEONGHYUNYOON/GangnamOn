@@ -34,6 +34,7 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
           { id: 'lunch_networking', label: '☕ 점심 네트워킹', icon: Calendar }, // Coffee changed to Calendar or keep Coffee if imported
           { id: 'recruit_proposal', label: '👥 구인/협업', icon: Tag },
           { id: 'office_rent', label: '🏢 사무실/임대', icon: MapPin }, // Store changed to MapPin
+          { id: 'housing_trade', label: '🏠 월세·전세 직거래', icon: MapPin },
           { id: 'gathering', label: '⚡ 동호회/모임', icon: Users },
           { id: 'market', label: '🥕 중고거래', icon: DollarSign },
      ];
@@ -120,7 +121,7 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                if (selectedCategory === 'market') {
                     payload.price = parseInt(formData.price.replace(/[^0-9]/g, '') || 0);
                }
-               if (selectedCategory === 'gathering') {
+               if (['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'housing_trade'].includes(selectedCategory)) {
                     payload.maxParticipants = parseInt(formData.maxMembers);
                     payload.currentParticipants = 1;
                }
@@ -339,7 +340,7 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                               )}
 
                               {/* Case: Office Rent (Deposit / Monthly Rent) */}
-                              {selectedCategory === 'office_rent' && (
+                              {['office_rent', 'housing_trade'].includes(selectedCategory) && (
                                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                                         <div>
                                              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">보증금 / 월세</label>

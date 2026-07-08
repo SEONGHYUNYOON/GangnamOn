@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
      X, Calendar, MapPin, Wallet, Backpack,
-     Map, MessageCircle, ChevronRight, Crown
+     Map, MessageCircle, ChevronRight, Crown, Loader2
 } from 'lucide-react';
+import { databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role } from '../lib/appwrite';
 
-const MeetingDetail = ({ meeting, onClose }) => {
+const MeetingDetail = ({ meeting, onClose, user }) => {
      if (!meeting) return null;
+     const [joining, setJoining] = useState(false);
+     const [joined, setJoined] = useState(false);
 
      // Mock Participants Data
      const participants = [
@@ -19,6 +22,48 @@ const MeetingDetail = ({ meeting, onClose }) => {
           { id: 1, user: '초보등산러', content: '등산화 꼭 신어야 하나요?', time: '2시간 전' },
           { id: 2, user: '산다람쥐', content: '운동화도 괞찮습니다! 가벼운 코스예요~', time: '1시간 전', isHost: true },
      ];
+
+     const handleJoin = async () => {
+          if (!user?.id) {
+               alert('로그인 후 참여할 수 있습니다.');
+               return;
+          }
+          if (!meeting?.id) return;
+          if (meeting.hostId === user.id) {
+               alert('내가 개설한 모임입니다.');
+               return;
+          }
+
+          setJoining(true);
+          try {
+               const participantId = `${meeting.id}_${user.id}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+               await databases.createDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.meetingParticipants,
+                    documentId: participantId,
+                    data: {
+                         meetingId: meeting.id,
+                         userId: user.id,
+                         status: 'joined',
+                    },
+                    permissions: [
+                         Permission.read(Role.user(user.id)),
+                         Permission.update(Role.user(user.id)),
+                         Permission.delete(Role.user(user.id)),
+                    ],
+               });
+               setJoined(true);
+          } catch (error) {
+               if (error?.code === 409) {
+                    setJoined(true);
+               } else {
+                    console.error('모임 참여 실패:', error);
+                    alert('참여 신청에 실패했습니다.');
+               }
+          } finally {
+               setJoining(false);
+          }
+     };
 
      return (
           <div
@@ -186,9 +231,14 @@ const MeetingDetail = ({ meeting, onClose }) => {
                               <p className="text-xs text-gray-500 font-bold">현재 {meeting.participants}명이 참여 중이에요!</p>
                               <p className="text-[10px] text-purple-500">지금 참여하면 '임진강의 샛별 ⭐' 뱃지 획득 가능</p>
                          </div>
-                         <button className="w-full md:w-auto md:min-w-[200px] bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-purple-200 transition-all active:scale-95 flex items-center justify-center gap-2">
-                              참여하고 뱃지 받기 ({meeting.participants}/{meeting.maxParticipants})
-                              <ChevronRight className="w-4 h-4" />
+                         <button
+                              onClick={handleJoin}
+                              disabled={joining || joined || meeting.hostId === user?.id}
+                              className="w-full md:w-auto md:min-w-[200px] bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-purple-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
+                         >
+                              {joining && <Loader2 className="w-4 h-4 animate-spin" />}
+                              {joined ? '참여 신청 완료' : meeting.hostId === user?.id ? '내가 개설한 모임' : `참여하고 뱃지 받기 (${meeting.participants}/${meeting.maxParticipants})`}
+                              {!joined && !joining && <ChevronRight className="w-4 h-4" />}
                          </button>
                     </div>
 

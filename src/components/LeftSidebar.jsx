@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, PlusCircle, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame, Lock } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, Palette, MessageCircle, ThumbsUp, Camera, Shield, Store, Zap, Flame, Lock, Home } from 'lucide-react';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 import GangnamOnLogo from './GangnamOnLogo';
 
-const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
+const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) => {
      // 그룹별 펼침 상태를 사용자가 직접 건드리기 전에는 저장하지 않습니다.
      // (undefined = 아직 수동으로 토글한 적 없음 → 현재 탭이 속한 그룹만 자동으로 펼쳐짐)
      const [expandedOverrides, setExpandedOverrides] = useState({});
@@ -65,6 +65,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                items: [
                     { id: 'qna', label: '무엇이든 물어보세요', icon: HelpCircle, subtext: 'Q&A' },
                     { id: 'news', label: '강남구 소식', icon: Bell, subtext: '구청 뉴스/RSS' },
+                    { id: 'housing_trade', label: '월세·전세 직거래', icon: Home, subtext: '부동산/룸메이트' },
                     { id: 'share', label: '당근보다 가까운 나눔', icon: Heart, subtext: '중고/나눔' },
                ]
           },
@@ -96,7 +97,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, isAdmin = false }) => {
                <div className="mb-7 px-2 flex items-center justify-center">
                     <GangnamOnLogo
                          className="h-14 w-auto cursor-pointer hover:scale-105 transition-transform duration-200"
-                         onClick={() => setActiveTab('home')}
+                         onClick={onLogoClick || (() => setActiveTab('home'))}
                     />
                </div>
 
