@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
+import GameHelpDropdown from './GameHelpDropdown';
 
 const AI_NAMES = ['민수', '지영', '현우', '수진', '태호', '유나'];
 const MAX_NUM = 7;
@@ -98,16 +99,23 @@ const GangnamNunchiGame = ({ onClose, user }) => {
           <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <h2 className="text-xl font-black tracking-wider">눈치게임</h2>
-                    <div className="text-sm text-amber-400 font-bold">생존 {survived}라운드</div>
+                    <div className="flex items-center gap-1.5">
+                         <h2 className="text-xl font-black tracking-wider">눈치게임</h2>
+                         <GameHelpDropdown accent="teal">
+                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
+                                   <li>AI 6명과 <b className="text-white">1부터 7까지</b> 순서대로 숫자를 외쳐요</li>
+                                   <li><b className="text-green-400">내 차례</b>가 되면 버튼을 눌러 다음 숫자를 외치세요</li>
+                                   <li>너무 빠르거나 늦으면 탈락 · 살아남은 라운드가 점수!</li>
+                              </ul>
+                         </GameHelpDropdown>
+                    </div>
+                    <div className="text-sm text-amber-400 font-bold min-w-[5rem] text-right">생존 {survived}라운드</div>
                </div>
 
                <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">
                     <div className="flex-1 max-w-md w-full">
                          {phase === 'idle' && (
                               <div className="text-center py-12">
-                                   <p className="text-gray-400 mb-2">AI 6명과 1부터 7까지!</p>
-                                   <p className="text-gray-500 text-xs mb-6">내 차례에만 버튼을 누르세요</p>
                                    <button onClick={start} className="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-full font-bold flex items-center gap-2 mx-auto"><Play className="w-5 h-5" /> 시작하기</button>
                               </div>
                          )}

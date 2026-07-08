@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
+import GameHelpDropdown from './GameHelpDropdown';
 
 const ROUNDS = 10;
 const BOARD_R = 120;
@@ -76,14 +77,23 @@ const GangnamDartGame = ({ onClose, user }) => {
           <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <h2 className="text-xl font-black tracking-wider">골드 다트</h2>
-                    <div className="text-amber-400 font-black">{phase === 'playing' || phase === 'done' ? `${total}점` : ''}</div>
+                    <div className="flex items-center gap-1.5">
+                         <h2 className="text-xl font-black tracking-wider">골드 다트</h2>
+                         <GameHelpDropdown accent="orange">
+                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
+                                   <li>움직이는 <b className="text-amber-400">골드 과녁</b>을 클릭하세요</li>
+                                   <li>중앙(빨간 점)에 가까울수록 <b className="text-white">최대 100점</b></li>
+                                   <li>총 10라운드 합산 점수가 랭킹에 기록돼요</li>
+                              </ul>
+                         </GameHelpDropdown>
+                    </div>
+                    <div className="text-amber-400 font-black min-w-[3rem] text-right">{phase === 'playing' || phase === 'done' ? `${total}점` : ''}</div>
                </div>
 
                <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">
                     <div className="flex-1 flex flex-col items-center">
                          {phase === 'idle' && (
-                              <button onClick={start} className="my-16 bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 px-8 rounded-full flex items-center gap-2"><Play className="w-5 h-5" /> 시작하기</button>
+                              <button onClick={start} className="my-16 bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 px-8 rounded-full flex items-center gap-2 mx-auto"><Play className="w-5 h-5" /> 시작하기</button>
                          )}
                          {(phase === 'playing' || phase === 'done') && (
                               <>

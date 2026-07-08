@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
+import GameHelpDropdown from './GameHelpDropdown';
 
 const W = 360;
 const H = 520;
@@ -117,8 +118,17 @@ const GangnamFlapOn = ({ onClose, user }) => {
           <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <h2 className="text-xl font-black tracking-wider">온 점프</h2>
-                    <div className="text-amber-400 font-black">{score}</div>
+                    <div className="flex items-center gap-1.5">
+                         <h2 className="text-xl font-black tracking-wider">온 점프</h2>
+                         <GameHelpDropdown accent="amber">
+                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
+                                   <li>클릭 또는 <b className="text-white">스페이스바</b>로 골드 코인을 점프시켜요</li>
+                                   <li>강남 빌딩(장애물) 사이를 통과하세요</li>
+                                   <li>부딪히면 게임 오버 · 통과한 개수가 점수!</li>
+                              </ul>
+                         </GameHelpDropdown>
+                    </div>
+                    <div className="text-amber-400 font-black min-w-[2rem] text-right">{score}</div>
                </div>
 
                <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, RotateCw, Heart } from 'lucide-react';
+import GameHelpDropdown from './GameHelpDropdown';
 
 const hashScore = (a, b) => {
      const combined = `${a.trim().toLowerCase()}|${b.trim().toLowerCase()}`;
@@ -45,7 +46,16 @@ const GangnamCompatibility = ({ onClose, user }) => {
           <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-lg mx-auto">
                <div className="w-full flex justify-between items-center mb-6">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <h2 className="text-xl font-black tracking-wider">궁합 테스트</h2>
+                    <div className="flex items-center gap-1.5">
+                         <h2 className="text-xl font-black tracking-wider">궁합 테스트</h2>
+                         <GameHelpDropdown accent="rose">
+                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
+                                   <li>두 사람의 이름(닉네임)을 입력하세요</li>
+                                   <li><b className="text-white">0~100%</b> 궁합 점수와 강남 드립이 나와요</li>
+                                   <li>같은 이름 조합이면 항상 같은 결과!</li>
+                              </ul>
+                         </GameHelpDropdown>
+                    </div>
                     <div className="w-10" />
                </div>
 

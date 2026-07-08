@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
+import GameHelpDropdown from './GameHelpDropdown';
 
 const EMOJIS = ['🏙️', '🚕', '🥟', '🏢', '🌃', '🚇', '🎡', '🏙️'];
 
@@ -87,7 +88,16 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
           <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <h2 className="text-xl font-black tracking-wider">추억의 짝맞추기</h2>
+                    <div className="flex items-center gap-1.5">
+                         <h2 className="text-xl font-black tracking-wider">추억의 짝맞추기</h2>
+                         <GameHelpDropdown accent="pink">
+                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
+                                   <li>카드를 눌러 뒤집고 <b className="text-white">같은 이모지 2장</b>을 찾아요</li>
+                                   <li>8쌍(16장)을 모두 맞추면 클리어!</li>
+                                   <li>시간·시도 횟수가 적을수록 점수가 높아요</li>
+                              </ul>
+                         </GameHelpDropdown>
+                    </div>
                     <div className="w-24 text-right text-xs text-gray-400">{started ? `${attempts}회 · ${elapsed}s` : ''}</div>
                </div>
 
@@ -95,7 +105,6 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
                     <div className="flex-1 max-w-sm w-full">
                          {!started ? (
                               <div className="text-center py-12">
-                                   <p className="text-gray-400 mb-4">강남 테마 이모지 8쌍을 맞춰보세요!</p>
                                    <button onClick={start} className="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-full font-bold flex items-center gap-2 mx-auto"><Play className="w-5 h-5" /> 시작하기</button>
                               </div>
                          ) : (

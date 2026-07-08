@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ArrowLeft, RotateCw, Trophy } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
+import GameHelpDropdown from './GameHelpDropdown';
 
 const SIZE = 4;
 
@@ -139,8 +140,18 @@ const GangnamGame2048 = ({ onClose, user }) => {
           <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
                <div className="w-full flex justify-between items-center mb-4">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <h2 className="text-xl font-black tracking-wider">2048 강남온</h2>
-                    <div className="w-24" />
+                    <div className="flex items-center gap-1.5">
+                         <h2 className="text-xl font-black tracking-wider">2048 강남온</h2>
+                         <GameHelpDropdown accent="violet">
+                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
+                                   <li><b className="text-white">방향키</b> 또는 <b className="text-white">스와이프</b>로 타일을 밀어요</li>
+                                   <li>같은 숫자가 부딪히면 <b className="text-amber-400">합쳐져요</b> (2+2→4, 4+4→8 …)</li>
+                                   <li>한 번 움직일 때마다 빈 칸에 <b className="text-white">2 또는 4</b>가 새로 생겨요</li>
+                                   <li>움직일 곳이 없으면 게임 오버 · 합친 점수가 랭킹에 기록돼요</li>
+                              </ul>
+                         </GameHelpDropdown>
+                    </div>
+                    <div className="w-10" />
                </div>
 
                <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">
@@ -174,7 +185,7 @@ const GangnamGame2048 = ({ onClose, user }) => {
                                    <button onClick={reset} className="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-full font-bold">다시하기</button>
                               </div>
                          )}
-                         <p className="text-gray-500 text-xs mt-3 text-center">방향키 또는 스와이프로 이동</p>
+                         <p className="text-gray-500 text-xs mt-3 text-center">↑↓←→ 키 또는 화면 스와이프 · 2048 타일을 만들면 보너스!</p>
                     </div>
 
                     <div className="bg-gray-800/80 rounded-xl p-4 border border-gray-600 w-full lg:w-56 shrink-0">

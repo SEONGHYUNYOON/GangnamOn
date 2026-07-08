@@ -672,9 +672,10 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                              <span className="text-xl">🔢</span>
                                              <div>
                                                   <div className="text-white font-bold text-sm">2048</div>
-                                                  <div className="text-slate-600 text-[10px]">숫자 합치기</div>
+                                                  <div className="text-slate-600 text-[10px]">방향키로 밀기 · 같으면 합쳐짐</div>
                                              </div>
                                         </div>
+                                        <p className="text-slate-500 text-[10px] leading-snug mb-2">4×4 칸에 숫자를 합쳐 2048을 만들어보세요</p>
                                         <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]"><MiniRank gameId="game2048" /></div>
                                         <button className="w-full py-1.5 bg-violet-600/15 hover:bg-violet-600/25 text-violet-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
                                    </div>
@@ -687,9 +688,10 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                              <span className="text-xl">🪙</span>
                                              <div>
                                                   <div className="text-white font-bold text-sm">온 점프</div>
-                                                  <div className="text-slate-600 text-[10px]">플래피 스타일</div>
+                                                  <div className="text-slate-600 text-[10px]">탭해서 점프 · 장애물 통과</div>
                                              </div>
                                         </div>
+                                        <p className="text-slate-500 text-[10px] leading-snug mb-2">빌딩 사이를 날며 통과한 개수가 점수</p>
                                         <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]"><MiniRank gameId="flapon" /></div>
                                         <button className="w-full py-1.5 bg-amber-600/15 hover:bg-amber-600/25 text-amber-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
                                    </div>
@@ -702,9 +704,10 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                              <span className="text-xl">🃏</span>
                                              <div>
                                                   <div className="text-white font-bold text-sm">짝맞추기</div>
-                                                  <div className="text-slate-600 text-[10px]">메모리 카드</div>
+                                                  <div className="text-slate-600 text-[10px]">카드 뒤집어 같은 이모지 찾기</div>
                                              </div>
                                         </div>
+                                        <p className="text-slate-500 text-[10px] leading-snug mb-2">8쌍을 빠르게 맞출수록 고득점</p>
                                         <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]"><MiniRank gameId="memory" /></div>
                                         <button className="w-full py-1.5 bg-pink-600/15 hover:bg-pink-600/25 text-pink-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
                                    </div>
@@ -717,9 +720,10 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                              <span className="text-xl">🎯</span>
                                              <div>
                                                   <div className="text-white font-bold text-sm">골드 다트</div>
-                                                  <div className="text-slate-600 text-[10px]">조준 게임</div>
+                                                  <div className="text-slate-600 text-[10px]">움직이는 과녁 클릭</div>
                                              </div>
                                         </div>
+                                        <p className="text-slate-500 text-[10px] leading-snug mb-2">10라운드 합산 · 중앙일수록 100점</p>
                                         <div className="border-t border-white/5 pt-2 mb-3 min-h-[52px]"><MiniRank gameId="dart" /></div>
                                         <button className="w-full py-1.5 bg-orange-600/15 hover:bg-orange-600/25 text-orange-400 rounded-lg text-xs font-bold transition-colors">시작 <span className="text-slate-700 ml-1">⚡1</span></button>
                                    </div>
@@ -824,7 +828,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                         <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 font-bold">무료입장</span>
                                    </div>
                                    <div className="text-white font-bold mb-1 text-sm">온 룰렛</div>
-                                   <div className="text-slate-600 text-xs mb-4">돌릴 때 1온 · 최대 +50온!</div>
+                                   <div className="text-slate-600 text-xs mb-4">입장 무료 · 돌릴 때 1온 · +5~+50온 또는 꽝</div>
                                    <div className="text-amber-400 text-xs font-bold">룰렛 돌리기 →</div>
                               </div>
 
@@ -834,7 +838,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                         <span className="flex items-center gap-0.5 text-slate-700 text-[10px]"><Zap className="w-2.5 h-2.5 text-amber-600" />1</span>
                                    </div>
                                    <div className="text-white font-bold mb-1 text-sm">눈치게임</div>
-                                   <div className="text-slate-600 text-xs mb-4">AI와 숫자 눈치싸움 · 1인용</div>
+                                   <div className="text-slate-600 text-xs mb-4">내 차례에만 숫자 외치기 · 너무 빠르거나 늦으면 탈락</div>
                                    <div className="text-teal-400 text-xs font-bold">도전하기 →</div>
                               </div>
 
@@ -844,7 +848,7 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
                                         <span className="flex items-center gap-0.5 text-slate-700 text-[10px]"><Zap className="w-2.5 h-2.5 text-amber-600" />1</span>
                                    </div>
                                    <div className="text-white font-bold mb-1 text-sm">궁합 테스트</div>
-                                   <div className="text-slate-600 text-xs mb-4">이름으로 궁합 · 강남 드립</div>
+                                   <div className="text-slate-600 text-xs mb-4">두 이름 입력 → 0~100% 궁합 · 강남 드립 결과</div>
                                    <div className="text-rose-400 text-xs font-bold">테스트 시작 →</div>
                               </div>
                          </div>

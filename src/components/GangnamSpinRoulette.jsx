@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft, RotateCw, Zap } from 'lucide-react';
+import GameHelpDropdown from './GameHelpDropdown';
 
 const SEGMENTS = [
      { label: '+5온', value: 5, color: '#22c55e' },
@@ -59,8 +60,17 @@ const GangnamSpinRoulette = ({ onClose, user, beanCount = 0, updateBeanCount }) 
           <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-lg mx-auto">
                <div className="w-full flex justify-between items-center mb-6">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <h2 className="text-xl font-black tracking-wider">온 룰렛</h2>
-                    <div className="flex items-center gap-1 text-amber-400 text-sm font-bold"><Zap className="w-4 h-4" />{beanCount}</div>
+                    <div className="flex items-center gap-1.5">
+                         <h2 className="text-xl font-black tracking-wider">온 룰렛</h2>
+                         <GameHelpDropdown accent="amber">
+                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
+                                   <li>입장은 <b className="text-white">무료</b>예요</li>
+                                   <li><b className="text-amber-400">돌리기</b> 버튼 클릭 시 1온이 소모돼요</li>
+                                   <li>당첨 시 +5 ~ +50온 지급 · 꽝도 있어요</li>
+                              </ul>
+                         </GameHelpDropdown>
+                    </div>
+                    <div className="flex items-center gap-1 text-amber-400 text-sm font-bold min-w-[3rem] justify-end"><Zap className="w-4 h-4" />{beanCount}</div>
                </div>
 
                <div className="relative mb-8">
