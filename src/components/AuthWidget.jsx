@@ -225,6 +225,9 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         <span className="text-[10px] font-bold uppercase tracking-wider text-gray-300">or</span>
                                         <div className="h-px flex-1 bg-gray-100" />
                                    </div>
+                                   <p className="rounded-lg bg-amber-50 px-3 py-2 text-[11px] font-bold leading-5 text-amber-700">
+                                        소셜 로그인은 Appwrite 콘솔에서 Google/OIDC provider를 활성화하고 클라이언트 ID를 등록해야 정상 연결됩니다.
+                                   </p>
                               </>
                          )}
 

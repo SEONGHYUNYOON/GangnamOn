@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role } from '../lib/appwrite';
 import { uploadProfileAvatar } from '../lib/imageUpload';
+import { getActivityRank } from '../lib/activityRank';
 import { BookOpen, Camera, ChevronRight, Heart, Home, Link2, Loader2, Mail, Send, Settings, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
@@ -24,14 +25,7 @@ const extractYoutubeId = (value = '') => {
      return /^[a-zA-Z0-9_-]{6,}$/.test(input) ? input : '';
 };
 
-const surfLinks = [
-     { name: '강남 북클럽', status: '오늘 독서모임 열림', tone: 'bg-amber-50 text-amber-800' },
-     { name: '역삼 러너스', status: '한강 10km 모집중', tone: 'bg-blue-50 text-blue-800' },
-     { name: '단대부고 25회', status: '동창회 사진 업데이트', tone: 'bg-emerald-50 text-emerald-800' },
-     { name: '테헤란 스타트업랩', status: '점심 네트워킹', tone: 'bg-violet-50 text-violet-800' },
-];
-
-const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) => {
+const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOpenProfile }) => {
      const [guestbookEntries, setGuestbookEntries] = useState([]);
      const [newComment, setNewComment] = useState('');
      const [profileData, setProfileData] = useState(null);
@@ -44,12 +38,15 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
      const [todayCount, setTodayCount] = useState(0);
      const [totalCount, setTotalCount] = useState(0);
      const [avatarUploading, setAvatarUploading] = useState(false);
+     const [surfProfiles, setSurfProfiles] = useState([]);
+     const [friendIds, setFriendIds] = useState(new Set());
 
      const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
      const displayName = profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '강남 이웃';
      const displayLocation = profileData?.location || user?.user_metadata?.location || '강남';
      const avatarUrl = profileData?.avatarUrl || user?.user_metadata?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gangnam';
      const statusMessage = profileData?.statusMessage || profileData?.bio || '오늘도 강남에서 좋은 사람을 만나는 중.';
+     const rank = getActivityRank((profileData?.beans || 0) / 50 + totalCount + guestbookEntries.length * 6);
 
      const panes = useMemo(() => [
           { id: 'home', label: '홈', icon: Home },
@@ -73,6 +70,13 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                          job: data.job || '',
                          bio: data.statusMessage || '',
                     });
+                    const profileBgm = {
+                         bgmUrl: data.bgmUrl || '',
+                         bgmTitle: data.bgmTitle || '',
+                         bgmVideoId: data.bgmVideoId || extractYoutubeId(data.bgmUrl || ''),
+                    };
+                    setMiniSettings(profileBgm);
+                    setBgmDraft({ bgmUrl: profileBgm.bgmUrl, bgmTitle: profileBgm.bgmTitle });
                } catch (error) {
                     console.error('프로필 로딩 실패:', error);
                }
@@ -153,12 +157,46 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                     bgmTitle: parsed.bgmTitle || '',
                     bgmVideoId: parsed.bgmVideoId || extractYoutubeId(parsed.bgmUrl || ''),
                };
-               setMiniSettings(next);
-               setBgmDraft({ bgmUrl: next.bgmUrl, bgmTitle: next.bgmTitle });
+               setMiniSettings(prev => prev.bgmVideoId ? prev : next);
+               setBgmDraft(prev => prev.bgmUrl ? prev : { bgmUrl: next.bgmUrl, bgmTitle: next.bgmTitle });
           } catch (error) {
                console.warn('미니홈피 설정 로딩 실패:', error);
           }
      }, [user?.id, user?.user_metadata?.username]);
+
+     useEffect(() => {
+          const fetchSurfProfiles = async () => {
+               try {
+                    const res = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.profiles,
+                         queries: [Query.limit(24)],
+                    });
+                    setSurfProfiles(res.documents.filter(profile => profile.$id !== user?.id));
+               } catch (error) {
+                    console.warn('파도타기 프로필 로딩 실패:', error);
+               }
+          };
+
+          const fetchFriends = async () => {
+               if (!currentUser?.id) return;
+               try {
+                    const res = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.userRelations,
+                         queries: [Query.equal('ownerId', currentUser.id), Query.equal('relationType', 'friend'), Query.limit(100)],
+                    });
+                    setFriendIds(new Set(res.documents.map(doc => doc.targetId)));
+               } catch (error) {
+                    console.warn('일촌 목록 로딩 실패:', error);
+               }
+          };
+
+          if (activePane === 'surf') {
+               fetchSurfProfiles();
+               fetchFriends();
+          }
+     }, [activePane, user?.id, currentUser?.id]);
 
      useEffect(() => {
           const fetchGuestbook = async () => {
@@ -239,7 +277,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           }
      };
 
-     const handleSaveBgm = () => {
+     const handleSaveBgm = async () => {
           if (!isOwner) return;
           const videoId = extractYoutubeId(bgmDraft.bgmUrl);
           if (bgmDraft.bgmUrl.trim() && !videoId) {
@@ -255,8 +293,54 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
 
           setMiniSettings(next);
           window.localStorage.setItem(getMinihomeStorageKey(user), JSON.stringify(next));
+          try {
+               await databases.updateDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    documentId: user.id,
+                    data: next,
+               });
+               setProfileData(prev => ({ ...prev, ...next }));
+          } catch (error) {
+               console.error('BGM 저장 실패:', error);
+               alert('BGM 저장에 실패했습니다.');
+               return;
+          }
           setIsBgmOpen(false);
      };
+
+     const handleFriend = async (profile) => {
+          if (!currentUser?.id) {
+               alert('로그인이 필요합니다.');
+               return;
+          }
+          if (!profile?.$id || profile.$id === currentUser.id || friendIds.has(profile.$id)) return;
+          const documentId = `${currentUser.id}_${profile.$id}_friend`.replace(/[^a-zA-Z0-9._-]/g, '_');
+          try {
+               await databases.createDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.userRelations,
+                    documentId,
+                    data: {
+                         ownerId: currentUser.id,
+                         targetId: profile.$id,
+                         relationType: 'friend',
+                         targetUsername: displayNameOfProfile(profile),
+                         targetAvatarUrl: profile.avatarUrl || '',
+                    },
+                    permissions: [
+                         Permission.read(Role.user(currentUser.id)),
+                         Permission.update(Role.user(currentUser.id)),
+                         Permission.delete(Role.user(currentUser.id)),
+                    ],
+               });
+               setFriendIds(prev => new Set([...prev, profile.$id]));
+          } catch (error) {
+               console.warn('일촌 맺기 실패:', error);
+          }
+     };
+
+     const displayNameOfProfile = (profile) => profile?.fullName || profile?.username || '강남 이웃';
 
      const handlePostComment = async () => {
           if (!newComment.trim()) return;
@@ -349,6 +433,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                               <div className="mt-4">
                                    <h2 className="text-xl font-black text-brand-ink">{displayName}</h2>
                                    <p className="mt-1 text-xs font-bold text-slate-500">{displayLocation} · {profileData?.mbti || 'MBTI 미설정'}</p>
+                                   <p className="mt-2 inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-black text-amber-800">{rank.badge} {rank.title}</p>
                                    <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-600">{statusMessage}</p>
                               </div>
 
@@ -416,17 +501,18 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                                        </button>
                                                   </div>
 
+                                                  {miniSettings.bgmVideoId && (
+                                                       <iframe
+                                                            title="Minihome YouTube BGM"
+                                                            className="aspect-video w-full rounded-xl"
+                                                            src={`https://www.youtube.com/embed/${miniSettings.bgmVideoId}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1`}
+                                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                            allowFullScreen
+                                                       />
+                                                  )}
+
                                                   {isBgmOpen && (
                                                        <div className="space-y-3">
-                                                            {miniSettings.bgmVideoId && (
-                                                                 <iframe
-                                                                      title="Minihome YouTube BGM"
-                                                                      className="aspect-video w-full rounded-xl"
-                                                                      src={`https://www.youtube.com/embed/${miniSettings.bgmVideoId}?rel=0&modestbranding=1`}
-                                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                                                      allowFullScreen
-                                                                 />
-                                                            )}
                                                             {isOwner && (
                                                                  <div className="grid gap-2 rounded-xl bg-white p-3">
                                                                       <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
@@ -520,15 +606,25 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                                   <h3 className="text-lg font-black text-sky-950">파도타기</h3>
                                                   <p className="mt-1 text-sm font-semibold text-sky-700">일촌과 관심사가 이어진 강남 미니홈피를 둘러보세요.</p>
                                              </div>
-                                             {surfLinks.map((link) => (
-                                                  <button key={link.name} type="button" className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-left hover:bg-slate-50">
+                                             {surfProfiles.map((profile) => (
+                                                  <div key={profile.$id} className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left hover:bg-slate-50">
                                                        <div>
-                                                            <p className="text-sm font-black text-brand-ink">{link.name}</p>
-                                                            <p className="mt-1 text-xs font-bold text-slate-500">{link.status}</p>
+                                                            <p className="text-sm font-black text-brand-ink">{displayNameOfProfile(profile)}</p>
+                                                            <p className="mt-1 text-xs font-bold text-slate-500">{profile.location || '강남'} · {profile.statusMessage || '미니홈피 운영 중'}</p>
                                                        </div>
-                                                       <span className={`rounded-full px-3 py-1 text-[11px] font-black ${link.tone}`}>방문</span>
-                                                  </button>
+                                                       <div className="flex shrink-0 gap-2">
+                                                            <button type="button" onClick={() => handleFriend(profile)} className={`rounded-full px-3 py-1 text-[11px] font-black ${friendIds.has(profile.$id) ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'}`}>
+                                                                 {friendIds.has(profile.$id) ? '일촌' : '일촌 맺기'}
+                                                            </button>
+                                                            <button type="button" onClick={() => onOpenProfile?.(profile)} className="rounded-full bg-sky-900 px-3 py-1 text-[11px] font-black text-white">방문</button>
+                                                       </div>
+                                                  </div>
                                              ))}
+                                             {surfProfiles.length === 0 && (
+                                                  <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-sm font-semibold text-slate-400">
+                                                       둘러볼 미니홈피를 찾는 중입니다.
+                                                  </div>
+                                             )}
                                         </div>
                                    )}
                               </div>

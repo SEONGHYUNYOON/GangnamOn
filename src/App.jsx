@@ -595,7 +595,19 @@ function App() {
      };
 
      const handleOpenMinihome = (targetProfile) => {
-          if (targetProfile && targetProfile.name) {
+          if (targetProfile?.$id) {
+               setMiniHomeTargetUser({
+                    id: targetProfile.$id,
+                    $id: targetProfile.$id,
+                    user_metadata: {
+                         username: targetProfile.username || targetProfile.fullName,
+                         full_name: targetProfile.fullName || targetProfile.username,
+                         avatar_url: targetProfile.avatarUrl || '',
+                         location: targetProfile.location || '강남'
+                    }
+               });
+               setIsMiniHomeOpen(true);
+          } else if (targetProfile && targetProfile.name) {
                // Mock profile object
                setMiniHomeTargetUser({
                     user_metadata: {
@@ -858,7 +870,15 @@ function App() {
                                                             + 글쓰기
                                                        </button>
                                                   </div>
-                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} onStartChat={handleStartChat} user={user} />
+                                                  <MeetingFeed
+                                                       items={meetingItems.filter(item => item.originalType === activeTab)}
+                                                       onStartChat={handleStartChat}
+                                                       user={user}
+                                                       title="최근 올라온 강남 비즈니스 글"
+                                                       actionLabel="전체 글 보기"
+                                                       emptyTitle="아직 등록한 게시글이 없습니다."
+                                                       emptyDescription="첫 번째 글을 등록해보세요."
+                                                  />
                                              </>
                                         )}
 
@@ -873,7 +893,15 @@ function App() {
                                                             + 매물 올리기
                                                        </button>
                                                   </div>
-                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === 'housing_trade')} onStartChat={handleStartChat} user={user} />
+                                                  <MeetingFeed
+                                                       items={meetingItems.filter(item => item.originalType === 'housing_trade')}
+                                                       onStartChat={handleStartChat}
+                                                       user={user}
+                                                       title="최근 올라온 직거래 게시글"
+                                                       actionLabel="전체 매물 보기"
+                                                       emptyTitle="아직 등록한 게시글이 없습니다."
+                                                       emptyDescription="첫 번째 매물을 올려보세요."
+                                                  />
                                              </>
                                         )}
 
@@ -1102,6 +1130,7 @@ function App() {
                                    user={miniHomeTargetUser || user}
                                    currentUser={user}
                                    onClose={() => setIsMiniHomeOpen(false)}
+                                   onOpenProfile={handleOpenMinihome}
                                    onOpenAvatarCustomizer={() => {
                                         setIsMiniHomeOpen(false);
                                         setIsAvatarModalOpen(true);

@@ -141,6 +141,24 @@
                     "type": "string",
                     "size": 500,
                     "required": false
+                },
+                {
+                    "key": "bgmUrl",
+                    "type": "string",
+                    "size": 512,
+                    "required": false
+                },
+                {
+                    "key": "bgmTitle",
+                    "type": "string",
+                    "size": 128,
+                    "required": false
+                },
+                {
+                    "key": "bgmVideoId",
+                    "type": "string",
+                    "size": 64,
+                    "required": false
                 }
             ],
             "indexes": [
@@ -457,6 +475,82 @@
                     "type": "key",
                     "attributes": [
                         "userId"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "user_relations",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "user_relations",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "ownerId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "targetId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "relationType",
+                    "type": "string",
+                    "size": 24,
+                    "required": true
+                },
+                {
+                    "key": "targetUsername",
+                    "type": "string",
+                    "size": 64,
+                    "required": false
+                },
+                {
+                    "key": "targetAvatarUrl",
+                    "type": "string",
+                    "size": 512,
+                    "required": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "owner_target_type_idx",
+                    "type": "unique",
+                    "attributes": [
+                        "ownerId",
+                        "targetId",
+                        "relationType"
+                    ]
+                },
+                {
+                    "key": "owner_idx",
+                    "type": "key",
+                    "attributes": [
+                        "ownerId"
+                    ]
+                },
+                {
+                    "key": "owner_relation_idx",
+                    "type": "key",
+                    "attributes": [
+                        "ownerId",
+                        "relationType"
+                    ]
+                },
+                {
+                    "key": "target_idx",
+                    "type": "key",
+                    "attributes": [
+                        "targetId"
                     ]
                 }
             ]

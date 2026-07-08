@@ -52,6 +52,7 @@ export const COLLECTIONS = {
      chatParticipants: 'chat_participants',
      chatMessages: 'chat_messages',
      meetingParticipants: 'meeting_participants',
+     userRelations: 'user_relations',
      presence: 'presence',
      pageViews: 'page_views',
      guestbookEntries: 'guestbook_entries',

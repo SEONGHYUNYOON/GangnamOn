@@ -37,7 +37,15 @@ const EventTimer = ({ expiresAt }) => {
      );
 };
 
-const MeetingFeed = ({ items, onStartChat, user }) => {
+const MeetingFeed = ({
+     items,
+     onStartChat,
+     user,
+     title = '지금 핫한 강남 모임',
+     actionLabel = '전체 모임 일정 보기',
+     emptyTitle = '아직 등록된 모임이 없어요.',
+     emptyDescription = '첫 번째 모임을 개설해보세요!',
+}) => {
      const [selectedMeeting, setSelectedMeeting] = useState(null);
      const [likedItems, setLikedItems] = useState(new Set());
      const [animatingHearts, setAnimatingHearts] = useState(new Set());
@@ -94,9 +102,9 @@ const MeetingFeed = ({ items, onStartChat, user }) => {
           <>
                <div className="space-y-4">
                     <div className="flex justify-between items-end px-1">
-                         <h2 className="text-lg font-black text-gray-900">지금 핫한 강남 모임</h2>
+                         <h2 className="text-lg font-black text-gray-900">{title}</h2>
                          <button className="text-xs text-brand-accent font-bold hover:underline underline-offset-4 flex items-center">
-                              전체 모임 일정 보기 <ChevronRight className="w-4 h-4 ml-1" />
+                              {actionLabel} <ChevronRight className="w-4 h-4 ml-1" />
                          </button>
                     </div>
 
@@ -221,8 +229,8 @@ const MeetingFeed = ({ items, onStartChat, user }) => {
                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                                         <Star className="w-8 h-8 text-gray-300" />
                                    </div>
-                                   <p className="text-gray-500 font-bold">아직 등록된 모임이 없어요.</p>
-                                   <p className="text-xs text-gray-400 mt-1">첫 번째 모임을 개설해보세요!</p>
+                                   <p className="text-gray-500 font-bold">{emptyTitle}</p>
+                                   <p className="text-xs text-gray-400 mt-1">{emptyDescription}</p>
                               </div>
                          )}
                     </div>

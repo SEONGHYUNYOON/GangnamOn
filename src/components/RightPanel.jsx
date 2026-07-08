@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink, Camera, Loader2 } from 'lucide-react';
 import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role } from '../lib/appwrite';
 import { uploadProfileAvatar } from '../lib/imageUpload';
+import { getActivityRank } from '../lib/activityRank';
 import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
 import GangnamNews from './GangnamNews';
@@ -321,6 +322,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      const weatherInfo = getWeatherInfo(weather.code);
      const dustInfo = getDustInfo(weather.pm10);
      const isRainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(weather.code);
+     const activityRank = getActivityRank(beanCount / 50 + visitorStats.total);
 
      // === LOGIN WIDGET (Replaces Minihome when logged out) ===
      const renderLoginWidget = () => (
@@ -481,6 +483,10 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                               >
                                    <span className="text-sm">⚡</span>
                                    <span className="text-xs font-black text-brand-accent">{beanCount.toLocaleString()} 온</span>
+                              </div>
+
+                              <div className="mb-3 rounded-full bg-slate-50 px-3 py-1 text-[11px] font-black text-slate-700">
+                                   {activityRank.badge} {activityRank.title}
                               </div>
 
                               <div className="flex gap-7 w-full justify-center border-t border-gray-50 pt-3">
