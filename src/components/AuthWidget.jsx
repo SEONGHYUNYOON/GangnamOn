@@ -378,23 +378,23 @@ const AuthWidget = ({ onLoginSuccess }) => {
                          </div>
                     ) : (
                     <div className="mt-6 pt-4 border-t border-gray-50 text-center">
-                         <p className="text-xs text-gray-400">
-                              {isSignUpMode ? '이미 계정이 있으신가요? ' : '아직 계정이 없으신가요? '}
-                              <button
-                                   onClick={() => {
-                                        setIsSignUpMode(!isSignUpMode);
-                                        setAuthError(null);
-                                        setEmail('');
-                                        setPassword('');
-                                        setUsername('');
-                                        setAgreedToTerms(false);
-                                   }}
-                                   className="font-bold text-brand-accent hover:underline"
-                              >
-                                   {isSignUpMode ? '로그인' : '회원가입'}
-                                   {!isSignUpMode && <span className="text-[10px] bg-brand-light text-brand-accent px-1 py-0.5 rounded ml-1 border border-brand-gold/20">3초컷</span>}
-                              </button>
-                         </p>
+                         <button
+                              type="button"
+                              onClick={() => {
+                                   setIsSignUpMode(!isSignUpMode);
+                                   setIsForgotMode(false);
+                                   setAuthError(null);
+                                   setEmail('');
+                                   setPassword('');
+                                   setUsername('');
+                                   setAgreedToTerms(false);
+                              }}
+                              className="inline-flex min-h-10 items-center justify-center gap-1 rounded-full px-4 text-xs font-bold text-gray-400 transition-colors hover:bg-brand-light hover:text-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+                         >
+                              <span>{isSignUpMode ? '이미 계정이 있으신가요?' : '아직 계정이 없으신가요?'}</span>
+                              <span className="text-brand-accent">{isSignUpMode ? '로그인' : '회원가입'}</span>
+                              {!isSignUpMode && <span className="text-[10px] bg-brand-light text-brand-accent px-1 py-0.5 rounded border border-brand-gold/20">3초컷</span>}
+                         </button>
                     </div>
                     )}
                </div>
