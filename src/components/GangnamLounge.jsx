@@ -62,6 +62,10 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
      const paidFeatures = ['block', 'snake', 'whack', 'brick', 'reaction', 'typing', 'towerdefense', 'balance', 'mbti', 'tarot'];
      const handleLoungeEntry = (feature) => {
           if (paidFeatures.includes(feature)) {
+               if (!user?.id) {
+                    alert('비회원은 이용 할 수 없습니다.');
+                    return;
+               }
                if (beanCount < LOUNGE_ENTRY_COST) {
                     alert(`온이 부족해요! 열심히 활동해서 모아보세요 ⚡\n(필요: ${LOUNGE_ENTRY_COST} 온)`);
                     return;
