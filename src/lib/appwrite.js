@@ -50,6 +50,9 @@ export const COLLECTIONS = {
      romanceInteractions: 'romance_interactions',
      chatRooms: 'chat_rooms',
      chatParticipants: 'chat_participants',
+     chatMessages: 'chat_messages',
+     presence: 'presence',
+     pageViews: 'page_views',
      guestbookEntries: 'guestbook_entries',
 };
 export const BUCKET_ID = 'post-images';

@@ -374,6 +374,139 @@
             ]
         },
         {
+            "$id": "chat_messages",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "chat_messages",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "roomId",
+                    "type": "string",
+                    "size": 128,
+                    "required": true
+                },
+                {
+                    "key": "senderId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "size": 2000,
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "room_idx",
+                    "type": "key",
+                    "attributes": [
+                        "roomId"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "presence",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "presence",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "username",
+                    "type": "string",
+                    "size": 64,
+                    "required": false
+                },
+                {
+                    "key": "avatarUrl",
+                    "type": "string",
+                    "size": 512,
+                    "required": false
+                },
+                {
+                    "key": "lastSeenAt",
+                    "type": "datetime",
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "last_seen_idx",
+                    "type": "key",
+                    "attributes": [
+                        "lastSeenAt"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "page_views",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"any\")"
+            ],
+            "databaseId": "main",
+            "name": "page_views",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "hostId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "visitorId",
+                    "type": "string",
+                    "size": 128,
+                    "required": true
+                },
+                {
+                    "key": "visitDate",
+                    "type": "string",
+                    "size": 10,
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "host_idx",
+                    "type": "key",
+                    "attributes": [
+                        "hostId"
+                    ]
+                },
+                {
+                    "key": "host_date_idx",
+                    "type": "key",
+                    "attributes": [
+                        "hostId",
+                        "visitDate"
+                    ]
+                }
+            ]
+        },
+        {
             "$id": "guestbook_entries",
             "$permissions": [
                 "read(\"any\")",

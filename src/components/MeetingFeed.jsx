@@ -37,7 +37,7 @@ const EventTimer = ({ expiresAt }) => {
      );
 };
 
-const MeetingFeed = ({ items }) => {
+const MeetingFeed = ({ items, onStartChat }) => {
      const [selectedMeeting, setSelectedMeeting] = useState(null);
      const [likedItems, setLikedItems] = useState(new Set());
      const [animatingHearts, setAnimatingHearts] = useState(new Set());
@@ -69,6 +69,17 @@ const MeetingFeed = ({ items }) => {
      const handleShare = (e, title) => {
           e.stopPropagation();
           alert(`${title} 링크가 복사되었습니다! (시뮬레이션)`);
+     };
+
+     const handleHostChat = (event, item) => {
+          event.stopPropagation();
+          if (!item.hostId || !onStartChat) return;
+          onStartChat({
+               $id: item.hostId,
+               username: item.host,
+               fullName: item.host,
+               avatarUrl: item.hostAvatarUrl || '',
+          });
      };
 
      if (!items) {
@@ -168,12 +179,18 @@ const MeetingFeed = ({ items }) => {
                                              {/* Footer Info: Host, Date, Participants */}
                                              <div className="flex justify-between items-center border-t border-gray-50 pt-2">
                                                   <div className="min-w-0 flex items-center gap-2">
-                                                       <div className="flex items-center gap-2">
+                                                       <button
+                                                            type="button"
+                                                            onClick={(event) => handleHostChat(event, item)}
+                                                            disabled={!item.hostId || !onStartChat}
+                                                            className="flex min-w-0 items-center gap-2 rounded-full pr-1 text-left disabled:cursor-default enabled:hover:bg-brand-light"
+                                                            title={item.hostId ? '1:1 대화하기' : undefined}
+                                                       >
                                                             <div className="w-4 h-4 rounded-full bg-yellow-100 flex items-center justify-center">
                                                                  <Star className="w-2.5 h-2.5 text-yellow-600 fill-yellow-600" />
                                                             </div>
                                                             <span className="truncate text-[11px] font-bold text-gray-700">{item.host}</span>
-                                                       </div>
+                                                       </button>
                                                        <div className="h-3 w-[1px] bg-gray-200 shrink-0"></div>
 
                                                        {/* Show Timer for Events, Date for others */}

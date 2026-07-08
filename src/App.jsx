@@ -96,6 +96,7 @@ function App() {
      const [isMobileLoginOpen, setIsMobileLoginOpen] = useState(false);
      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
      const [passwordRecovery, setPasswordRecovery] = useState(null); // { userId, secret } | null
+     const [chatPeer, setChatPeer] = useState(null);
 
      // 관리자 대시보드에 접근 가능한 이메일 (운영진 전용 — 다른 사용자에게는 메뉴 자체가 보이지 않음)
      const ADMIN_EMAILS = ['a23642514@gmail.com'];
@@ -179,6 +180,8 @@ function App() {
                     avatar_url: profile?.avatarUrl || '',
                     region: profile?.location || '강남',
                     gender: profile?.gender || '',
+                    visitors_today: profile?.visitorsToday || 0,
+                    visitors_total: profile?.visitorsTotal || 0,
                },
           });
      };
@@ -248,10 +251,6 @@ function App() {
           handleEmailVerificationCallback();
           refreshUser();
 
-          // Appwrite에는 Supabase 같은 실시간 presence(접속자 추적) 기능이 기본 제공되지 않습니다.
-          // 실제 접속자 추적은 추후 별도 작업으로 남겨두고, 우선 화면 표시용 숫자를 채워둡니다.
-          setOnlineUsersCount(Math.floor(Math.random() * 40) + 15);
-
           // Fetch Feed Data
           const fetchFeeds = async () => {
                try {
@@ -299,7 +298,9 @@ function App() {
                          isEvent: g.type === 'event',
                          expiresAt: g.expiresAt,
                          title: g.title,
+                         hostId: g.authorId,
                          host: normalizeForGangnamDisplay(g.authorUsername) || g.authorUsername || '익명',
+                         hostAvatarUrl: g.authorAvatarUrl || '',
                          hostBadge: '강남 이웃',
                          date: new Date(g.$createdAt).toLocaleDateString(),
                          location: normalizeForGangnamDisplay(g.locationName || '장소미정'),
@@ -309,7 +310,7 @@ function App() {
                          status: (g.currentParticipants >= (g.maxParticipants || 99)) ? 'closed' : 'open',
                          image: g.imageUrls?.[0] || 'https://via.placeholder.com/600'
                     }));
-                    setMeetingItems([...VIRTUAL_MEETING_ITEMS, ...mappedGatherings]);
+                    setMeetingItems(mappedGatherings);
 
                     // 플로우 배너 자동 생성: 진행 중인 사장님 이벤트 + 지금 핫한 모임을 배너에 실어서
                     // 클릭하면 바로 해당 메뉴로 이동하도록 연결 (목적성 강화)
@@ -411,6 +412,16 @@ function App() {
           window.scrollTo(0, 0);
      };
 
+     const handleStartChat = (profile) => {
+          if (!user) {
+               setIsMobileLoginOpen(true);
+               setToastMessage('로그인 후 1:1 대화를 시작할 수 있어요.');
+               return;
+          }
+          if (!profile?.$id || profile.$id === user.id) return;
+          setChatPeer(profile);
+     };
+
      // --- 2. Share Logic ---
      // CreatePostModal이 이미 실제 DB insert를 마치고 저장된 row(savedPost)를 넘겨줍니다.
      // 여기서는 다시 insert하지 않고, 화면 상태만 업데이트합니다.
@@ -444,6 +455,8 @@ function App() {
                     location: normalizeForGangnamDisplay(savedPost.locationName),
                     likes: 0,
                     image: savedPost.imageUrls?.[0],
+                    sellerId: savedPost.authorId,
+                    sellerAvatarUrl: savedPost.authorAvatarUrl || '',
                     seller: savedPost.authorUsername
                };
                setMarketItems(prev => [newItem, ...prev]);
@@ -459,7 +472,9 @@ function App() {
                     category: CATEGORY_LABELS[category] || '⚡ 번개',
                     originalType: category,
                     title: savedPost.title,
+                    hostId: savedPost.authorId,
                     host: savedPost.authorUsername,
+                    hostAvatarUrl: savedPost.authorAvatarUrl || '',
                     hostBadge: '강남 이웃',
                     date: new Date().toLocaleDateString(),
                     location: normalizeForGangnamDisplay(savedPost.locationName),
@@ -787,7 +802,7 @@ function App() {
                                                   </section>
                                                   <ILoveSchool />
                                                   <DiningCompanion />
-                                                  <MeetingFeed items={meetingItems} />
+                                                  <MeetingFeed items={meetingItems.slice(0, 6)} onStartChat={handleStartChat} />
                                                   <UsedMarket items={marketItems} />
                                              </>
                                         )}
@@ -820,7 +835,7 @@ function App() {
                                                             + 글쓰기
                                                        </button>
                                                   </div>
-                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} />
+                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} onStartChat={handleStartChat} />
                                              </>
                                         )}
 
@@ -838,7 +853,7 @@ function App() {
                                                             + 모임 만들기
                                                        </button>
                                                   </div>
-                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} />
+                                                  <MeetingFeed items={meetingItems.filter(item => item.originalType === activeTab)} onStartChat={handleStartChat} />
                                              </>
                                         )}
 
@@ -1088,7 +1103,7 @@ function App() {
                     }
                </Suspense>
 
-               <ChatWidget />
+               <ChatWidget user={user} initialPeer={chatPeer} onConsumeInitialPeer={() => setChatPeer(null)} />
 
           </div>
      )

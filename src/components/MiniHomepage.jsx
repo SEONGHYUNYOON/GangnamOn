@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role } from '../lib/appwrite';
-import { BookOpen, ChevronRight, Heart, Home, Link2, Mail, Music2, PlayCircle, Send, Settings, UserRound, X, Youtube } from 'lucide-react';
+import { uploadProfileAvatar } from '../lib/imageUpload';
+import { BookOpen, Camera, ChevronRight, Heart, Home, Link2, Loader2, Mail, Send, Settings, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
 
@@ -40,9 +41,9 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
      const [miniSettings, setMiniSettings] = useState({ bgmUrl: '', bgmTitle: '', bgmVideoId: '' });
      const [bgmDraft, setBgmDraft] = useState({ bgmUrl: '', bgmTitle: '' });
      const [editForm, setEditForm] = useState({ location: '', mbti: '', job: '', bio: '' });
-     const [todayCount] = useState(Math.floor(Math.random() * 80) + 48);
-     const [totalCount] = useState(Math.floor(Math.random() * 9000) + 3200);
-     const [ilchonCount] = useState(Math.floor(Math.random() * 50) + 10);
+     const [todayCount, setTodayCount] = useState(0);
+     const [totalCount, setTotalCount] = useState(0);
+     const [avatarUploading, setAvatarUploading] = useState(false);
 
      const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
      const displayName = profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '강남 이웃';
@@ -78,6 +79,67 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           };
           fetchProfile();
      }, [user?.id]);
+
+     useEffect(() => {
+          const recordVisit = async () => {
+               if (!user?.id) return;
+               const today = new Date().toISOString().slice(0, 10);
+               let guestId = window.localStorage.getItem('gangnam:on:guest-id');
+               if (!guestId) {
+                    guestId = crypto.randomUUID();
+                    window.localStorage.setItem('gangnam:on:guest-id', guestId);
+               }
+               const visitorId = currentUser?.id || `guest-${guestId}`;
+               const documentId = `${user.id}_${visitorId}_${today}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+               try {
+                    await databases.createDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.pageViews,
+                         documentId,
+                         data: { hostId: user.id, visitorId, visitDate: today },
+                         permissions: [Permission.read(Role.any())],
+                    });
+               } catch {
+                    // 이미 오늘 방문한 사용자는 중복 집계하지 않습니다.
+               }
+
+               try {
+                    const [todayRes, totalRes] = await Promise.all([
+                         databases.listDocuments({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.pageViews,
+                              queries: [Query.equal('hostId', user.id), Query.equal('visitDate', today), Query.limit(1)],
+                         }),
+                         databases.listDocuments({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.pageViews,
+                              queries: [Query.equal('hostId', user.id), Query.limit(1)],
+                         }),
+                    ]);
+                    setTodayCount(todayRes.total || 0);
+                    setTotalCount(totalRes.total || 0);
+
+                    if (isOwner) {
+                         await databases.updateDocument({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.profiles,
+                              documentId: user.id,
+                              data: {
+                                   visitorsToday: todayRes.total || 0,
+                                   visitorsTotal: totalRes.total || 0,
+                              },
+                         });
+                    }
+               } catch (error) {
+                    console.warn('방문자 수 집계 실패:', error);
+                    setTodayCount(profileData?.visitorsToday || 0);
+                    setTotalCount(profileData?.visitorsTotal || 0);
+               }
+          };
+
+          recordVisit();
+     }, [user?.id, currentUser?.id, isOwner, profileData?.visitorsToday, profileData?.visitorsTotal]);
 
      useEffect(() => {
           if (!user) return;
@@ -152,6 +214,28 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
           } catch (error) {
                console.error('Profile update failed:', error);
                alert('프로필 저장 실패');
+          }
+     };
+
+     const handleAvatarFile = async (event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (!file || !isOwner) return;
+
+          if (!file.type.startsWith('image/')) {
+               alert('이미지 파일만 등록할 수 있습니다.');
+               return;
+          }
+
+          setAvatarUploading(true);
+          try {
+               const avatarUrl = await uploadProfileAvatar(user.id, file);
+               setProfileData(prev => ({ ...prev, avatarUrl }));
+          } catch (error) {
+               console.error('프로필 사진 업로드 실패:', error);
+               alert('프로필 사진 업로드에 실패했습니다.');
+          } finally {
+               setAvatarUploading(false);
           }
      };
 
@@ -252,9 +336,15 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
                                    <p className="text-2xl font-black text-brand-ink">{todayCount}</p>
                               </div>
 
-                              <button type="button" onClick={isOwner ? onOpenAvatarCustomizer : undefined} className="group block w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                              <label className="group relative block w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                                   {isOwner && <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />}
                                    <img src={avatarUrl} alt="프로필" className="h-44 w-full object-cover transition-transform group-hover:scale-105" />
-                              </button>
+                                   {isOwner && (
+                                        <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                             {avatarUploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Camera className="h-6 w-6" />}
+                                        </span>
+                                   )}
+                              </label>
 
                               <div className="mt-4">
                                    <h2 className="text-xl font-black text-brand-ink">{displayName}</h2>
@@ -264,8 +354,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser }) =>
 
                               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                                    <div className="rounded-xl bg-sky-50 p-2">
-                                        <p className="text-sm font-black text-sky-900">{ilchonCount}</p>
-                                        <p className="text-[10px] font-bold text-sky-500">일촌</p>
+                                        <p className="text-sm font-black text-sky-900">{totalCount}</p>
+                                        <p className="text-[10px] font-bold text-sky-500">방문</p>
                                    </div>
                                    <div className="rounded-xl bg-amber-50 p-2">
                                         <p className="text-sm font-black text-amber-800">{guestbookEntries.length}</p>

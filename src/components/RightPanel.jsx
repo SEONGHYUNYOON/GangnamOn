@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Sun, Zap, MapPin, Star, Heart, Cloud, Sparkles, ExternalLink } from 'lucide-react';
-import { callEconomy } from '../lib/appwrite';
+import React, { useState, useEffect, useRef } from 'react';
+import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink, Camera, Loader2 } from 'lucide-react';
+import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role } from '../lib/appwrite';
+import { uploadProfileAvatar } from '../lib/imageUpload';
 import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
 import GangnamNews from './GangnamNews';
 
 const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount, user = null, onLoginSuccess, onLogout }) => {
      const [onlineCount, setOnlineCount] = useState(1204);
+     const [onlineUsers, setOnlineUsers] = useState([]);
+     const [avatarUploading, setAvatarUploading] = useState(false);
+     const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
+     const avatarInputRef = useRef(null);
      const [trafficStatus, setTrafficStatus] = useState({
           jayuro: 'smooth',
           secondJayuro: 'slow',
@@ -27,14 +32,6 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      // --- Edit Profile State ---
      const [isEditingName, setIsEditingName] = useState(false);
      const [editName, setEditName] = useState('');
-
-     // Mock Data: Real-time Users
-     const onlineUsers = [
-          { id: 1, name: '강남사랑꾼', status: 'online' },
-          { id: 2, name: '역삼댁', status: 'online' },
-          { id: 3, name: '강남지킴이', status: 'away' },
-          { id: 4, name: '강남토박이', status: 'online' },
-     ];
 
      // Romance Rank Mock
      const rankedUsers = [
@@ -87,12 +84,6 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           // Fetch weather every 10 minutes
           const weatherInterval = setInterval(fetchWeather, 600000);
 
-          // Online User Counter & Traffic Mock
-          const userInterval = setInterval(() => {
-               const change = Math.floor(Math.random() * 9) - 3;
-               setOnlineCount(prev => prev + change);
-          }, 3500);
-
           const trafficInterval = setInterval(() => {
                const statuses = ['smooth', 'slow', 'jammed'];
                setTrafficStatus({
@@ -104,10 +95,108 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
           return () => {
                clearInterval(weatherInterval);
-               clearInterval(userInterval);
                clearInterval(trafficInterval);
           };
      }, []);
+
+     useEffect(() => {
+          let isMounted = true;
+
+          const refreshPresence = async () => {
+               try {
+                    if (user?.id) {
+                         const displayName = user.user_metadata?.username || user.user_metadata?.full_name || user.email || '강남 이웃';
+                         const payload = {
+                              userId: user.id,
+                              username: displayName,
+                              avatarUrl: user.user_metadata?.avatar_url || '',
+                              lastSeenAt: new Date().toISOString(),
+                         };
+
+                         try {
+                              await databases.updateDocument({
+                                   databaseId: DATABASE_ID,
+                                   collectionId: COLLECTIONS.presence,
+                                   documentId: user.id,
+                                   data: payload,
+                              });
+                         } catch {
+                              await databases.createDocument({
+                                   databaseId: DATABASE_ID,
+                                   collectionId: COLLECTIONS.presence,
+                                   documentId: user.id,
+                                   data: payload,
+                                   permissions: [
+                                        Permission.read(Role.any()),
+                                        Permission.update(Role.user(user.id)),
+                                        Permission.delete(Role.user(user.id)),
+                                   ],
+                              });
+                         }
+                    }
+
+                    const since = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+                    const res = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.presence,
+                         queries: [Query.greaterThan('lastSeenAt', since), Query.orderDesc('lastSeenAt'), Query.limit(12)],
+                    });
+
+                    if (!isMounted) return;
+                    setOnlineCount(res.total || res.documents.length);
+                    setOnlineUsers(res.documents);
+               } catch (error) {
+                    console.warn('실시간 접속자 로딩 실패:', error);
+                    if (isMounted) {
+                         setOnlineCount(user ? 1 : 0);
+                         setOnlineUsers(user ? [{
+                              $id: user.id,
+                              username: user.user_metadata?.username || user.user_metadata?.full_name || '나',
+                              avatarUrl: user.user_metadata?.avatar_url || '',
+                         }] : []);
+                    }
+               }
+          };
+
+          refreshPresence();
+          const interval = setInterval(refreshPresence, 30000);
+          return () => {
+               isMounted = false;
+               clearInterval(interval);
+          };
+     }, [user?.id, user?.user_metadata?.username, user?.user_metadata?.avatar_url]);
+
+     useEffect(() => {
+          const fetchVisitorStats = async () => {
+               if (!user?.id) {
+                    setVisitorStats({ today: 0, total: 0 });
+                    return;
+               }
+               const today = new Date().toISOString().slice(0, 10);
+               try {
+                    const [todayRes, totalRes] = await Promise.all([
+                         databases.listDocuments({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.pageViews,
+                              queries: [Query.equal('hostId', user.id), Query.equal('visitDate', today), Query.limit(1)],
+                         }),
+                         databases.listDocuments({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.pageViews,
+                              queries: [Query.equal('hostId', user.id), Query.limit(1)],
+                         }),
+                    ]);
+                    setVisitorStats({ today: todayRes.total || 0, total: totalRes.total || 0 });
+               } catch {
+                    setVisitorStats({
+                         today: user.user_metadata?.visitors_today || 0,
+                         total: user.user_metadata?.visitors_total || 0,
+                    });
+               }
+          };
+
+          fetchVisitorStats();
+     }, [user?.id, user?.user_metadata?.visitors_today, user?.user_metadata?.visitors_total]);
 
      useEffect(() => {
           if (user) {
@@ -165,6 +254,28 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                alert(`닉네임 변경 완료! -${CHANGE_COST}온`);
           } catch (error) {
                alert("이름 변경 실패: " + error.message);
+          }
+     };
+
+     const handleAvatarFile = async (event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (!file || !user?.id) return;
+
+          if (!file.type.startsWith('image/')) {
+               alert('이미지 파일만 등록할 수 있습니다.');
+               return;
+          }
+
+          setAvatarUploading(true);
+          try {
+               await uploadProfileAvatar(user.id, file);
+               if (onLoginSuccess) await onLoginSuccess();
+          } catch (error) {
+               console.error('프로필 사진 업로드 실패:', error);
+               alert('프로필 사진 업로드에 실패했습니다.');
+          } finally {
+               setAvatarUploading(false);
           }
      };
 
@@ -310,10 +421,12 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                          </div>
 
                          <div className="flex flex-col items-center relative z-10">
-                              <div
+                              <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
+                              <button
+                                   type="button"
                                    onClick={(e) => {
                                         e.stopPropagation();
-                                        onOpenAvatarCustomizer();
+                                        avatarInputRef.current?.click();
                                    }}
                                    className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-slate-700 p-[2px] mb-3 group-hover:scale-105 transition-transform duration-300 relative cursor-pointer"
                               >
@@ -327,10 +440,10 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                         </div>
                                    </div>
                                    {/* Edit Overlay */}
-                                   <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                        <Sparkles className="w-6 h-6 text-white" />
+                                   <div className="absolute inset-0 bg-black/35 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                        {avatarUploading ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Camera className="w-6 h-6 text-white" />}
                                    </div>
-                              </div>
+                              </button>
 
                               {/* Name Display / Edit Mode */}
                               {isEditingName ? (
@@ -372,11 +485,11 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
                               <div className="flex gap-8 w-full justify-center border-t border-gray-50 pt-4">
                                    <div className="text-center group-hover:text-gray-900 transition-colors">
-                                        <span className="block text-lg font-bold text-gray-900">128</span>
+                                        <span className="block text-lg font-bold text-gray-900">{visitorStats.today.toLocaleString()}</span>
                                         <span className="text-[10px] text-gray-400 uppercase">Today</span>
                                    </div>
                                    <div className="text-center">
-                                        <span className="block text-lg font-bold text-gray-900">1.2k</span>
+                                        <span className="block text-lg font-bold text-gray-900">{visitorStats.total.toLocaleString()}</span>
                                         <span className="text-[10px] text-gray-400 uppercase">Total</span>
                                    </div>
                               </div>
@@ -479,30 +592,33 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                     <div className="space-y-4 relative">
                          <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-100 -z-10"></div>
 
-                         {onlineUsers.map(user => (
-                              <div key={user.id} className="flex items-center justify-between bg-white z-10">
+                         {onlineUsers.slice(0, 6).map(user => (
+                              <div key={user.$id || user.userId} className="flex items-center justify-between bg-white z-10">
                                    <div className="flex items-center gap-3">
                                         <div className="relative">
                                              <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm overflow-hidden">
-                                                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
+                                                  <img src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} alt={user.username} />
                                              </div>
-                                             {user.status === 'online' && (
-                                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
-                                             )}
+                                             <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
                                         </div>
-                                        <span className="text-sm font-bold text-gray-700">{user.name}</span>
+                                        <span className="text-sm font-bold text-gray-700">{user.username}</span>
                                    </div>
                                    <span className="text-[10px] font-medium text-gray-400">
-                                        {user.status === 'online' ? 'On' : 'Away'}
+                                        On
                                    </span>
                               </div>
                          ))}
+                         {onlineUsers.length === 0 && (
+                              <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-center text-xs font-bold text-slate-400">
+                                   현재 온라인 사용자를 집계하는 중입니다.
+                              </div>
+                         )}
                     </div>
 
                     <div className="mt-6 pt-4 border-t border-gray-50 text-center">
                          <p className="text-xs text-gray-400 leading-relaxed">
-                              외 <span className="font-bold text-gray-800">{(onlineCount - onlineUsers.length).toLocaleString()}명</span>이<br />
-                              지금 <span className="text-purple-600 font-bold">강남온</span>을 여행 중입니다. 🚀
+                              현재 <span className="font-bold text-gray-800">{onlineCount.toLocaleString()}명</span>이<br />
+                              지금 <span className="text-purple-600 font-bold">강남온</span>에 접속 중입니다.
                          </p>
                     </div>
                </div>
