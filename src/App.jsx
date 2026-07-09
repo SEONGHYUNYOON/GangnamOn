@@ -288,6 +288,9 @@ function App() {
                          location: normalizeForGangnamDisplay(m.locationName || '강남'),
                          likes: m.likesCount || 0,
                          image: m.imageUrls?.[0] || 'https://via.placeholder.com/500',
+                         content: m.content || '',
+                         sellerId: m.authorId,
+                         sellerAvatarUrl: m.authorAvatarUrl || '',
                          seller: normalizeForGangnamDisplay(m.authorUsername) || m.authorUsername,
                          category: m.productCategory || '기타'
                     })));
@@ -527,7 +530,9 @@ function App() {
                     image: savedPost.imageUrls?.[0],
                     sellerId: savedPost.authorId,
                     sellerAvatarUrl: savedPost.authorAvatarUrl || '',
-                    seller: savedPost.authorUsername
+                    seller: savedPost.authorUsername,
+                    category: savedPost.productCategory || '기타',
+                    content: savedPost.content || ''
                };
                setMarketItems(prev => [newItem, ...prev]);
                setToastMessage("중고 물품 등록! +20 ON · 활동점수 +12 ⚡");
@@ -821,10 +826,10 @@ function App() {
                                                             <div className="space-y-3">
                                                                  <div className="grid gap-2 sm:grid-cols-4">
                                                                       {[
-                                                                           { title: '미니홈피', desc: 'BGM/방명록', icon: User, action: () => handleOpenMinihome(), tone: 'bg-sky-50 text-sky-800' },
+                                                                           { title: '핫플 가이드', desc: '강남 픽', icon: MapPin, action: () => handleTabChange('gangnam_pick'), tone: 'bg-sky-50 text-sky-800' },
                                                                            { title: '동창 찾기', desc: '아이러브스쿨', icon: BookOpen, action: () => handleTabChange('school_find'), tone: 'bg-amber-50 text-amber-800' },
                                                                            { title: '밥친구', desc: '근처 약속', icon: Utensils, action: () => handleTabChange('home'), tone: 'bg-rose-50 text-rose-800' },
-                                                                           { title: '강남소식', desc: '구청 이슈', icon: Newspaper, action: () => handleTabChange('news'), tone: 'bg-emerald-50 text-emerald-800' },
+                                                                           { title: '강남 트렌드', desc: '오늘 소식', icon: Newspaper, action: () => handleTabChange('news'), tone: 'bg-emerald-50 text-emerald-800' },
                                                                       ].map((item) => {
                                                                            const Icon = item.icon;
                                                                            return (
@@ -864,24 +869,24 @@ function App() {
                                                                       </div>
 
                                                                       <div className="rounded-2xl border border-surface-border bg-white p-4">
-                                                                           <h3 className="mb-3 text-sm font-black text-brand-ink">내 커뮤니티</h3>
+                                                                           <h3 className="mb-3 text-sm font-black text-brand-ink">오늘 강남 추천</h3>
                                                                            <div className="grid grid-cols-3 gap-2">
-                                                                                <button onClick={() => handleOpenMinihome()} className="rounded-xl bg-sky-50 p-3 text-center">
-                                                                                     <p className="text-base font-black text-sky-900">BGM</p>
-                                                                                     <p className="text-[10px] font-bold text-sky-500">미니홈피</p>
+                                                                                <button onClick={() => handleTabChange('gangnam_pick')} className="rounded-xl bg-sky-50 p-3 text-center">
+                                                                                     <p className="text-base font-black text-sky-900">핫플</p>
+                                                                                     <p className="text-[10px] font-bold text-sky-500">가이드</p>
                                                                                 </button>
-                                                                                <button onClick={() => handleTabChange('school_find')} className="rounded-xl bg-amber-50 p-3 text-center">
-                                                                                     <p className="text-base font-black text-amber-900">동창</p>
-                                                                                     <p className="text-[10px] font-bold text-amber-600">찾기</p>
+                                                                                <button onClick={() => handleTabChange('wine')} className="rounded-xl bg-amber-50 p-3 text-center">
+                                                                                     <p className="text-base font-black text-amber-900">맛집</p>
+                                                                                     <p className="text-[10px] font-bold text-amber-600">모임</p>
                                                                                 </button>
-                                                                                <button onClick={() => handleTabChange('news')} className="rounded-xl bg-emerald-50 p-3 text-center">
-                                                                                     <p className="text-base font-black text-emerald-900">소식</p>
-                                                                                     <p className="text-[10px] font-bold text-emerald-600">강남구</p>
+                                                                                <button onClick={() => handleTabChange('share')} className="rounded-xl bg-emerald-50 p-3 text-center">
+                                                                                     <p className="text-base font-black text-emerald-900">나눔</p>
+                                                                                     <p className="text-[10px] font-bold text-emerald-600">거래</p>
                                                                                 </button>
                                                                            </div>
                                                                            <div className="mt-3 rounded-xl bg-surface-muted px-3 py-2">
                                                                                 <p className="text-[11px] font-bold text-slate-400">추천 동선</p>
-                                                                                <p className="mt-1 text-xs font-black text-brand-ink">미니홈피 꾸미기 → 파도타기 → 방명록 남기기</p>
+                                                                                <p className="mt-1 text-xs font-black text-brand-ink">핫플 확인 → 밥친구 찾기 → 중고거래 픽업</p>
                                                                            </div>
                                                                       </div>
                                                                  </div>
@@ -902,7 +907,10 @@ function App() {
                                                   <ILoveSchool />
                                                   <DiningCompanion />
                                                   <MeetingFeed items={meetingItems.slice(0, 6)} onStartChat={handleStartChat} user={user} />
-                                                  <UsedMarket items={marketItems} />
+                                                  <UsedMarket
+                                                       items={marketItems}
+                                                       onCreate={() => { setCreateModalCategory('market'); setIsCreateModalOpen(true); }}
+                                                  />
                                              </>
                                         )}
 
@@ -1011,7 +1019,10 @@ function App() {
                                                        </h2>
                                                   </div>
                                                   {activeTab === 'share' ? (
-                                                       <UsedMarket items={marketItems} />
+                                                       <UsedMarket
+                                                            items={marketItems}
+                                                            onCreate={() => { setCreateModalCategory('market'); setIsCreateModalOpen(true); }}
+                                                       />
                                                   ) : (
                                                        <NeighborhoodLife filter={activeTab} />
                                                   )}

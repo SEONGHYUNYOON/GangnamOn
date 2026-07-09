@@ -183,7 +183,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                                         className="w-full flex items-start gap-2 text-left px-2 py-1.5 rounded-lg hover:bg-surface-muted transition-colors"
                                    >
                                         <div className="flex-1 min-w-0 leading-snug">
-                                             <div className="text-[11px] font-black uppercase text-brand-accent">{group.tag}</div>
+                                             <div className="text-xs font-black uppercase text-brand-accent">{group.tag}</div>
                                              {group.subtitle && (
                                                   <div className="text-sm font-semibold text-gray-700 mt-0.5">{group.subtitle}</div>
                                              )}
