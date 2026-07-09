@@ -1,8 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2, X, Map } from 'lucide-react';
+import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2, X, Map, LayoutGrid, UtensilsCrossed, Palette } from 'lucide-react';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
 
 const REGIONS = ['강남 전체', '역삼동', '신사동', '청담동', '삼성동', '논현동', '압구정', '강남역'];
+
+const GROUP_TABS = [
+     { key: 'all', label: '전체', icon: LayoutGrid },
+     { key: 'restaurant', label: '맛집', icon: UtensilsCrossed },
+     { key: 'cafe', label: '카페', icon: Coffee },
+     { key: 'culture', label: '문화·예술', icon: Palette },
+];
+
+const GROUP_META = {
+     restaurant: { label: '맛집', icon: UtensilsCrossed, className: 'bg-amber-50 text-amber-700' },
+     cafe: { label: '카페', icon: Coffee, className: 'bg-emerald-50 text-emerald-700' },
+     culture: { label: '문화·예술', icon: Palette, className: 'bg-violet-50 text-violet-700' },
+};
 
 const PlaceholderThumb = ({ className = '' }) => (
      <div className={`flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-brand-light via-[#f3ead9] to-[#ecdfc4] text-brand-accent/70 ${className}`}>
@@ -72,6 +85,12 @@ const PickCard = ({ post, onOpen }) => {
 
                {/* Body */}
                <div className="p-4">
+                    {GROUP_META[post.pickGroup] && (
+                         <div className={`mb-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black ${GROUP_META[post.pickGroup].className}`}>
+                              {React.createElement(GROUP_META[post.pickGroup].icon, { className: 'h-3 w-3' })}
+                              {GROUP_META[post.pickGroup].label}
+                         </div>
+                    )}
                     <h3 className="text-base font-black leading-snug text-brand-ink [word-break:keep-all]">
                          {post.title}
                     </h3>
@@ -170,6 +189,12 @@ const PickDetailModal = ({ post, onClose }) => {
                                    <Sparkles className="h-3 w-3" />
                                    AI 추천
                               </span>
+                              {GROUP_META[post.pickGroup] && (
+                                   <span className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black ${GROUP_META[post.pickGroup].className}`}>
+                                        {React.createElement(GROUP_META[post.pickGroup].icon, { className: 'h-3 w-3' })}
+                                        {GROUP_META[post.pickGroup].label}
+                                   </span>
+                              )}
                               {post.placeCategory && (
                                    <span className="rounded-full bg-brand-light px-2.5 py-1 text-[10px] font-bold text-brand-accent">
                                         {post.placeCategory}
@@ -231,6 +256,7 @@ const GangnamPickBoard = () => {
      const [posts, setPosts] = useState([]);
      const [loading, setLoading] = useState(true);
      const [region, setRegion] = useState('강남 전체');
+     const [groupTab, setGroupTab] = useState('all');
      const [selectedPost, setSelectedPost] = useState(null);
 
      useEffect(() => {
@@ -254,6 +280,7 @@ const GangnamPickBoard = () => {
                          placeAddress: p.placeAddress,
                          placePhone: p.placePhone,
                          placeCategory: p.placeCategory,
+                         pickGroup: p.pickGroup || 'restaurant',
                          sourceUrl: p.sourceUrl,
                          imageUrls: p.imageUrls || [],
                          likesCount: p.likesCount || 0,
@@ -270,9 +297,15 @@ const GangnamPickBoard = () => {
           fetchPicks();
      }, []);
 
+     const byGroup = groupTab === 'all' ? posts : posts.filter((p) => p.pickGroup === groupTab);
      const filtered = region === '강남 전체'
-          ? posts
-          : posts.filter((p) => (p.placeAddress || p.locationName || '').includes(region));
+          ? byGroup
+          : byGroup.filter((p) => (p.placeAddress || p.locationName || '').includes(region));
+
+     const groupCounts = GROUP_TABS.reduce((acc, tab) => {
+          acc[tab.key] = tab.key === 'all' ? posts.length : posts.filter((p) => p.pickGroup === tab.key).length;
+          return acc;
+     }, {});
 
      return (
           <div>
@@ -281,13 +314,37 @@ const GangnamPickBoard = () => {
                     <div>
                          <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-brand-gold/30 bg-brand-light px-3 py-1 text-[11px] font-black text-brand-accent">
                               <Sparkles className="h-3.5 w-3.5" />
-                              AI가 매일 골라주는 강남 맛집·카페
+                              AI가 골라주는 강남 맛집·카페·문화예술
                          </div>
                          <h2 className="text-xl font-black text-brand-ink">👍 강남 픽</h2>
                          <p className="mt-1 text-xs font-semibold text-slate-500">
-                              AI가 네이버 블로그 후기를 분석해 12시간마다 새로운 장소를 소개해요. 카드를 눌러보면 주소·전화번호·사진을 더 볼 수 있어요.
+                              AI가 네이버 블로그를 분석해 12시간마다 맛집·카페·전시/공연 소식을 새로 소개해요. 카드를 눌러보면 주소·전화번호·사진을 더 볼 수 있어요.
                          </p>
                     </div>
+               </div>
+
+               {/* Group tabs (맛집 / 카페 / 문화·예술) */}
+               <div className="mb-3 flex flex-wrap gap-2">
+                    {GROUP_TABS.map((tab) => {
+                         const Icon = tab.icon;
+                         const active = groupTab === tab.key;
+                         return (
+                              <button
+                                   key={tab.key}
+                                   onClick={() => setGroupTab(tab.key)}
+                                   className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-black transition-all ${active
+                                        ? 'bg-brand-ink text-brand-gold shadow-soft'
+                                        : 'bg-surface-muted text-slate-500 hover:bg-brand-light hover:text-brand-accent'
+                                        }`}
+                              >
+                                   <Icon className="h-4 w-4" />
+                                   {tab.label}
+                                   <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${active ? 'bg-white/15 text-brand-gold' : 'bg-white text-slate-400'}`}>
+                                        {groupCounts[tab.key] ?? 0}
+                                   </span>
+                              </button>
+                         );
+                    })}
                </div>
 
                {/* Region filter */}
@@ -315,7 +372,9 @@ const GangnamPickBoard = () => {
                     <div className="rounded-2xl border border-dashed border-brand-gold/30 bg-brand-light/40 p-12 text-center">
                          <Coffee className="mx-auto mb-3 h-8 w-8 text-brand-accent/60" strokeWidth={1.5} />
                          <p className="text-sm font-bold text-slate-500">
-                              아직 등록된 장소가 없어요. 잠시 후 다시 확인해주세요.
+                              {groupTab === 'all'
+                                   ? '아직 등록된 장소가 없어요. 잠시 후 다시 확인해주세요.'
+                                   : `아직 ${GROUP_TABS.find((t) => t.key === groupTab)?.label} 소식이 없어요. AI가 12시간마다 새로 찾아올게요.`}
                          </p>
                     </div>
                ) : (

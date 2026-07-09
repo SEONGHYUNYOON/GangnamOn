@@ -9,9 +9,11 @@
             "execute": [
                 "any"
             ],
-            "events": [],
+            "events": [
+                "databases.main.collections.chat_messages.documents.*.create"
+            ],
             "schedule": "",
-            "timeout": 15,
+            "timeout": 60,
             "enabled": true,
             "logging": true,
             "deploymentRetention": 0,
@@ -36,7 +38,7 @@
             ],
             "events": [],
             "schedule": "0 */12 * * *",
-            "timeout": 60,
+            "timeout": 300,
             "enabled": true,
             "logging": true,
             "deploymentRetention": 0,
@@ -216,6 +218,12 @@
                     "type": "integer",
                     "required": false,
                     "default": 0
+                },
+                {
+                    "key": "isAdmin",
+                    "type": "boolean",
+                    "required": false,
+                    "default": false
                 }
             ],
             "indexes": [
@@ -356,6 +364,13 @@
                     "type": "string",
                     "size": 64,
                     "required": false
+                },
+                {
+                    "key": "pickGroup",
+                    "type": "string",
+                    "size": 20,
+                    "required": false,
+                    "default": "restaurant"
                 }
             ],
             "indexes": [
@@ -378,6 +393,13 @@
                     "type": "key",
                     "attributes": [
                         "sourceUrl"
+                    ]
+                },
+                {
+                    "key": "pick_group_idx",
+                    "type": "key",
+                    "attributes": [
+                        "pickGroup"
                     ]
                 }
             ]
@@ -507,6 +529,12 @@
                     "type": "string",
                     "size": 2000,
                     "required": true
+                },
+                {
+                    "key": "isNotice",
+                    "type": "boolean",
+                    "required": false,
+                    "default": false
                 }
             ],
             "indexes": [
@@ -790,6 +818,46 @@
                     "type": "key",
                     "attributes": [
                         "hostId"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "push_subscriptions",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "push_subscriptions",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "endpoint",
+                    "type": "string",
+                    "size": 512,
+                    "required": true
+                },
+                {
+                    "key": "keys",
+                    "type": "string",
+                    "size": 512,
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_idx",
+                    "type": "key",
+                    "attributes": [
+                        "userId"
                     ]
                 }
             ]
