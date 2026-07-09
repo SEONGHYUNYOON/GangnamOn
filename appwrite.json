@@ -371,6 +371,13 @@
                     "size": 20,
                     "required": false,
                     "default": "restaurant"
+                },
+                {
+                    "key": "productCategory",
+                    "type": "string",
+                    "size": 32,
+                    "required": false,
+                    "default": "기타"
                 }
             ],
             "indexes": [
@@ -400,6 +407,13 @@
                     "type": "key",
                     "attributes": [
                         "pickGroup"
+                    ]
+                },
+                {
+                    "key": "product_category_idx",
+                    "type": "key",
+                    "attributes": [
+                        "productCategory"
                     ]
                 }
             ]
@@ -760,6 +774,58 @@
                     "attributes": [
                         "hostId",
                         "visitDate"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "bean_transactions",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "bean_transactions",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "size": 32,
+                    "required": true
+                },
+                {
+                    "key": "amount",
+                    "type": "integer",
+                    "required": true
+                },
+                {
+                    "key": "note",
+                    "type": "string",
+                    "size": 128,
+                    "required": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "userId_idx",
+                    "type": "key",
+                    "attributes": [
+                        "userId"
+                    ]
+                },
+                {
+                    "key": "type_idx",
+                    "type": "key",
+                    "attributes": [
+                        "type"
                     ]
                 }
             ]

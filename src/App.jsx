@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
-import { account, client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, getCurrentUser, callEconomy } from './lib/appwrite'
+import { account, client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, getCurrentUser, callEconomy, SITE_HOST_ID } from './lib/appwrite'
 import { normalizeForGangnamDisplay } from './lib/displayGangnam'
 import { resolveAvatarUrl } from './lib/avatar'
 import LeftSidebar from './components/LeftSidebar'
@@ -288,7 +288,8 @@ function App() {
                          location: normalizeForGangnamDisplay(m.locationName || '강남'),
                          likes: m.likesCount || 0,
                          image: m.imageUrls?.[0] || 'https://via.placeholder.com/500',
-                         seller: normalizeForGangnamDisplay(m.authorUsername) || m.authorUsername
+                         seller: normalizeForGangnamDisplay(m.authorUsername) || m.authorUsername,
+                         category: m.productCategory || '기타'
                     })));
 
                     // Gatherings
@@ -399,6 +400,36 @@ function App() {
                window.removeEventListener('popstate', handlePopState);
           };
      }, []);
+
+     // 사이트 전체 방문 기록 — 미니홈피 방문(hostId=회원ID)과 구분되는, "누구든 사이트를
+     // 한 번이라도 열면" 집계되는 진짜 전체 방문자 수입니다. 로그인 여부와 무관하게 하루에
+     // 한 번만 집계되도록 게스트ID/날짜로 문서ID를 고정합니다 (MiniHomepage의 recordVisit과 동일 패턴).
+     useEffect(() => {
+          const recordSiteVisit = async () => {
+               try {
+                    const today = new Date().toISOString().slice(0, 10);
+                    let guestId = window.localStorage.getItem('gangnam:on:guest-id');
+                    if (!guestId) {
+                         guestId = crypto.randomUUID();
+                         window.localStorage.setItem('gangnam:on:guest-id', guestId);
+                    }
+                    const visitorId = user?.id || `guest-${guestId}`;
+                    const documentId = `site_${visitorId}_${today}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+                    await databases.createDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.pageViews,
+                         documentId,
+                         data: { hostId: SITE_HOST_ID, visitorId, visitDate: today },
+                         permissions: [Permission.read(Role.any())],
+                    });
+               } catch {
+                    // 오늘 이미 집계된 방문이면 문서ID 충돌(409)로 실패하는 게 정상입니다.
+               }
+          };
+
+          recordSiteVisit();
+     }, [user?.id]);
 
      // 관리자 전용 — 새 회원이 가입(profiles 문서 생성)하면 실시간으로 팝업 알림을 띄웁니다.
      // 관리자 대시보드를 보고 있지 않아도, 로그인해서 사이트 어디에 있든 바로 알 수 있어요.

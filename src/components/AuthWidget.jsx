@@ -132,6 +132,19 @@ const AuthWidget = ({ onLoginSuccess }) => {
                     ],
                });
 
+               // 가입 보너스도 재화 발급 내역에 남겨서 관리자 대시보드의 "발급된 재화" 통계에 잡히도록 합니다.
+               try {
+                    await databases.createDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.beanTransactions,
+                         documentId: ID.unique(),
+                         data: { userId: newAccount.$id, type: 'signup_bonus', amount: 1250, note: '가입 축하 보너스' },
+                         permissions: [Permission.read(Role.any())],
+                    });
+               } catch (txError) {
+                    console.warn('가입 보너스 기록 실패 (통계용, 가입 자체는 정상):', txError);
+               }
+
                // 인증 메일 발송 (실패해도 가입 자체는 정상 진행 — 나중에 재전송 버튼으로 다시 보낼 수 있음)
                try {
                     await account.createVerification(window.location.origin + window.location.pathname);

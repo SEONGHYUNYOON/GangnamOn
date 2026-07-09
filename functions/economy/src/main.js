@@ -21,6 +21,25 @@ const CHAT_ROOMS = 'chat_rooms';
 const CHAT_PARTICIPANTS = 'chat_participants';
 const CHAT_MESSAGES = 'chat_messages';
 const POST_LIKES = 'post_likes';
+const BEAN_TRANSACTIONS = 'bean_transactions';
+
+// 재화가 오갈 때마다 bean_transactions에 한 줄 남깁니다. amount는 양수면 발급(적립),
+// 음수면 소모(사용)입니다. 관리자 대시보드의 "발급된 재화/소모된 재화" 통계가 이 내역을
+// 그대로 합산해서 보여줍니다. 기록 실패는 본 동작(구매/차감 등)을 막지 않도록 조용히 무시합니다.
+async function logBeanTx(databases, userId, type, amount, note) {
+     if (!amount) return;
+     try {
+          await databases.createDocument(
+               DATABASE_ID,
+               BEAN_TRANSACTIONS,
+               ID.unique(),
+               { userId, type, amount, note: note || '' },
+               [Permission.read(Role.any())]
+          );
+     } catch {
+          // 통계용 부가 기록이므로 실패해도 본 로직에는 영향을 주지 않습니다.
+     }
+}
 
 // Appwrite 문서 ID는 36자 제한이 있어서, userId+postId를 그대로 이어붙이면
 // 넘칠 수 있습니다. 두 값을 해시해서 짧고 충돌 가능성이 낮은 고정 ID를 만듭니다.
@@ -157,6 +176,7 @@ export default async ({ req, res, log, error }) => {
                          beans: newBeans,
                          unlockedStyles: newStyles,
                     }));
+                    await logBeanTx(databases, userId, 'purchase_style', -price, `아바타 스타일 구매 (${styleId})`);
 
                     return res.json({ success: true, beans: newBeans, unlockedStyles: newStyles });
                }
@@ -174,6 +194,7 @@ export default async ({ req, res, log, error }) => {
 
                     const newBeans = currentBeans - cost;
                     await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, { beans: newBeans }));
+                    await logBeanTx(databases, userId, `spend_${type}`, -cost, `사용: ${type}`);
 
                     return res.json({ success: true, beans: newBeans, spent: cost });
                }
@@ -197,6 +218,7 @@ export default async ({ req, res, log, error }) => {
 
                     await databases.updateDocument(DATABASE_ID, POSTS, postId, { featuredUntil });
                     await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, { beans: newBeans }));
+                    await logBeanTx(databases, userId, 'boost_event', -BOOST_COST, `이벤트 부스트 (${postId})`);
 
                     return res.json({ success: true, beans: newBeans, featuredUntil });
                }
@@ -229,6 +251,7 @@ export default async ({ req, res, log, error }) => {
                          }
                          throw err;
                     }
+                    await logBeanTx(databases, userId, 'change_nickname', -NICKNAME_COST, `닉네임 변경 → ${trimmed}`);
 
                     return res.json({ success: true, beans: newBeans, username: trimmed });
                }
@@ -368,6 +391,7 @@ export default async ({ req, res, log, error }) => {
                          beans: newBeans,
                          activityScore: newActivityScore,
                     }));
+                    await logBeanTx(databases, userId, `earn_${type}`, reward.beans, `적립: ${type}`);
 
                     return res.json({ success: true, beans: newBeans, activityScore: newActivityScore, earned: reward.beans, scoreEarned: reward.score });
                }

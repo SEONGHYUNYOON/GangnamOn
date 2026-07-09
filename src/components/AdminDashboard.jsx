@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy } from '../lib/appwrite';
+import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy, SITE_HOST_ID } from '../lib/appwrite';
 import { resolveAvatarUrl } from '../lib/avatar';
 import { Users, Activity, FileText, TrendingUp, Shield, DollarSign, X, MapPin, Calendar, MessageSquare, Heart, Megaphone, Send, Loader2 } from 'lucide-react';
 
@@ -23,7 +23,10 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
           totalUsers: 0,
           totalPosts: 0,
           totalVisits: 0,
+          visitsToday: 0,
           totalBeans: 0,
+          issuedBeans: 0,
+          spentBeans: 0,
           newUsersToday: 0,
           newPostsToday: 0,
      });
@@ -58,7 +61,33 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
           return sum;
      };
 
-     // 최근 7일간 미니홈피 방문(page_views) 건수를 하루 단위로 집계합니다.
+     // bean_transactions 컬렉션(재화 발급/소모 내역)을 전부 훑어서 발급 합계와 소모 합계를
+     // 나눠 구합니다. amount가 양수면 발급(적립), 음수면 소모(사용)입니다.
+     // 이 컬렉션은 이번 업데이트부터 새로 기록되므로, 배포 시점 이전의 내역은 포함되지 않습니다.
+     const sumBeanTransactions = async () => {
+          let issued = 0;
+          let spent = 0;
+          let offset = 0;
+          const pageSize = 100;
+          for (let page = 0; page < 20; page++) {
+               const res = await databases.listDocuments({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.beanTransactions,
+                    queries: [Query.limit(pageSize), Query.offset(offset)],
+               }).catch(() => ({ documents: [] }));
+               (res.documents || []).forEach((doc) => {
+                    const amount = doc.amount || 0;
+                    if (amount > 0) issued += amount;
+                    else spent += Math.abs(amount);
+               });
+               if (!res.documents || res.documents.length < pageSize) break;
+               offset += pageSize;
+          }
+          return { issued, spent };
+     };
+
+     // 최근 7일간 "사이트 전체" 방문(page_views, hostId=SITE_HOST_ID) 건수를 하루 단위로 집계합니다.
+     // (미니홈피 개별 방문과는 별개의 집계입니다.)
      const fetchWeeklyTraffic = async () => {
           const days = [];
           for (let i = 6; i >= 0; i--) {
@@ -70,7 +99,7 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                databases.listDocuments({
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.pageViews,
-                    queries: [Query.equal('visitDate', date), Query.limit(1)],
+                    queries: [Query.equal('hostId', SITE_HOST_ID), Query.equal('visitDate', date), Query.limit(1)],
                }).catch(() => ({ total: 0 }))
           ));
           return days.map((d, i) => ({ ...d, count: results[i].total || 0 }));
@@ -86,22 +115,29 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
 
                // Appwrite의 listDocuments 응답에는 조건에 맞는 전체 개수(total)가 함께 들어있어
                // 별도의 count 전용 쿼리 없이도 총 인원/게시글 수를 구할 수 있습니다.
-               const [profilesRes, postsRes, recentRes, pageViewsRes, newUsersRes, newPostsRes, totalBeans, weekly] = await Promise.all([
+               const todayStr = todayStart.toISOString().slice(0, 10);
+
+               const [profilesRes, postsRes, recentRes, siteVisitsRes, siteVisitsTodayRes, newUsersRes, newPostsRes, totalBeans, beanTx, weekly] = await Promise.all([
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.limit(1)] }),
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.posts, queries: [Query.limit(1)] }),
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.orderDesc('$createdAt'), Query.limit(15)] }),
-                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.pageViews, queries: [Query.limit(1)] }).catch(() => ({ total: 0 })),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.pageViews, queries: [Query.equal('hostId', SITE_HOST_ID), Query.limit(1)] }).catch(() => ({ total: 0 })),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.pageViews, queries: [Query.equal('hostId', SITE_HOST_ID), Query.equal('visitDate', todayStr), Query.limit(1)] }).catch(() => ({ total: 0 })),
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.greaterThanEqual('$createdAt', todayStartISO), Query.limit(1)] }),
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.posts, queries: [Query.greaterThanEqual('$createdAt', todayStartISO), Query.limit(1)] }),
                     sumAllBeans(),
+                    sumBeanTransactions(),
                     fetchWeeklyTraffic(),
                ]);
 
                setStats({
                     totalUsers: profilesRes.total || 0,
                     totalPosts: postsRes.total || 0,
-                    totalVisits: pageViewsRes.total || 0,
+                    totalVisits: siteVisitsRes.total || 0,
+                    visitsToday: siteVisitsTodayRes.total || 0,
                     totalBeans,
+                    issuedBeans: beanTx.issued,
+                    spentBeans: beanTx.spent,
                     newUsersToday: newUsersRes.total || 0,
                     newPostsToday: newPostsRes.total || 0,
                });
@@ -172,7 +208,7 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                     <StatCard
                          title="누적 방문자"
                          value={loading ? "..." : stats.totalVisits.toLocaleString()}
-                         subtext="미니홈피 방문 누적 (실제 집계)"
+                         subtext={loading ? '' : `오늘 방문 +${stats.visitsToday}명 · 사이트 전체 기준`}
                          icon={Activity}
                          color="bg-orange-500"
                     />
@@ -182,6 +218,20 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                          subtext="전 회원 보유 온 합계"
                          icon={DollarSign}
                          color="bg-emerald-500"
+                    />
+                    <StatCard
+                         title="발급된 재화"
+                         value={loading ? "..." : `+${stats.issuedBeans.toLocaleString()}`}
+                         subtext="가입 보너스·글쓰기 보상 등 (추적 시작 이후 누적)"
+                         icon={TrendingUp}
+                         color="bg-sky-500"
+                    />
+                    <StatCard
+                         title="소모된 재화"
+                         value={loading ? "..." : `-${stats.spentBeans.toLocaleString()}`}
+                         subtext="아바타 구매·부스트·닉네임 변경 등 (추적 시작 이후 누적)"
+                         icon={DollarSign}
+                         color="bg-rose-500"
                     />
                </div>
 

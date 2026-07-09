@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink } from 'lucide-react';
-import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role } from '../lib/appwrite';
+import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role, SITE_HOST_ID } from '../lib/appwrite';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
 import AuthWidget from './AuthWidget';
@@ -11,6 +11,9 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      const [onlineCount, setOnlineCount] = useState(0);
      const [onlineUsers, setOnlineUsers] = useState([]);
      const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
+     // 로그인 여부와 무관하게 모든 사용자에게 보이는 "사이트 전체" 방문자 수입니다.
+     // (위 visitorStats는 로그인한 사람 본인의 미니홈피 방문자 수라 서로 다른 값입니다.)
+     const [siteVisitorStats, setSiteVisitorStats] = useState({ today: 0, total: 0 });
      const [trafficStatus, setTrafficStatus] = useState({
           jayuro: 'smooth',
           secondJayuro: 'slow',
@@ -196,6 +199,35 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
           fetchVisitorStats();
      }, [user?.id, user?.user_metadata?.visitors_today, user?.user_metadata?.visitors_total]);
+
+     // 사이트 전체 방문자 수 — App.jsx가 SITE_HOST_ID로 기록해두는 전체 방문 로그를 집계합니다.
+     // 로그인 여부와 관계없이 항상 표시되어야 하므로 user 의존성이 없습니다.
+     useEffect(() => {
+          const fetchSiteVisitorStats = async () => {
+               const today = new Date().toISOString().slice(0, 10);
+               try {
+                    const [todayRes, totalRes] = await Promise.all([
+                         databases.listDocuments({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.pageViews,
+                              queries: [Query.equal('hostId', SITE_HOST_ID), Query.equal('visitDate', today), Query.limit(1)],
+                         }),
+                         databases.listDocuments({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.pageViews,
+                              queries: [Query.equal('hostId', SITE_HOST_ID), Query.limit(1)],
+                         }),
+                    ]);
+                    setSiteVisitorStats({ today: todayRes.total || 0, total: totalRes.total || 0 });
+               } catch {
+                    // 조용히 무시 — 위젯이 0으로 표시되는 정도라 크리티컬하지 않습니다.
+               }
+          };
+
+          fetchSiteVisitorStats();
+          const interval = setInterval(fetchSiteVisitorStats, 60000);
+          return () => clearInterval(interval);
+     }, []);
 
      useEffect(() => {
           if (user) {
@@ -467,6 +499,19 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                ) : (
                     renderLoginWidget()
                )}
+
+               {/* 사이트 전체 방문자 위젯 — 로그인 여부와 무관하게 항상 노출 */}
+               <div className="mb-4 flex items-center justify-center gap-6 rounded-card border border-surface-border bg-white px-4 py-3 shadow-soft">
+                    <div className="text-center">
+                         <span className="block text-base font-black text-gray-900">{siteVisitorStats.today.toLocaleString()}</span>
+                         <span className="text-[10px] font-bold uppercase text-gray-400">오늘 방문</span>
+                    </div>
+                    <div className="h-8 w-px bg-gray-100" />
+                    <div className="text-center">
+                         <span className="block text-base font-black text-gray-900">{siteVisitorStats.total.toLocaleString()}</span>
+                         <span className="text-[10px] font-bold uppercase text-gray-400">누적 방문</span>
+                    </div>
+               </div>
 
                <section className="mb-5 rounded-card border border-surface-border bg-white p-4 shadow-soft">
                     <div className="mb-4 flex items-center justify-between">

@@ -727,17 +727,23 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                             </p>
                                                        </div>
                                                   ) : (
-                                                       <div className="grid gap-3 sm:grid-cols-2">
+                                                       // 인스타그램처럼 한 장씩 세로로 쌓아 보여줍니다. homePosts는 이미
+                                                       // $createdAt 내림차순(orderDesc)으로 불러오므로 최신 사진이 항상 맨 위입니다.
+                                                       <div className="flex flex-col gap-4">
                                                             {homePosts.map((post) => (
                                                                  <article key={post.$id} className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                                                                      <div className="flex items-center gap-2 px-3 py-2.5">
+                                                                           <img src={avatarUrl} alt={displayName} className="h-7 w-7 rounded-full object-cover" />
+                                                                           <span className="text-xs font-black text-slate-700">{displayName}</span>
+                                                                           <span className="ml-auto text-[10px] font-bold text-slate-400">
+                                                                                {new Date(post.$createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                                           </span>
+                                                                      </div>
                                                                       {post.imageUrls?.[0] && (
                                                                            <img src={post.imageUrls[0]} alt={post.title || '일상 사진'} className="aspect-square w-full object-cover" />
                                                                       )}
                                                                       <div className="p-3">
                                                                            <p className="text-sm font-bold text-slate-700">{post.content || post.title || '오늘의 일상'}</p>
-                                                                           <p className="mt-1 text-[10px] font-bold text-slate-400">
-                                                                                {new Date(post.$createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                                           </p>
                                                                       </div>
                                                                  </article>
                                                             ))}

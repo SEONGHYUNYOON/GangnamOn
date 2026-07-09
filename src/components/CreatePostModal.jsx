@@ -35,8 +35,12 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
           time: '19:00',
           maxMembers: 4,
           description: '',
-          eventDeadline: defaultEventDeadline
+          eventDeadline: defaultEventDeadline,
+          productCategory: '기타',
      });
+
+     // 중고마켓 카테고리 — UsedMarket.jsx의 필터 탭과 동일한 목록을 씁니다.
+     const marketCategories = ['디지털/가전', '가구/인테리어', '의류/잡화', '유아동/도서', '스포츠/레저', '생활/주방', '기타'];
 
      const categories = [
           { id: 'event', label: '🎉 이벤트 홍보(사장님)', icon: Megaphone },
@@ -130,6 +134,7 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
 
                if (selectedCategory === 'market') {
                     payload.price = parseInt(formData.price.replace(/[^0-9]/g, '') || 0);
+                    payload.productCategory = formData.productCategory || '기타';
                }
                if (['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'housing_trade'].includes(selectedCategory)) {
                     payload.maxParticipants = parseInt(formData.maxMembers);
@@ -330,7 +335,7 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                    </div>
                               )}
 
-                              {/* Case A: Market (Price) */}
+                              {/* Case A: Market (Price + Category) */}
                               {selectedCategory === 'market' && (
                                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                                         <div>
@@ -344,6 +349,24 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                                        placeholder="가격 입력"
                                                        className="w-full pl-8 py-3 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:border-purple-200 focus:ring-0 transition-all font-bold"
                                                   />
+                                             </div>
+                                        </div>
+                                        <div>
+                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">카테고리</label>
+                                             <div className="flex flex-wrap gap-2">
+                                                  {marketCategories.map((cat) => (
+                                                       <button
+                                                            key={cat}
+                                                            type="button"
+                                                            onClick={() => setFormData({ ...formData, productCategory: cat })}
+                                                            className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all ${formData.productCategory === cat
+                                                                 ? 'bg-purple-600 text-white'
+                                                                 : 'bg-gray-100 text-gray-500 hover:bg-purple-50'
+                                                                 }`}
+                                                       >
+                                                            {cat}
+                                                       </button>
+                                                  ))}
                                              </div>
                                         </div>
                                    </div>

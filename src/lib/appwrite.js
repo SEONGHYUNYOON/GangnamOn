@@ -58,9 +58,14 @@ export const COLLECTIONS = {
      guestbookEntries: 'guestbook_entries',
      pushSubscriptions: 'push_subscriptions',
      postLikes: 'post_likes',
+     beanTransactions: 'bean_transactions',
 };
 export const BUCKET_ID = 'post-images';
 export const ECONOMY_FUNCTION_ID = 'economy';
+
+// page_views 컬렉션에서 "미니홈피 방문"이 아니라 "사이트 전체 방문"을 기록할 때 사용하는
+// 고정 hostId 값입니다. 실제 사용자 ID와 겹치지 않도록 예약된 값입니다.
+export const SITE_HOST_ID = '__site_home__';
 
 // 현재 로그인한 사용자를 가져옵니다. 로그인 안 되어 있으면 null (에러를 던지지 않음)
 export async function getCurrentUser() {

@@ -1,20 +1,46 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Heart } from 'lucide-react';
 import PostDetailModal from './PostDetailModal';
 
+const CATEGORIES = ['전체', '디지털/가전', '가구/인테리어', '의류/잡화', '유아동/도서', '스포츠/레저', '생활/주방', '기타'];
+
 const UsedMarket = ({ items }) => {
      const [selectedItem, setSelectedItem] = useState(null);
+     const [activeCategory, setActiveCategory] = useState('전체');
+
+     const filteredItems = useMemo(() => {
+          if (!items) return [];
+          if (activeCategory === '전체') return items;
+          return items.filter((item) => (item.category || '기타') === activeCategory);
+     }, [items, activeCategory]);
 
      return (
           <div className="bg-white rounded-card p-5 md:p-6 shadow-soft border border-surface-border">
-               <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-black text-gray-900">중고마켓 & 라이프</h2>
+               <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-black text-gray-900">중고마켓</h2>
                     <span className="text-xs text-gray-400 cursor-pointer hover:text-black hover:underline underline-offset-4">더보기</span>
+               </div>
+
+               {/* Category Filter Tabs */}
+               <div className="mb-5 flex flex-wrap gap-2">
+                    {CATEGORIES.map((cat) => (
+                         <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setActiveCategory(cat)}
+                              className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all ${activeCategory === cat
+                                   ? 'bg-gray-900 text-white'
+                                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                   }`}
+                         >
+                              {cat}
+                         </button>
+                    ))}
                </div>
 
                {/* Instagram Explore Style Grid */}
                <div className="grid grid-cols-3 gap-1 md:gap-4">
-                    {items && items.map((item) => (
+                    {filteredItems.map((item) => (
                          <div
                               key={item.id}
                               onClick={() => setSelectedItem(item)}
@@ -53,6 +79,11 @@ const UsedMarket = ({ items }) => {
                )}
 
                {!items && <div className="text-center py-4 text-gray-400">데이터가 없습니다.</div>}
+               {items && filteredItems.length === 0 && (
+                    <div className="text-center py-8 text-sm font-semibold text-gray-400">
+                         '{activeCategory}' 카테고리에 등록된 상품이 아직 없어요.
+                    </div>
+               )}
           </div>
      );
 };

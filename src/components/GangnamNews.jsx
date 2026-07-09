@@ -6,18 +6,21 @@ const FALLBACK_NEWS = [
           title: "논현1동 '복지동네 건강마당' 성황리에 마무리",
           date: '2026-06-23',
           link: 'https://www.gangnam.go.kr/board/article/list.do?mid=ID01_0501',
+          source: '강남이슈',
           description: '강남구청 강남이슈 최신 목록 기준 소식입니다.',
      },
      {
           title: "'비일비재' 챌린지 참여로 일상 속 자원순환 실천해요",
           date: '2026-06-01',
           link: 'https://www.gangnam.go.kr/board/article/list.do?mid=ID01_0501',
+          source: '강남이슈',
           description: '강남구청 강남이슈 최신 목록 기준 소식입니다.',
      },
      {
           title: "산뜻한 디자인과 촘촘한 콘텐츠로 새로워진 '비짓 강남'",
           date: '2026-05-19',
           link: 'https://www.gangnam.go.kr/board/article/list.do?mid=ID01_0501',
+          source: '강남이슈',
           description: '강남구청 강남이슈 최신 목록 기준 소식입니다.',
      },
 ];
@@ -154,7 +157,14 @@ const GangnamNews = ({ compact = false }) => {
                          >
                               <div className="flex items-start justify-between gap-4">
                                    <div>
-                                        <p className="text-xs font-black text-brand-accent">{formatDate(item.date)}</p>
+                                        <div className="flex items-center gap-2">
+                                             <p className="text-xs font-black text-brand-accent">{formatDate(item.date)}</p>
+                                             {item.source && (
+                                                  <span className="rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-black text-brand-accent">
+                                                       {item.source}
+                                                  </span>
+                                             )}
+                                        </div>
                                         <h3 className="mt-1 text-base font-black leading-6 text-brand-ink [word-break:keep-all] group-hover:text-brand-accent">
                                              {item.title}
                                         </h3>
