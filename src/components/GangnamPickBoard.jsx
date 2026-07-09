@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2, X, Map, LayoutGrid, UtensilsCrossed, Palette, Puzzle, Dumbbell } from 'lucide-react';
+import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2, X, Map, LayoutGrid, UtensilsCrossed, Palette, Puzzle, Dumbbell, ChevronLeft, ChevronRight } from 'lucide-react';
 import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy } from '../lib/appwrite';
 
 const REGIONS = ['강남 전체', '역삼동', '신사동', '청담동', '삼성동', '논현동', '압구정', '강남역'];
@@ -42,8 +42,15 @@ const LikeButton = ({ liked, count, onToggle }) => (
 );
 
 const PickCard = ({ post, onOpen, liked, onToggleLike }) => {
-     const thumb = post.imageUrls?.[0];
-     const extraCount = Math.max(0, (post.imageUrls?.length || 0) - 1);
+     const images = post.imageUrls?.length ? post.imageUrls : [];
+     const [activeImg, setActiveImg] = useState(0);
+     const thumb = images[activeImg];
+     const extraCount = Math.max(0, images.length - 1);
+     const moveImage = (event, direction) => {
+          event.stopPropagation();
+          if (images.length < 2) return;
+          setActiveImg((current) => (current + direction + images.length) % images.length);
+     };
 
      return (
           <div
@@ -75,9 +82,27 @@ const PickCard = ({ post, onOpen, liked, onToggleLike }) => {
                     )}
 
                     {extraCount > 0 && (
-                         <div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white">
-                              +{extraCount}
-                         </div>
+                         <>
+                              <button
+                                   type="button"
+                                   onClick={(event) => moveImage(event, -1)}
+                                   className="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity hover:bg-black/65 group-hover:opacity-100"
+                                   aria-label="이전 사진"
+                              >
+                                   <ChevronLeft className="h-4 w-4" />
+                              </button>
+                              <button
+                                   type="button"
+                                   onClick={(event) => moveImage(event, 1)}
+                                   className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity hover:bg-black/65 group-hover:opacity-100"
+                                   aria-label="다음 사진"
+                              >
+                                   <ChevronRight className="h-4 w-4" />
+                              </button>
+                              <div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white">
+                                   {activeImg + 1}/{images.length} · +{extraCount}
+                              </div>
+                         </>
                     )}
                </div>
 
@@ -168,15 +193,34 @@ const PickDetailModal = ({ post, onClose, liked, onToggleLike }) => {
                          </button>
 
                          {images.length > 1 && (
-                              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-                                   {images.map((_, i) => (
-                                        <button
-                                             key={i}
-                                             onClick={() => setActiveImg(i)}
-                                             className={`h-1.5 rounded-full transition-all ${i === activeImg ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
-                                        />
-                                   ))}
-                              </div>
+                              <>
+                                   <button
+                                        type="button"
+                                        onClick={() => setActiveImg((current) => (current - 1 + images.length) % images.length)}
+                                        className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white hover:bg-black/65"
+                                        aria-label="이전 사진"
+                                   >
+                                        <ChevronLeft className="h-5 w-5" />
+                                   </button>
+                                   <button
+                                        type="button"
+                                        onClick={() => setActiveImg((current) => (current + 1) % images.length)}
+                                        className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white hover:bg-black/65"
+                                        aria-label="다음 사진"
+                                   >
+                                        <ChevronRight className="h-5 w-5" />
+                                   </button>
+                                   <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1.5">
+                                        <span className="mr-1 text-[10px] font-black text-white">{activeImg + 1}/{images.length}</span>
+                                        {images.map((_, i) => (
+                                             <button
+                                                  key={i}
+                                                  onClick={() => setActiveImg(i)}
+                                                  className={`h-1.5 rounded-full transition-all ${i === activeImg ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
+                                             />
+                                        ))}
+                                   </div>
+                              </>
                          )}
                     </div>
 

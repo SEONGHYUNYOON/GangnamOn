@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, callEconomy, AVATAR_STYLE_PRICES } from '../lib/appwrite';
+import { account, client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, callEconomy, AVATAR_STYLE_PRICES } from '../lib/appwrite';
 import { uploadProfileAvatar, uploadPostImage } from '../lib/imageUpload';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
 import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Send, Settings, ShoppingBag, Sparkles, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
+const getMinihomeProfileKey = (user) => `gangnam:on:minihome-profile:${user?.id || user?.user_metadata?.username || 'guest'}`;
 
 const extractYoutubeId = (value = '') => {
      const input = value.trim();
@@ -72,18 +73,38 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      useEffect(() => {
           const fetchProfile = async () => {
                if (!user?.id) return;
+               const loadSavedProfile = async () => {
+                    let localProfile = {};
+                    try {
+                         localProfile = JSON.parse(window.localStorage.getItem(getMinihomeProfileKey(user)) || '{}');
+                    } catch {
+                         localProfile = {};
+                    }
+
+                    if (!isOwner) return localProfile;
+
+                    try {
+                         const prefs = await account.getPrefs();
+                         return { ...localProfile, ...(prefs?.minihomeProfile || {}) };
+                    } catch {
+                         return localProfile;
+                    }
+               };
+
                try {
                     const data = await databases.getDocument({
                          databaseId: DATABASE_ID,
                          collectionId: COLLECTIONS.profiles,
                          documentId: user.id,
                     });
-                    setProfileData(data);
+                    const savedProfile = await loadSavedProfile();
+                    const mergedProfile = { ...data, ...savedProfile };
+                    setProfileData(mergedProfile);
                     setEditForm({
-                         location: data.location || '',
-                         mbti: data.mbti || '',
-                         job: data.job || '',
-                         bio: data.statusMessage || '',
+                         location: mergedProfile.location || '',
+                         mbti: mergedProfile.mbti || '',
+                         job: mergedProfile.job || '',
+                         bio: mergedProfile.statusMessage || '',
                     });
                     const profileBgm = {
                          bgmUrl: data.bgmUrl || '',
@@ -97,10 +118,20 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                     setBgmDraft({ bgmUrl: profileBgm.bgmUrl, bgmTitle: profileBgm.bgmTitle });
                } catch (error) {
                     console.error('프로필 로딩 실패:', error);
+                    const savedProfile = await loadSavedProfile();
+                    if (Object.keys(savedProfile).length) {
+                         setProfileData(prev => ({ ...prev, ...savedProfile }));
+                         setEditForm({
+                              location: savedProfile.location || '',
+                              mbti: savedProfile.mbti || '',
+                              job: savedProfile.job || '',
+                              bio: savedProfile.statusMessage || '',
+                         });
+                    }
                }
           };
           fetchProfile();
-     }, [user?.id]);
+     }, [user, user?.id, isOwner]);
 
      useEffect(() => {
           const recordVisit = async () => {
@@ -290,6 +321,12 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           };
 
           try {
+               try {
+                    window.localStorage.setItem(getMinihomeProfileKey(user), JSON.stringify(cleanProfile));
+               } catch {
+                    // localStorage may be blocked.
+               }
+
                const savePayload = {
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.profiles,
@@ -299,19 +336,35 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
 
                try {
                     await databases.updateDocument(savePayload);
-               } catch (updateError) {
-                    if (updateError?.code !== 404) throw updateError;
-                    await databases.createDocument({
-                         databaseId: DATABASE_ID,
-                         collectionId: COLLECTIONS.profiles,
-                         documentId: user.id,
-                         data: createProfile,
-                         permissions: [
-                              Permission.read(Role.any()),
-                              Permission.update(Role.user(user.id)),
-                              Permission.delete(Role.user(user.id)),
-                         ],
+               } catch (profileDbError) {
+                    console.warn('프로필 DB 동기화 실패, 계정 prefs로 저장합니다:', profileDbError);
+                    if (profileDbError?.code === 404) {
+                         try {
+                              await databases.createDocument({
+                                   databaseId: DATABASE_ID,
+                                   collectionId: COLLECTIONS.profiles,
+                                   documentId: user.id,
+                                   data: { username: createProfile.username, avatarUrl: createProfile.avatarUrl, gender: createProfile.gender },
+                                   permissions: [
+                                        Permission.read(Role.any()),
+                                        Permission.update(Role.user(user.id)),
+                                        Permission.delete(Role.user(user.id)),
+                                   ],
+                              });
+                         } catch (createError) {
+                              console.warn('프로필 문서 생성도 건너뜁니다:', createError);
+                         }
+                    }
+               }
+
+               try {
+                    const currentPrefs = await account.getPrefs();
+                    await account.updatePrefs({
+                         ...(currentPrefs || {}),
+                         minihomeProfile: cleanProfile,
                     });
+               } catch (prefsError) {
+                    console.warn('프로필 계정 prefs 저장 실패, 로컬 백업만 유지합니다:', prefsError);
                }
 
                setProfileData(prev => ({
