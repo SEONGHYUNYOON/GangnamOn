@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Ban, Bell, BellOff, BellRing, Heart, Loader2, MessageCircle, Search, Send, Star, UserPlus, X } from 'lucide-react';
 import { client, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role } from '../lib/appwrite';
 import { isPushSupported, getPushPermission, subscribeToPush } from '../lib/push';
+import { resolveAvatarUrl } from '../lib/avatar';
 
 const displayNameOf = (profile) => profile?.username || profile?.fullName || '강남 이웃';
 const relationId = (ownerId, targetId, type) => `${ownerId}_${targetId}_${type}`.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -383,7 +384,7 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                className="flex w-full items-center gap-2 rounded-xl bg-white p-2 text-left hover:bg-brand-light"
           >
                <div className="relative shrink-0">
-                    <img src={profile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayNameOf(profile)}`} alt="" className="h-8 w-8 rounded-full object-cover" />
+                    <img src={resolveAvatarUrl(profile)} alt="" className="h-8 w-8 rounded-full object-cover" />
                     <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white ${onlineIds.has(profile.$id) ? 'bg-green-500' : 'bg-slate-300'}`} />
                </div>
                <span className={`min-w-0 flex-1 text-xs leading-4 text-brand-ink ${isUnread ? 'font-black' : 'font-bold'}`}>{displayNameOf(profile)}</span>

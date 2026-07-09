@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, callEconomy, AVATAR_STYLE_PRICES } from '../lib/appwrite';
 import { uploadProfileAvatar, uploadPostImage } from '../lib/imageUpload';
 import { getActivityRank } from '../lib/activityRank';
+import { resolveAvatarUrl } from '../lib/avatar';
 import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Send, Settings, ShoppingBag, Sparkles, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
@@ -51,7 +52,11 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
      const displayName = profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '강남 이웃';
      const displayLocation = profileData?.location || user?.user_metadata?.location || '강남';
-     const avatarUrl = profileData?.avatarUrl || user?.user_metadata?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gangnam';
+     const avatarUrl = resolveAvatarUrl({
+          avatarUrl: profileData?.avatarUrl || user?.user_metadata?.avatar_url,
+          gender: profileData?.gender || user?.user_metadata?.gender,
+          $id: profileData?.$id || user?.id,
+     });
      const statusMessage = profileData?.statusMessage || profileData?.bio || '오늘도 강남에서 좋은 사람을 만나는 중.';
      const rank = getActivityRank((profileData?.activityScore || 0) + totalCount + guestbookEntries.length * 6);
      const bgmIds = miniSettings.bgmPlaylistIds?.length ? miniSettings.bgmPlaylistIds : (miniSettings.bgmVideoId ? [miniSettings.bgmVideoId] : []);

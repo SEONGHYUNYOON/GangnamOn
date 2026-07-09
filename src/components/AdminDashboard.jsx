@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy } from '../lib/appwrite';
+import { resolveAvatarUrl } from '../lib/avatar';
 import { Users, Activity, FileText, TrendingUp, Shield, DollarSign, X, MapPin, Calendar, MessageSquare, Heart, Megaphone, Send, Loader2 } from 'lucide-react';
 
 const StatCard = ({ title, value, subtext, icon: Icon, color }) => (
@@ -15,15 +16,20 @@ const StatCard = ({ title, value, subtext, icon: Icon, color }) => (
      </div>
 );
 
+const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+
 const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
      const [stats, setStats] = useState({
           totalUsers: 0,
           totalPosts: 0,
-          totalVisits: 0, // Mock for now or sum of stats
-          totalBeans: 0,  // Mock or sum
+          totalVisits: 0,
+          totalBeans: 0,
+          newUsersToday: 0,
+          newPostsToday: 0,
      });
      const [loading, setLoading] = useState(true);
      const [recentUsers, setRecentUsers] = useState([]);
+     const [weeklyTraffic, setWeeklyTraffic] = useState([]);
      const [selectedUser, setSelectedUser] = useState(null);
      const [broadcastText, setBroadcastText] = useState('');
      const [broadcastSending, setBroadcastSending] = useState(false);
@@ -33,24 +39,73 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
           fetchStats();
      }, []);
 
+     // profiles.beans를 전부 더해서 "유통된 온" 실제 합계를 구합니다.
+     // 사용자가 많아지면 비용이 커질 수 있어 최대 20페이지(2,000명)까지만 안전하게 합산합니다.
+     const sumAllBeans = async () => {
+          let sum = 0;
+          let offset = 0;
+          const pageSize = 100;
+          for (let page = 0; page < 20; page++) {
+               const res = await databases.listDocuments({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    queries: [Query.limit(pageSize), Query.offset(offset)],
+               });
+               res.documents.forEach((doc) => { sum += doc.beans || 0; });
+               if (res.documents.length < pageSize) break;
+               offset += pageSize;
+          }
+          return sum;
+     };
+
+     // 최근 7일간 미니홈피 방문(page_views) 건수를 하루 단위로 집계합니다.
+     const fetchWeeklyTraffic = async () => {
+          const days = [];
+          for (let i = 6; i >= 0; i--) {
+               const d = new Date();
+               d.setDate(d.getDate() - i);
+               days.push({ date: d.toISOString().slice(0, 10), label: WEEKDAY_LABELS[d.getDay()] });
+          }
+          const results = await Promise.all(days.map(({ date }) =>
+               databases.listDocuments({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.pageViews,
+                    queries: [Query.equal('visitDate', date), Query.limit(1)],
+               }).catch(() => ({ total: 0 }))
+          ));
+          return days.map((d, i) => ({ ...d, count: results[i].total || 0 }));
+     };
+
      const fetchStats = async () => {
           try {
                setLoading(true);
 
+               const todayStart = new Date();
+               todayStart.setHours(0, 0, 0, 0);
+               const todayStartISO = todayStart.toISOString();
+
                // Appwrite의 listDocuments 응답에는 조건에 맞는 전체 개수(total)가 함께 들어있어
                // 별도의 count 전용 쿼리 없이도 총 인원/게시글 수를 구할 수 있습니다.
-               const [profilesRes, postsRes, recentRes] = await Promise.all([
+               const [profilesRes, postsRes, recentRes, pageViewsRes, newUsersRes, newPostsRes, totalBeans, weekly] = await Promise.all([
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.limit(1)] }),
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.posts, queries: [Query.limit(1)] }),
-                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.orderDesc('$createdAt'), Query.limit(10)] }),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.orderDesc('$createdAt'), Query.limit(15)] }),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.pageViews, queries: [Query.limit(1)] }).catch(() => ({ total: 0 })),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.greaterThanEqual('$createdAt', todayStartISO), Query.limit(1)] }),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.posts, queries: [Query.greaterThanEqual('$createdAt', todayStartISO), Query.limit(1)] }),
+                    sumAllBeans(),
+                    fetchWeeklyTraffic(),
                ]);
 
                setStats({
                     totalUsers: profilesRes.total || 0,
                     totalPosts: postsRes.total || 0,
-                    totalVisits: 15420, // Mock for visual fullness
-                    totalBeans: 85400,  // Mock
+                    totalVisits: pageViewsRes.total || 0,
+                    totalBeans,
+                    newUsersToday: newUsersRes.total || 0,
+                    newPostsToday: newPostsRes.total || 0,
                });
+               setWeeklyTraffic(weekly);
                setRecentUsers(recentRes.documents || []);
 
           } catch (error) {
@@ -103,28 +158,28 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                     <StatCard
                          title="총 회원수"
                          value={loading ? "..." : `${stats.totalUsers.toLocaleString()}명`}
-                         subtext="전일 대비 +12%"
+                         subtext={loading ? '' : `오늘 신규 +${stats.newUsersToday}명`}
                          icon={Users}
                          color="bg-blue-500"
                     />
                     <StatCard
                          title="총 게시글"
                          value={loading ? "..." : `${stats.totalPosts.toLocaleString()}개`}
-                         subtext="새 글 +5 (오늘)"
+                         subtext={loading ? '' : `새 글 +${stats.newPostsToday} (오늘)`}
                          icon={FileText}
                          color="bg-purple-500"
                     />
                     <StatCard
                          title="누적 방문자"
                          value={loading ? "..." : stats.totalVisits.toLocaleString()}
-                         subtext="실시간 집계 중"
+                         subtext="미니홈피 방문 누적 (실제 집계)"
                          icon={Activity}
                          color="bg-orange-500"
                     />
                     <StatCard
                          title="유통된 온(재화)"
-                         value={loading ? "..." : `85.4k`}
-                         subtext="경제 생태계 활발"
+                         value={loading ? "..." : `${stats.totalBeans.toLocaleString()}`}
+                         subtext="전 회원 보유 온 합계"
                          icon={DollarSign}
                          color="bg-emerald-500"
                     />
@@ -147,7 +202,7 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                                    >
                                         <div className="flex items-center gap-3">
                                              <img
-                                                  src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                                                  src={resolveAvatarUrl(user)}
                                                   alt="avatar"
                                                   className="w-10 h-10 rounded-full bg-gray-100"
                                              />
@@ -172,25 +227,35 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                          </div>
                     </div>
 
-                    {/* System Health / Traffic (Placeholder Chart) */}
+                    {/* 최근 7일 미니홈피 방문 추이 (page_views 컬렉션 기반 실제 집계) */}
                     <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
                          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                               <TrendingUp className="w-5 h-5 text-gray-400" />
-                              트래픽 현황
+                              최근 7일 방문 추이
                          </h3>
                          <div className="h-64 flex items-end gap-2 justify-between px-2">
-                              {/* Simple Bar Chart Visualization */}
-                              {[40, 65, 45, 80, 55, 90, 70].map((height, i) => (
-                                   <div key={i} className="w-full flex flex-col items-center gap-2 group">
-                                        <div
-                                             className="w-full bg-blue-100 rounded-t-lg relative overflow-hidden group-hover:bg-blue-200 transition-colors"
-                                             style={{ height: `${height}%` }}
-                                        >
-                                             <div className="absolute bottom-0 left-0 right-0 bg-blue-500 h-[10%] opacity-50"></div>
-                                        </div>
-                                        <span className="text-xs text-gray-400">{['월', '화', '수', '목', '금', '토', '일'][i]}</span>
-                                   </div>
-                              ))}
+                              {loading ? (
+                                   <div className="w-full text-center text-sm text-gray-400 self-center">불러오는 중...</div>
+                              ) : weeklyTraffic.length === 0 ? (
+                                   <div className="w-full text-center text-sm text-gray-400 self-center">데이터가 없습니다.</div>
+                              ) : (() => {
+                                   const maxCount = Math.max(1, ...weeklyTraffic.map(d => d.count));
+                                   return weeklyTraffic.map((day, i) => {
+                                        const heightPct = Math.max(4, Math.round((day.count / maxCount) * 100));
+                                        return (
+                                             <div key={day.date} className="w-full flex flex-col items-center gap-2 group">
+                                                  <span className="text-[10px] font-bold text-gray-400">{day.count}</span>
+                                                  <div
+                                                       className="w-full bg-blue-100 rounded-t-lg relative overflow-hidden group-hover:bg-blue-200 transition-colors"
+                                                       style={{ height: `${heightPct}%` }}
+                                                  >
+                                                       <div className="absolute bottom-0 left-0 right-0 bg-blue-500 h-[10%] opacity-50"></div>
+                                                  </div>
+                                                  <span className="text-xs text-gray-400">{day.label}</span>
+                                             </div>
+                                        );
+                                   });
+                              })()}
                          </div>
                     </div>
                </div>
@@ -248,7 +313,7 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                                    </button>
                                    <div className="absolute -bottom-12 left-8">
                                         <img
-                                             src={selectedUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.username}`}
+                                             src={resolveAvatarUrl(selectedUser)}
                                              alt="profile"
                                              className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-md object-cover"
                                         />

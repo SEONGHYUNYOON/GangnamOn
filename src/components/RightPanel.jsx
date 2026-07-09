@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink } from 'lucide-react';
 import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role } from '../lib/appwrite';
 import { getActivityRank } from '../lib/activityRank';
+import { resolveAvatarUrl } from '../lib/avatar';
 import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
 import GangnamNews from './GangnamNews';
 
 const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount, user = null, onLoginSuccess, onLogout, onStartChat }) => {
-     const [onlineCount, setOnlineCount] = useState(1204);
+     const [onlineCount, setOnlineCount] = useState(0);
      const [onlineUsers, setOnlineUsers] = useState([]);
      const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
      const [trafficStatus, setTrafficStatus] = useState({
@@ -402,7 +403,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    <div className="w-full h-full rounded-full bg-white p-[2px]">
                                         <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-400 overflow-hidden">
                                              <img
-                                                  src={user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
+                                                  src={resolveAvatarUrl(user)}
                                                   className="w-full h-full object-cover"
                                                   alt="me"
                                              />
@@ -579,7 +580,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                         <div className="flex items-center gap-3">
                                              <div className="relative">
                                                   <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm overflow-hidden">
-                                                       <img src={onlineUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${onlineUser.username}`} alt={onlineUser.username} />
+                                                       <img src={resolveAvatarUrl(onlineUser)} alt={onlineUser.username} />
                                                   </div>
                                                   <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
                                              </div>

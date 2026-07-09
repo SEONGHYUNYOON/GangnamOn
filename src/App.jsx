@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
-import { account, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, getCurrentUser, callEconomy } from './lib/appwrite'
+import { account, client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, getCurrentUser, callEconomy } from './lib/appwrite'
 import { normalizeForGangnamDisplay } from './lib/displayGangnam'
+import { resolveAvatarUrl } from './lib/avatar'
 import LeftSidebar from './components/LeftSidebar'
 import RightPanel from './components/RightPanel'
 import ChatWidget from './components/ChatWidget'
@@ -8,6 +9,7 @@ import Toast from './components/Toast'
 import WelcomeConfetti from './components/WelcomeConfetti'
 import KakaoMap from './components/KakaoMap'
 import GangnamNews from './components/GangnamNews'
+import AdminNewSignupPopup from './components/AdminNewSignupPopup'
 import './index.css'
 import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, CalendarDays, MapPin, BookOpen, Newspaper, Utensils } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -85,6 +87,7 @@ function App() {
 
      // Admin / Presence State
      const [onlineUsersCount, setOnlineUsersCount] = useState(1); // Self
+     const [newSignupAlert, setNewSignupAlert] = useState(null); // 관리자 전용: 신규 가입 실시간 알림
 
 
      // 플로우 배너: 이제 메시지뿐 아니라 "클릭하면 어디로 이동할지"도 함께 들고 다닙니다.
@@ -396,6 +399,23 @@ function App() {
                window.removeEventListener('popstate', handlePopState);
           };
      }, []);
+
+     // 관리자 전용 — 새 회원이 가입(profiles 문서 생성)하면 실시간으로 팝업 알림을 띄웁니다.
+     // 관리자 대시보드를 보고 있지 않아도, 로그인해서 사이트 어디에 있든 바로 알 수 있어요.
+     useEffect(() => {
+          if (!isAdmin) return undefined;
+          const unsubscribe = client.subscribe(
+               [`databases.${DATABASE_ID}.collections.${COLLECTIONS.profiles}.documents`],
+               (response) => {
+                    const isCreate = response.events.some(event => event.endsWith('.create'));
+                    if (!isCreate) return;
+                    const payload = response.payload;
+                    if (!payload || payload.$id === user?.id) return; // 본인 프로필 생성은 알림 제외
+                    setNewSignupAlert(payload);
+               }
+          );
+          return () => unsubscribe();
+     }, [isAdmin, user?.id]);
 
      // Helper to update beans safely in DB and State
      const updateBeanCount = async (delta) => {
@@ -1191,7 +1211,7 @@ function App() {
                               <AvatarCustomizer
                                    onClose={() => setIsAvatarModalOpen(false)}
                                    onSave={handleAvatarSave}
-                                   currentAvatarUrl={user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
+                                   currentAvatarUrl={resolveAvatarUrl(user)}
                                    unlockedStyles={unlockedStyles}
                                    userBeanCount={beanCount}
                                    onPurchaseStyle={handlePurchaseStyle}
@@ -1201,6 +1221,14 @@ function App() {
                </Suspense>
 
                <ChatWidget user={user} initialPeer={chatPeer} onConsumeInitialPeer={() => setChatPeer(null)} />
+
+               {isAdmin && newSignupAlert && (
+                    <AdminNewSignupPopup
+                         profile={newSignupAlert}
+                         onClose={() => setNewSignupAlert(null)}
+                         onStartChat={handleStartChat}
+                    />
+               )}
 
           </div>
      )

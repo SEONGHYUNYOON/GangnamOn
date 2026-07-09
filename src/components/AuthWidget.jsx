@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ChevronRight, User, MapPin, Smile } from 'lucide-react';
 import { account, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role, OAuthProvider } from '../lib/appwrite';
+import { getDefaultAvatarUrl } from '../lib/avatar';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 
 const AuthWidget = ({ onLoginSuccess }) => {
@@ -100,11 +101,9 @@ const AuthWidget = ({ onLoginSuccess }) => {
           setAuthLoading(true);
           setAuthError(null);
 
-          // Assign default avatar based on gender
-          // Using DiceBear Avataaars seeds that look clearly male/female
-          const defaultAvatar = gender === 'male'
-               ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
-               : 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka';
+          // Assign default avatar based on gender — 같은 성별이라도 사용자마다(아이디 기준)
+          // 조금씩 다른 캐릭터가 배정되도록 여러 시드 중 하나를 고정 선택합니다.
+          const defaultAvatar = getDefaultAvatarUrl(gender, username);
 
           try {
                const newAccount = await account.create(ID.unique(), email, password, username);

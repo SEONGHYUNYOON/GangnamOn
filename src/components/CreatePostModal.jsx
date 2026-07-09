@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, Image as ImageIcon, MapPin, Calendar, Users, DollarSign, Tag, ArrowLeft, Loader2, Megaphone, Clock } from 'lucide-react';
 import { databases, storage, DATABASE_ID, COLLECTIONS, BUCKET_ID, ID, Permission, Role, getFileUrl } from '../lib/appwrite';
+import { resolveAvatarUrl } from '../lib/avatar';
 import KakaoMap from './KakaoMap';
 
 const gangnamPlacePresets = [
@@ -242,7 +243,7 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                          {/* 1. User Profile Header */}
                          <div className="p-6 border-b border-gray-100 flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                                   <img src={user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="User" />
+                                   <img src={resolveAvatarUrl(user)} alt="User" />
                               </div>
                               <span className="font-bold text-gray-900">{user?.user_metadata?.username || user?.user_metadata?.full_name || '강남주민'}</span>
                          </div>
