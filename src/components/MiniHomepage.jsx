@@ -314,7 +314,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                if (onProfileUpdate) await onProfileUpdate();
           } catch (error) {
                console.error('프로필 사진 업로드 실패:', error);
-               alert('프로필 사진 업로드에 실패했습니다.');
+               const detail = error?.message ? `\n(${error.message})` : '';
+               alert(`프로필 사진 업로드에 실패했습니다.${detail}`);
           } finally {
                setAvatarUploading(false);
           }

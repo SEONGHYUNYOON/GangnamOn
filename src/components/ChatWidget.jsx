@@ -353,9 +353,14 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                const payload = response.payload;
                const isCreate = response.events.some(event => event.endsWith('.create'));
                if (!isCreate || !payload?.roomId || payload.senderId === user.id) return;
-               if (payload.roomId !== activeRoom?.roomId) {
-                    setNotice({ roomId: payload.roomId, text: '새 1:1 대화가 도착했어요' });
-                    setTimeout(() => setNotice(null), 4500);
+
+               const isActiveRoom = payload.roomId === activeRoom?.roomId;
+
+               // 접속 중(온라인)일 때는 지금 보고 있는 방이든 아니든 항상 팝업으로 새 메시지를 알려줍니다.
+               setNotice({ roomId: payload.roomId, text: isActiveRoom ? '새 메시지가 도착했어요' : '새 1:1 대화가 도착했어요' });
+               setTimeout(() => setNotice(null), 4500);
+
+               if (!isActiveRoom) {
                     setUnreadRoomIds(prev => new Set(prev).add(payload.roomId));
                     if (!rooms.some(room => room.roomId === payload.roomId)) fetchRooms();
                }
@@ -467,7 +472,7 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                                    </div>
                               </aside>
 
-                              <main className="flex min-w-0 flex-col">
+                              <main className="flex min-h-0 min-w-0 flex-col">
                                    {activeRoom ? (
                                         <>
                                              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2">
