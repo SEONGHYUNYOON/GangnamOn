@@ -42,7 +42,7 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                const [profilesRes, postsRes, recentRes] = await Promise.all([
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.limit(1)] }),
                     databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.posts, queries: [Query.limit(1)] }),
-                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.orderDesc('$createdAt'), Query.limit(5)] }),
+                    databases.listDocuments({ databaseId: DATABASE_ID, collectionId: COLLECTIONS.profiles, queries: [Query.orderDesc('$createdAt'), Query.limit(10)] }),
                ]);
 
                setStats({
@@ -195,6 +195,42 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                     </div>
                </div>
 
+               {/* Broadcast / 전체 공지 보내기 */}
+               <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                    <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
+                         <Megaphone className="w-5 h-5 text-amber-500" />
+                         전체 회원에게 공지 보내기
+                    </h3>
+                    <p className="text-xs text-gray-400 mb-4">
+                         모든 회원의 1:1 채팅방에 "공지" 표시가 붙은 메시지로 전달돼요. 스팸성 사용을 막기 위해 신중하게 사용해주세요.
+                    </p>
+                    <textarea
+                         value={broadcastText}
+                         onChange={(event) => setBroadcastText(event.target.value)}
+                         disabled={broadcastSending}
+                         placeholder="전체 회원에게 보낼 공지 내용을 입력하세요..."
+                         maxLength={1000}
+                         className="min-h-24 w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-100 disabled:bg-gray-50"
+                    />
+                    <div className="mt-3 flex items-center justify-between">
+                         <span className="text-[11px] font-bold text-gray-400">{broadcastText.length}/1000</span>
+                         <button
+                              type="button"
+                              onClick={handleSendBroadcast}
+                              disabled={broadcastSending || !broadcastText.trim()}
+                              className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-5 py-2.5 text-xs font-black text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                         >
+                              {broadcastSending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                              {broadcastSending ? '전송 중...' : '전체 공지 보내기'}
+                         </button>
+                    </div>
+                    {broadcastResult && (
+                         <p className={`mt-3 text-xs font-bold ${broadcastResult.ok ? 'text-emerald-600' : 'text-red-500'}`}>
+                              {broadcastResult.message}
+                         </p>
+                    )}
+               </div>
+
                {/* User Detail Modal */}
                {selectedUser && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedUser(null)}>
@@ -301,10 +337,20 @@ const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
                                    {/* Action Buttons */}
                                    <div className="flex gap-3 mt-8">
                                         <button
-                                             className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-700 transition-colors"
-                                             onClick={() => alert("기능 준비중입니다.")} // Placeholder action
+                                             className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                             disabled={!onStartChat}
+                                             onClick={() => {
+                                                  if (!onStartChat) return;
+                                                  onStartChat({
+                                                       $id: selectedUser.$id,
+                                                       username: selectedUser.username,
+                                                       fullName: selectedUser.fullName,
+                                                       avatarUrl: selectedUser.avatarUrl || '',
+                                                  });
+                                                  setSelectedUser(null);
+                                             }}
                                         >
-                                             관리자 메시지 전송
+                                             1:1 메시지 보내기
                                         </button>
                                    </div>
                               </div>

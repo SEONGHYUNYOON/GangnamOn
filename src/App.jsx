@@ -980,7 +980,7 @@ function App() {
                                         {/* ADMIN TAB — 관리자 계정이 아니면 데이터가 아예 렌더되지 않음 */}
                                         {activeTab === 'admin' && (
                                              isAdmin ? (
-                                                  <AdminDashboard onlineUsersCount={onlineUsersCount} />
+                                                  <AdminDashboard onlineUsersCount={onlineUsersCount} onStartChat={handleStartChat} />
                                              ) : (
                                                   <div className="flex flex-col items-center justify-center h-[50vh] text-gray-400">
                                                        <Lock className="w-10 h-10 mb-3 text-gray-300" />

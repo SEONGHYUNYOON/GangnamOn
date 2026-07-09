@@ -221,6 +221,17 @@ export default async ({ req, res, log, error }) => {
                     return res.json({ success: true, beans: newBeans, username: trimmed });
                }
 
+               case 'update_avatar': {
+                    const { avatarUrl } = payload;
+                    if (!avatarUrl || typeof avatarUrl !== 'string') {
+                         return res.json({ success: false, message: '잘못된 이미지 주소입니다.' }, 400);
+                    }
+
+                    await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, { avatarUrl }));
+
+                    return res.json({ success: true, avatarUrl });
+               }
+
                case 'admin_broadcast': {
                     if (!profile.isAdmin) {
                          return res.json({ success: false, message: '관리자만 사용할 수 있는 기능입니다.' }, 403);
