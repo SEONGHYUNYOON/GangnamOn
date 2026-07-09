@@ -105,7 +105,7 @@ function App() {
      const [chatPeer, setChatPeer] = useState(null);
 
      // 관리자 대시보드에 접근 가능한 이메일 (운영진 전용 — 다른 사용자에게는 메뉴 자체가 보이지 않음)
-     const ADMIN_EMAILS = ['a23642514@gmail.com'];
+     const ADMIN_EMAILS = ['a23642514@gmail.com', 'united6494@naver.com'];
      const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email);
 
      // --- 1. Data State ---
@@ -531,12 +531,19 @@ function App() {
 
           try {
                // Appwrite profiles 문서에 아바타 URL 저장
-               await databases.updateDocument({
-                    databaseId: DATABASE_ID,
-                    collectionId: COLLECTIONS.profiles,
-                    documentId: user.id,
-                    data: { avatarUrl: newUrl },
-               });
+               try {
+                    await databases.updateDocument({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.profiles,
+                         documentId: user.id,
+                         data: { avatarUrl: newUrl },
+                    });
+               } catch (updateError) {
+                    // 오래된 계정은 profiles 문서에 update 권한이 없을 수 있습니다.
+                    // 서버 권한(API 키)을 가진 economy Function을 통해 한 번 더 시도합니다.
+                    const fallback = await callEconomy({ action: 'update_avatar', avatarUrl: newUrl });
+                    if (!fallback.success) throw updateError;
+               }
 
                setUser(prev => ({ ...prev, user_metadata: { ...prev.user_metadata, avatar_url: newUrl } }));
                setToastMessage("캐릭터가 변경되었습니다! ✨");

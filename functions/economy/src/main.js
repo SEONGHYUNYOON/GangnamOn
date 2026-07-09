@@ -1,4 +1,5 @@
-import { Client, Account, Databases } from 'node-appwrite';
+import { Client, Account, Databases, ID, Permission, Role, Query } from 'node-appwrite';
+import { handlePushNotification } from './pushNotification.js';
 
 // ────────────────────────────────────────────────────────────────
 // 강남온 "온"(재화) 서버 검증 Function
@@ -16,6 +17,11 @@ import { Client, Account, Databases } from 'node-appwrite';
 const DATABASE_ID = 'main';
 const PROFILES = 'profiles';
 const POSTS = 'posts';
+const CHAT_ROOMS = 'chat_rooms';
+const CHAT_PARTICIPANTS = 'chat_participants';
+const CHAT_MESSAGES = 'chat_messages';
+
+const safeRoomId = (idA, idB) => [idA, idB].sort().join('_dm_').replace(/[^a-zA-Z0-9._-]/g, '_');
 
 // 아바타 스타일 가격표 (AvatarCustomizer.jsx와 동일하게 유지)
 const STYLE_PRICES = {
@@ -64,6 +70,18 @@ function profileUpdateData(profile, userId, fields) {
 }
 
 export default async ({ req, res, log, error }) => {
+     let eventPayload = {};
+     try {
+          eventPayload = req.body ? JSON.parse(req.body) : {};
+     } catch {
+          eventPayload = {};
+     }
+
+     // chat_messages 생성 이벤트 → 오프라인 푸시 (Appwrite 플랜 함수 2개 제한으로 economy에서 처리)
+     if (!req.headers['x-appwrite-user-id'] && eventPayload.roomId && eventPayload.senderId) {
+          return handlePushNotification({ req, res, log, error, payload: eventPayload });
+     }
+
      let userId = req.headers['x-appwrite-user-id'];
 
      if (!userId && req.headers['x-appwrite-user-jwt']) {
@@ -201,6 +219,72 @@ export default async ({ req, res, log, error }) => {
                     }
 
                     return res.json({ success: true, beans: newBeans, username: trimmed });
+               }
+
+               case 'admin_broadcast': {
+                    if (!profile.isAdmin) {
+                         return res.json({ success: false, message: '관리자만 사용할 수 있는 기능입니다.' }, 403);
+                    }
+
+                    const content = (payload.content || '').trim();
+                    if (!content) {
+                         return res.json({ success: false, message: '메시지 내용을 입력해주세요.' }, 400);
+                    }
+                    if (content.length > 1000) {
+                         return res.json({ success: false, message: '메시지가 너무 깁니다 (최대 1000자).' }, 400);
+                    }
+
+                    // 전체 회원 목록을 페이지 단위로 가져와, 관리자 본인을 제외한 모두에게 발송합니다.
+                    const recipients = [];
+                    let offset = 0;
+                    const pageSize = 100;
+                    for (;;) {
+                         const page = await databases.listDocuments(DATABASE_ID, PROFILES, [Query.limit(pageSize), Query.offset(offset)]);
+                         recipients.push(...page.documents.map((doc) => doc.$id).filter((id) => id !== userId));
+                         if (page.documents.length < pageSize) break;
+                         offset += pageSize;
+                    }
+
+                    let sentCount = 0;
+                    for (const recipientId of recipients) {
+                         try {
+                              const roomId = safeRoomId(userId, recipientId);
+
+                              await databases.createDocument(DATABASE_ID, CHAT_ROOMS, roomId, { type: 'dm' }, [
+                                   Permission.read(Role.user(userId)),
+                                   Permission.read(Role.user(recipientId)),
+                              ]).catch(() => null);
+
+                              await Promise.all([userId, recipientId].map((memberId) =>
+                                   databases.createDocument(
+                                        DATABASE_ID,
+                                        CHAT_PARTICIPANTS,
+                                        `${roomId}_${memberId}`.replace(/[^a-zA-Z0-9._-]/g, '_'),
+                                        { roomId, userId: memberId },
+                                        [Permission.read(Role.user(memberId)), Permission.read(Role.user(userId)), Permission.read(Role.user(recipientId))]
+                                   ).catch(() => null)
+                              ));
+
+                              await databases.createDocument(
+                                   DATABASE_ID,
+                                   CHAT_MESSAGES,
+                                   ID.unique(),
+                                   { roomId, senderId: userId, content, isNotice: true },
+                                   [
+                                        Permission.read(Role.user(userId)),
+                                        Permission.read(Role.user(recipientId)),
+                                        Permission.update(Role.user(userId)),
+                                        Permission.delete(Role.user(userId)),
+                                   ]
+                              );
+
+                              sentCount += 1;
+                         } catch (sendErr) {
+                              log(`공지 발송 실패 (recipient=${recipientId}): ${sendErr.message || String(sendErr)}`);
+                         }
+                    }
+
+                    return res.json({ success: true, sentCount, totalRecipients: recipients.length });
                }
 
                case 'earn': {

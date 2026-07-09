@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
-import { Users, Activity, FileText, TrendingUp, Shield, DollarSign, X, MapPin, Calendar, MessageSquare, Heart } from 'lucide-react';
+import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy } from '../lib/appwrite';
+import { Users, Activity, FileText, TrendingUp, Shield, DollarSign, X, MapPin, Calendar, MessageSquare, Heart, Megaphone, Send, Loader2 } from 'lucide-react';
 
 const StatCard = ({ title, value, subtext, icon: Icon, color }) => (
      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-start justify-between">
@@ -15,7 +15,7 @@ const StatCard = ({ title, value, subtext, icon: Icon, color }) => (
      </div>
 );
 
-const AdminDashboard = ({ onlineUsersCount }) => {
+const AdminDashboard = ({ onlineUsersCount, onStartChat }) => {
      const [stats, setStats] = useState({
           totalUsers: 0,
           totalPosts: 0,
@@ -25,6 +25,9 @@ const AdminDashboard = ({ onlineUsersCount }) => {
      const [loading, setLoading] = useState(true);
      const [recentUsers, setRecentUsers] = useState([]);
      const [selectedUser, setSelectedUser] = useState(null);
+     const [broadcastText, setBroadcastText] = useState('');
+     const [broadcastSending, setBroadcastSending] = useState(false);
+     const [broadcastResult, setBroadcastResult] = useState(null);
 
      useEffect(() => {
           fetchStats();
@@ -54,6 +57,27 @@ const AdminDashboard = ({ onlineUsersCount }) => {
                console.error('Admin stats error:', error);
           } finally {
                setLoading(false);
+          }
+     };
+
+     const handleSendBroadcast = async () => {
+          const content = broadcastText.trim();
+          if (!content || broadcastSending) return;
+
+          setBroadcastSending(true);
+          setBroadcastResult(null);
+          try {
+               const result = await callEconomy({ action: 'admin_broadcast', content });
+               if (result.success) {
+                    setBroadcastResult({ ok: true, message: `${result.sentCount}명에게 공지를 보냈어요.` });
+                    setBroadcastText('');
+               } else {
+                    setBroadcastResult({ ok: false, message: result.message || '공지 전송에 실패했어요.' });
+               }
+          } catch (error) {
+               setBroadcastResult({ ok: false, message: '공지 전송 중 오류가 발생했어요.' });
+          } finally {
+               setBroadcastSending(false);
           }
      };
 

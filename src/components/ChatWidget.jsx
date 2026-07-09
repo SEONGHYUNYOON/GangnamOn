@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Ban, Bell, Heart, Loader2, MessageCircle, Search, Send, Star, UserPlus, X } from 'lucide-react';
+import { Ban, Bell, BellOff, BellRing, Heart, Loader2, MessageCircle, Search, Send, Star, UserPlus, X } from 'lucide-react';
 import { client, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role } from '../lib/appwrite';
+import { isPushSupported, getPushPermission, subscribeToPush } from '../lib/push';
 
 const displayNameOf = (profile) => profile?.username || profile?.fullName || '강남 이웃';
 const relationId = (ownerId, targetId, type) => `${ownerId}_${targetId}_${type}`.replace(/[^a-zA-Z0-9._-]/g, '_');
 const historyKey = (userId) => `gangnam:on:chat-search-history:${userId}`;
+const lastReadKey = (userId) => `gangnam:on:chat-last-read:${userId}`;
 
 const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
      const [isOpen, setIsOpen] = useState(false);
@@ -21,6 +23,10 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
      const [searchHistory, setSearchHistory] = useState([]);
      const [showHistory, setShowHistory] = useState(false);
      const [notice, setNotice] = useState(null);
+     const [lastReadMap, setLastReadMap] = useState({});
+     const [unreadRoomIds, setUnreadRoomIds] = useState(new Set());
+     const [pushState, setPushState] = useState('default');
+     const [pushLoading, setPushLoading] = useState(false);
 
      const activePeer = activeRoom?.peer;
      const canChat = Boolean(user?.id);
@@ -115,13 +121,56 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                ));
                const profileMap = new Map(peerProfiles.filter(Boolean).map(profile => [profile.$id, profile]));
 
-               setRooms(roomIds.map((roomId, index) => {
+               const nextRooms = roomIds.map((roomId, index) => {
                     const peerId = peerParticipants[index].documents.find(doc => doc.userId !== user.id)?.userId;
                     return { roomId, peer: profileMap.get(peerId) || { $id: peerId, username: '알 수 없음' } };
-               }).filter(room => room.peer?.$id && !blockedIds.has(room.peer.$id)));
+               }).filter(room => room.peer?.$id && !blockedIds.has(room.peer.$id));
+
+               setRooms(nextRooms);
+
+               // 각 방의 마지막 메시지 시각을 확인해 "안읽음" 상태를 계산합니다.
+               const lastMessages = await Promise.all(nextRooms.map(room =>
+                    databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.chatMessages,
+                         queries: [Query.equal('roomId', room.roomId), Query.orderDesc('$createdAt'), Query.limit(1)],
+                    }).catch(() => ({ documents: [] }))
+               ));
+               setUnreadRoomIds(prev => {
+                    const next = new Set(prev);
+                    nextRooms.forEach((room, index) => {
+                         const lastMessage = lastMessages[index].documents[0];
+                         if (!lastMessage || lastMessage.senderId === user.id) return;
+                         const readAt = lastReadMap[room.roomId];
+                         if (!readAt || new Date(lastMessage.$createdAt) > new Date(readAt)) {
+                              next.add(room.roomId);
+                         }
+                    });
+                    return next;
+               });
           } catch (error) {
                console.warn('대화방 로딩 실패:', error);
           }
+     };
+
+     const markRoomRead = (roomId) => {
+          if (!user?.id || !roomId) return;
+          const nowIso = new Date().toISOString();
+          setLastReadMap(prev => {
+               const next = { ...prev, [roomId]: nowIso };
+               try {
+                    window.localStorage.setItem(lastReadKey(user.id), JSON.stringify(next));
+               } catch {
+                    // localStorage 사용 불가 시 무시 (badge는 세션 내에서만 동작)
+               }
+               return next;
+          });
+          setUnreadRoomIds(prev => {
+               if (!prev.has(roomId)) return prev;
+               const next = new Set(prev);
+               next.delete(roomId);
+               return next;
+          });
      };
 
      const upsertRelation = async (profile, relationType) => {
@@ -177,6 +226,7 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                setActiveRoom({ roomId, peer: profile });
                setIsOpen(true);
                setQuery('');
+               markRoomRead(roomId);
                await fetchRooms();
           } finally {
                setLoading(false);
@@ -238,6 +288,24 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
           }
      };
 
+     const handleEnablePush = async () => {
+          if (!user?.id || pushLoading) return;
+          setPushLoading(true);
+          try {
+               const result = await subscribeToPush(user.id);
+               setPushState(getPushPermission());
+               if (!result.success) {
+                    if (result.reason === 'denied') {
+                         setErrorText('브라우저 알림 권한이 차단되어 있어요. 브라우저 설정에서 알림을 허용해주세요.');
+                    } else if (result.reason === 'unsupported') {
+                         setErrorText('이 브라우저에서는 오프라인 알림을 지원하지 않아요.');
+                    }
+               }
+          } finally {
+               setPushLoading(false);
+          }
+     };
+
      useEffect(() => {
           if (!user?.id) return;
           try {
@@ -245,6 +313,12 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
           } catch {
                setSearchHistory([]);
           }
+          try {
+               setLastReadMap(JSON.parse(window.localStorage.getItem(lastReadKey(user.id)) || '{}'));
+          } catch {
+               setLastReadMap({});
+          }
+          setPushState(getPushPermission());
      }, [user?.id]);
 
      useEffect(() => {
@@ -264,7 +338,11 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
           fetchMessages();
           if (!activeRoom?.roomId) return undefined;
           const unsubscribe = client.subscribe([`databases.${DATABASE_ID}.collections.${COLLECTIONS.chatMessages}.documents`], (response) => {
-               if (response.payload?.roomId === activeRoom.roomId) fetchMessages();
+               if (response.payload?.roomId === activeRoom.roomId) {
+                    fetchMessages();
+                    // 지금 보고 있는 방에 새 메시지가 오면 바로 읽음 처리
+                    if (response.payload?.senderId !== user?.id) markRoomRead(activeRoom.roomId);
+               }
           });
           return () => unsubscribe();
      }, [activeRoom?.roomId]);
@@ -278,10 +356,12 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                if (payload.roomId !== activeRoom?.roomId) {
                     setNotice({ roomId: payload.roomId, text: '새 1:1 대화가 도착했어요' });
                     setTimeout(() => setNotice(null), 4500);
+                    setUnreadRoomIds(prev => new Set(prev).add(payload.roomId));
+                    if (!rooms.some(room => room.roomId === payload.roomId)) fetchRooms();
                }
           });
           return () => unsubscribe();
-     }, [canChat, user?.id, activeRoom?.roomId]);
+     }, [canChat, user?.id, activeRoom?.roomId, rooms]);
 
      useEffect(() => {
           if (!initialPeer) return;
@@ -290,7 +370,7 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
           if (onConsumeInitialPeer) onConsumeInitialPeer();
      }, [initialPeer?.$id]);
 
-     const renderProfileButton = (profile, key) => (
+     const renderProfileButton = (profile, key, isUnread = false) => (
           <button
                key={key}
                type="button"
@@ -301,7 +381,8 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                     <img src={profile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayNameOf(profile)}`} alt="" className="h-8 w-8 rounded-full object-cover" />
                     <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white ${onlineIds.has(profile.$id) ? 'bg-green-500' : 'bg-slate-300'}`} />
                </div>
-               <span className="min-w-0 flex-1 text-xs font-black leading-4 text-brand-ink">{displayNameOf(profile)}</span>
+               <span className={`min-w-0 flex-1 text-xs leading-4 text-brand-ink ${isUnread ? 'font-black' : 'font-bold'}`}>{displayNameOf(profile)}</span>
+               {isUnread && <span className="h-2 w-2 shrink-0 rounded-full bg-brand-accent" />}
           </button>
      );
 
@@ -323,7 +404,28 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                                    {activePeer ? `${isPeerOnline ? '온라인 · 바로 대화' : '오프라인 · 쪽지로 전달'}` : canChat ? '아이디·대화명 검색 후 1:1 대화' : '로그인이 필요합니다'}
                               </p>
                          </div>
-                         {loading && <Loader2 className="h-4 w-4 animate-spin text-brand-accent" />}
+                         <div className="flex items-center gap-2">
+                              {canChat && isPushSupported() && (
+                                   <button
+                                        type="button"
+                                        onClick={handleEnablePush}
+                                        disabled={pushLoading || pushState === 'granted'}
+                                        title={pushState === 'granted' ? '오프라인 알림이 켜져 있어요' : pushState === 'denied' ? '브라우저 설정에서 알림이 차단되어 있어요' : '오프라인 푸시 알림 켜기'}
+                                        className={`rounded-full p-1.5 transition-colors ${pushState === 'granted' ? 'text-emerald-500' : pushState === 'denied' ? 'text-slate-300' : 'text-brand-accent hover:bg-amber-50'}`}
+                                   >
+                                        {pushLoading ? (
+                                             <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : pushState === 'granted' ? (
+                                             <BellRing className="h-4 w-4" />
+                                        ) : pushState === 'denied' ? (
+                                             <BellOff className="h-4 w-4" />
+                                        ) : (
+                                             <Bell className="h-4 w-4" />
+                                        )}
+                                   </button>
+                              )}
+                              {loading && <Loader2 className="h-4 w-4 animate-spin text-brand-accent" />}
+                         </div>
                     </div>
 
                     {!canChat ? (
@@ -357,7 +459,8 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                                         {(query ? filteredProfiles : rooms).map((item) => {
                                              const profile = query ? item : item.peer;
                                              const key = query ? profile.$id : item.roomId;
-                                             return renderProfileButton(profile, key);
+                                             const isUnread = !query && unreadRoomIds.has(item.roomId);
+                                             return renderProfileButton(profile, key, isUnread);
                                         })}
                                         {!query && rooms.length === 0 && <p className="px-1 py-4 text-center text-[11px] font-bold text-slate-400">검색으로 대화를 시작하세요.</p>}
                                         {query && filteredProfiles.length === 0 && <p className="px-1 py-4 text-center text-[11px] font-bold text-slate-400">검색 결과가 없습니다.</p>}
@@ -387,6 +490,19 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                                              <div className="flex-1 space-y-3 overflow-y-auto bg-gray-50 p-4">
                                                   {messages.map((message) => {
                                                        const mine = message.senderId === user.id;
+                                                       if (message.isNotice) {
+                                                            return (
+                                                                 <div key={message.$id} className="flex justify-center">
+                                                                      <div className="max-w-[90%] rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 shadow-sm">
+                                                                           <div className="mb-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-amber-600">
+                                                                                <Bell className="h-3 w-3" />
+                                                                                공지
+                                                                           </div>
+                                                                           {message.content}
+                                                                      </div>
+                                                                 </div>
+                                                            );
+                                                       }
                                                        return (
                                                             <div key={message.$id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                                                                  <div className={`max-w-[82%] rounded-2xl px-3 py-2 text-sm font-semibold ${mine ? 'rounded-br-none bg-brand text-white' : 'rounded-bl-none bg-white text-slate-700 shadow-sm'}`}>
@@ -430,8 +546,13 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
                     )}
                </div>
 
-               <button onClick={() => setIsOpen(!isOpen)} className={`pointer-events-auto rounded-full w-14 h-14 flex items-center justify-center shadow-[0_12px_34px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 active:scale-95 z-[70] ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-brand hover:bg-brand-dark hover:rotate-12'}`}>
+               <button onClick={() => setIsOpen(!isOpen)} className={`pointer-events-auto relative rounded-full w-14 h-14 flex items-center justify-center shadow-[0_12px_34px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 active:scale-95 z-[70] ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-brand hover:bg-brand-dark hover:rotate-12'}`}>
                     {isOpen ? <X className="w-6 h-6 text-white" /> : <MessageCircle className="w-7 h-7 text-white fill-current" />}
+                    {!isOpen && unreadRoomIds.size > 0 && (
+                         <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-black leading-none text-white">
+                              {unreadRoomIds.size > 9 ? '9+' : unreadRoomIds.size}
+                         </span>
+                    )}
                </button>
           </div>
      );

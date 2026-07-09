@@ -56,6 +56,7 @@ export const COLLECTIONS = {
      presence: 'presence',
      pageViews: 'page_views',
      guestbookEntries: 'guestbook_entries',
+     pushSubscriptions: 'push_subscriptions',
 };
 export const BUCKET_ID = 'post-images';
 export const ECONOMY_FUNCTION_ID = 'economy';
