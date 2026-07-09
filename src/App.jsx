@@ -1035,6 +1035,7 @@ function App() {
                               user={user}
                               onLoginSuccess={handleAuthSuccess}
                               onLogout={handleLogout}
+                              onStartChat={handleStartChat}
                          />
                     </div>
                </div>

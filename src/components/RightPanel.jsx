@@ -6,7 +6,7 @@ import AuthWidget from './AuthWidget';
 import GangnamTraffic from './GangnamTraffic';
 import GangnamNews from './GangnamNews';
 
-const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount, user = null, onLoginSuccess, onLogout }) => {
+const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount, user = null, onLoginSuccess, onLogout, onStartChat }) => {
      const [onlineCount, setOnlineCount] = useState(1204);
      const [onlineUsers, setOnlineUsers] = useState([]);
      const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
@@ -560,22 +560,37 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                     <div className="space-y-4 relative">
                          <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-100 -z-10"></div>
 
-                         {onlineUsers.slice(0, 6).map(user => (
-                              <div key={user.$id || user.userId} className="flex items-center justify-between bg-white z-10">
-                                   <div className="flex items-center gap-3">
-                                        <div className="relative">
-                                             <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm overflow-hidden">
-                                                  <img src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} alt={user.username} />
+                         {onlineUsers.slice(0, 6).map(onlineUser => {
+                              const targetId = onlineUser.userId || onlineUser.$id;
+                              const isMe = user?.id && targetId === user.id;
+                              return (
+                                   <button
+                                        key={onlineUser.$id || onlineUser.userId}
+                                        type="button"
+                                        disabled={isMe}
+                                        onClick={() => onStartChat && onStartChat({
+                                             $id: targetId,
+                                             username: onlineUser.username,
+                                             fullName: onlineUser.username,
+                                             avatarUrl: onlineUser.avatarUrl || '',
+                                        })}
+                                        className={`flex w-full items-center justify-between bg-white z-10 rounded-xl -mx-1 px-1 py-0.5 text-left transition-colors ${isMe ? 'cursor-default opacity-60' : 'hover:bg-brand-light cursor-pointer'}`}
+                                   >
+                                        <div className="flex items-center gap-3">
+                                             <div className="relative">
+                                                  <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm overflow-hidden">
+                                                       <img src={onlineUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${onlineUser.username}`} alt={onlineUser.username} />
+                                                  </div>
+                                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
                                              </div>
-                                             <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                                             <span className="text-sm font-bold text-gray-700">{onlineUser.username}{isMe ? ' (나)' : ''}</span>
                                         </div>
-                                        <span className="text-sm font-bold text-gray-700">{user.username}</span>
-                                   </div>
-                                   <span className="text-[10px] font-medium text-gray-400">
-                                        On
-                                   </span>
-                              </div>
-                         ))}
+                                        <span className="text-[10px] font-medium text-gray-400">
+                                             {isMe ? '' : '1:1 대화'}
+                                        </span>
+                                   </button>
+                              );
+                         })}
                          {onlineUsers.length === 0 && (
                               <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-center text-xs font-bold text-slate-400">
                                    현재 온라인 사용자를 집계하는 중입니다.
