@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink, UserRound, MessageCircle } from 'lucide-react';
+import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink, UserRound, MessageCircle, UserPlus } from 'lucide-react';
 import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role, SITE_HOST_ID } from '../lib/appwrite';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
@@ -11,6 +11,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      const [onlineCount, setOnlineCount] = useState(0);
      const [onlineUsers, setOnlineUsers] = useState([]);
      const [activeLiveUserId, setActiveLiveUserId] = useState(null);
+     const [friendRequestingId, setFriendRequestingId] = useState('');
      const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
      // 로그인 여부와 무관하게 모든 사용자에게 보이는 "사이트 전체" 방문자 수입니다.
      // (위 visitorStats는 로그인한 사람 본인의 미니홈피 방문자 수라 서로 다른 값입니다.)
@@ -31,6 +32,45 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      });
 
      // --- Auth State: user는 App.jsx에서 props로 내려줍니다 (단일 소스) ---
+
+     const handleLiveFriendRequest = async (profile) => {
+          if (!user?.id) {
+               alert('로그인이 필요합니다.');
+               return;
+          }
+          if (!profile?.$id || profile.$id === user.id) return;
+          const documentId = `${user.id}_${profile.$id}_friend`.replace(/[^a-zA-Z0-9._-]/g, '_');
+          setFriendRequestingId(profile.$id);
+          try {
+               await databases.createDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.userRelations,
+                    documentId,
+                    data: {
+                         ownerId: user.id,
+                         targetId: profile.$id,
+                         relationType: 'friend',
+                         targetUsername: profile.username || profile.fullName || '강남 이웃',
+                         targetAvatarUrl: profile.avatarUrl || '',
+                    },
+                    permissions: [
+                         Permission.read(Role.user(user.id)),
+                         Permission.update(Role.user(user.id)),
+                         Permission.delete(Role.user(user.id)),
+                    ],
+               });
+               setActiveLiveUserId(null);
+          } catch (error) {
+               if (error?.code !== 409) {
+                    console.warn('일촌 신청 실패:', error);
+                    alert('일촌 신청에 실패했습니다.');
+               } else {
+                    setActiveLiveUserId(null);
+               }
+          } finally {
+               setFriendRequestingId('');
+          }
+     };
 
      // --- Edit Profile State ---
      const [isEditingName, setIsEditingName] = useState(false);
@@ -641,7 +681,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                              </span>
                                         </button>
                                         {activeLiveUserId === targetId && (
-                                             <div className="absolute left-11 top-9 z-20 w-36 overflow-hidden rounded-xl border border-surface-border bg-white shadow-soft-lg">
+                                             <div className="absolute left-11 top-9 z-20 w-40 overflow-hidden rounded-xl border border-surface-border bg-white shadow-soft-lg">
                                                   <button
                                                        type="button"
                                                        onClick={() => {
@@ -652,6 +692,15 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                                   >
                                                        <UserRound className="h-3.5 w-3.5 text-brand-accent" />
                                                        프로필 보기
+                                                  </button>
+                                                  <button
+                                                       type="button"
+                                                       disabled={isMe || friendRequestingId === targetId}
+                                                       onClick={() => handleLiveFriendRequest(profilePayload)}
+                                                       className={`flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs font-black transition-colors ${isMe ? 'cursor-not-allowed text-slate-300' : 'text-brand-ink hover:bg-brand-light'}`}
+                                                  >
+                                                       <UserPlus className="h-3.5 w-3.5 text-brand-accent" />
+                                                       {friendRequestingId === targetId ? '신청 중' : '일촌 신청'}
                                                   </button>
                                                   <button
                                                        type="button"

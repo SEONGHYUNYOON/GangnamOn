@@ -627,7 +627,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      return (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-3 backdrop-blur-sm" onClick={onClose}>
                <div
-                    className="flex h-[min(88vh,820px)] w-full max-w-[980px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl"
+                    className="flex h-[min(90vh,860px)] w-full max-w-[1120px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl"
                     onClick={(event) => event.stopPropagation()}
                >
                     <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 bg-white/95 px-5 backdrop-blur">
@@ -645,13 +645,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                          </div>
                     </div>
 
-                    <div className="grid min-h-0 flex-1 gap-4 bg-slate-50/70 p-4 md:grid-cols-[260px_1fr]">
-                         <aside className="min-h-0 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
-                              <div className="mb-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-center">
-                                   <p className="text-[11px] font-black text-brand-accent">TODAY</p>
-                                   <p className="text-2xl font-black text-brand-ink">{todayCount}</p>
-                              </div>
-
+                    <div className="grid min-h-0 flex-1 gap-4 bg-slate-50/70 p-4 md:grid-cols-[310px_1fr]">
+                         <aside className="min-h-0 overflow-y-auto rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
                               <label className="group relative block w-full overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50">
                                    {isOwner && <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />}
                                    <img src={avatarUrl} alt="프로필" className="aspect-square w-full object-contain transition-transform group-hover:scale-[1.01]" />
@@ -664,26 +659,109 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                               </label>
 
                               <div className="mt-4">
-                                   <h2 className="text-xl font-black text-brand-ink">{displayName}</h2>
-                                   <p className="mt-1 text-xs font-bold text-slate-500">{displayLocation} · {profileData?.mbti || 'MBTI 미설정'}</p>
+                                   <h2 className="text-2xl font-black tracking-tight text-brand-ink">{displayName}</h2>
+                                   <p className="mt-1 text-sm font-bold text-slate-500">{displayLocation} · {profileData?.mbti || 'MBTI 미설정'}</p>
                                    {profileData?.job && <p className="mt-1 text-xs font-bold text-amber-700">{profileData.job}</p>}
                                    <p className="mt-2 inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-black text-amber-800">{rank.badge} {rank.title}</p>
                                    <p className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-600">{statusMessage}</p>
                               </div>
 
                               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                                   <div className="rounded-xl bg-sky-50 p-2">
-                                        <p className="text-sm font-black text-sky-900">{totalCount}</p>
-                                        <p className="text-[10px] font-bold text-sky-500">방문</p>
+                                   <div className="rounded-2xl bg-sky-50 p-3">
+                                        <p className="text-lg font-black text-sky-900">{todayCount}</p>
+                                        <p className="text-[10px] font-bold text-sky-500">TODAY</p>
                                    </div>
-                                   <div className="rounded-xl bg-amber-50 p-2">
-                                        <p className="text-sm font-black text-amber-800">{guestbookEntries.length}</p>
+                                   <div className="rounded-2xl bg-amber-50 p-3">
+                                        <p className="text-lg font-black text-amber-800">{guestbookEntries.length}</p>
                                         <p className="text-[10px] font-bold text-amber-600">방명록</p>
                                    </div>
-                                   <div className="rounded-xl bg-rose-50 p-2">
-                                        <p className="text-sm font-black text-rose-800">{homePosts.length}</p>
+                                   <div className="rounded-2xl bg-rose-50 p-3">
+                                        <p className="text-lg font-black text-rose-800">{homePosts.length}</p>
                                         <p className="text-[10px] font-bold text-rose-500">일상</p>
                                    </div>
+                              </div>
+
+                              <div className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50 p-4">
+                                   <div className="mb-3 flex items-center justify-between gap-3">
+                                        <div className="min-w-0">
+                                             <p className="text-[11px] font-black uppercase tracking-wide text-brand-accent">Mini BGM</p>
+                                             <h3 className="mt-0.5 truncate text-sm font-black text-brand-ink">{bgmIds.length ? bgmTitles[0] : 'BGM을 연결해보세요'}</h3>
+                                        </div>
+                                        <button type="button" onClick={() => setIsBgmOpen(!isBgmOpen)} className="rounded-full bg-brand px-3 py-1.5 text-[11px] font-black text-white">
+                                             {bgmIds.length ? '설정' : '추가'}
+                                        </button>
+                                   </div>
+
+                                   {bgmIds.length > 0 && (
+                                        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-3">
+                                             <iframe
+                                                  title="Minihome background music"
+                                                  className="pointer-events-none absolute -left-[9999px] h-px w-px opacity-0"
+                                                  src={`https://www.youtube.com/embed/${bgmIds[0]}?autoplay=1&mute=0&loop=1&playlist=${bgmIds.join(',')}&rel=0&modestbranding=1&playsinline=1`}
+                                                  allow="autoplay; encrypted-media"
+                                             />
+                                             <div className="flex items-center gap-3">
+                                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+                                                       <Music2 className="h-4 w-4" />
+                                                  </div>
+                                                  <div className="min-w-0 flex-1">
+                                                       <p className="truncate text-xs font-black text-brand-ink">{bgmTitles[0]}</p>
+                                                       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                                                            <div className="h-full w-2/3 rounded-full bg-brand-gold" />
+                                                       </div>
+                                                  </div>
+                                             </div>
+                                             {bgmIds.length > 1 && (
+                                                  <p className="mt-2 text-[10px] font-bold text-slate-400">총 {bgmIds.length}곡이 순차 재생됩니다.</p>
+                                             )}
+                                        </div>
+                                   )}
+
+                                   {isBgmOpen && isOwner && (
+                                        <div className="mt-3 grid gap-2 rounded-2xl bg-white p-3">
+                                             <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                                                  <Youtube className="h-4 w-4 text-red-500" />
+                                                  유튜브 링크를 음악만 재생되는 BGM으로 연결합니다.
+                                             </div>
+                                             <input
+                                                  value={bgmDraft.bgmTitle}
+                                                  onChange={(event) => setBgmDraft(prev => ({ ...prev, bgmTitle: event.target.value }))}
+                                                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
+                                                  placeholder="BGM 제목"
+                                             />
+                                             <div className="flex gap-2">
+                                                  <div className="relative min-w-0 flex-1">
+                                                       <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
+                                                       <input
+                                                            value={bgmDraft.bgmUrl}
+                                                            onChange={(event) => setBgmDraft(prev => ({ ...prev, bgmUrl: event.target.value }))}
+                                                            className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
+                                                            placeholder="youtube.com/watch..."
+                                                       />
+                                                  </div>
+                                                  <button type="button" onClick={handleSaveBgm} className="rounded-lg bg-brand px-3 py-2 text-xs font-black text-white">저장</button>
+                                             </div>
+                                             {bgmIds.length > 0 && (
+                                                  <div className="space-y-1">
+                                                       {bgmIds.map((id, index) => (
+                                                            <div key={`${id}-${index}`} className="flex items-center justify-between rounded-lg bg-slate-50 px-2.5 py-2">
+                                                                 <span className="truncate text-[11px] font-bold text-slate-600">{index + 1}. {bgmTitles[index] || `BGM ${index + 1}`}</span>
+                                                                 <button type="button" onClick={() => removeBgmItem(index)} className="text-[10px] font-black text-slate-400 hover:text-red-500">삭제</button>
+                                                            </div>
+                                                       ))}
+                                                  </div>
+                                             )}
+                                        </div>
+                                   )}
+                              </div>
+
+                              <div className="mt-4 grid grid-cols-2 gap-2">
+                                   <button type="button" onClick={() => setActivePane('guestbook')} className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-brand-ink hover:bg-brand-light">
+                                        방명록 남기기
+                                   </button>
+                                   <button type="button" onClick={() => setActivePane('surf')} className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-brand-ink hover:bg-brand-light">
+                                        파도타기
+                                   </button>
                               </div>
                          </aside>
 
@@ -834,75 +912,32 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                   )}
                                              </section>
 
-                                             <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                             <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
                                                   <div className="mb-3 flex items-center justify-between gap-3">
-                                                       <div className="min-w-0">
-                                                            <p className="text-xs font-black text-sky-700">Mini BGM</p>
-                                                            <h3 className="truncate text-lg font-black text-brand-ink">{bgmIds.length ? bgmTitles[0] : '유튜브 BGM을 연결해보세요'}</h3>
+                                                       <div>
+                                                            <p className="text-xs font-black text-brand-accent">Guestbook</p>
+                                                            <h3 className="text-lg font-black text-brand-ink">최근 방명록</h3>
                                                        </div>
-                                                       <button type="button" onClick={() => setIsBgmOpen(!isBgmOpen)} className="rounded-full bg-brand px-3 py-2 text-xs font-black text-white">
-                                                            {bgmIds.length ? '리스트/설정' : 'BGM 설정'}
+                                                       <button type="button" onClick={() => setActivePane('guestbook')} className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-brand-light">
+                                                            전체 보기
                                                        </button>
                                                   </div>
-
-                                                  {bgmIds.length > 0 && (
-                                                       <div className="relative overflow-hidden rounded-2xl border border-sky-100 bg-white p-4">
-                                                            <iframe
-                                                                 title="Minihome background music"
-                                                                 className="pointer-events-none absolute -left-[9999px] h-px w-px opacity-0"
-                                                                 src={`https://www.youtube.com/embed/${bgmIds[0]}?autoplay=1&mute=0&loop=1&playlist=${bgmIds.join(',')}&rel=0&modestbranding=1&playsinline=1`}
-                                                                 allow="autoplay; encrypted-media"
-                                                            />
-                                                            <div className="flex items-center gap-3">
-                                                                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-900 text-white">
-                                                                      <Music2 className="h-5 w-5" />
-                                                                 </div>
-                                                                 <div className="min-w-0">
-                                                                      <p className="text-[11px] font-black text-sky-600">BGM PLAYING</p>
-                                                                      <p className="truncate text-sm font-black text-brand-ink">{bgmTitles[0]}</p>
-                                                                 </div>
-                                                            </div>
-                                                            <div className="mt-3 space-y-1.5">
-                                                                 {bgmIds.map((id, index) => (
-                                                                      <div key={`${id}-${index}`} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
-                                                                           <span className="truncate text-xs font-bold text-slate-600">{index + 1}. {bgmTitles[index] || `BGM ${index + 1}`}</span>
-                                                                           {isOwner && (
-                                                                                <button type="button" onClick={() => removeBgmItem(index)} className="text-[10px] font-black text-slate-400 hover:text-red-500">삭제</button>
-                                                                           )}
-                                                                      </div>
-                                                                 ))}
-                                                            </div>
+                                                  {guestbookEntries.length === 0 ? (
+                                                       <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+                                                            <p className="text-sm font-bold text-slate-500">아직 남겨진 방문 흔적이 없어요.</p>
+                                                            <p className="mt-1 text-xs font-semibold text-slate-400">첫 방명록을 남기면 이곳에 표시됩니다.</p>
                                                        </div>
-                                                  )}
-
-                                                  {isBgmOpen && (
-                                                       <div className="space-y-3">
-                                                            {isOwner && (
-                                                                 <div className="grid gap-2 rounded-xl bg-white p-3">
-                                                                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                                                                           <Youtube className="h-4 w-4 text-red-500" />
-                                                                           유튜브 링크를 BGM 리스트에 추가합니다. 화면에는 음악 플레이어만 표시됩니다.
+                                                  ) : (
+                                                       <div className="grid gap-2">
+                                                            {guestbookEntries.slice(0, 3).map((entry) => (
+                                                                 <article key={entry.$id} className="rounded-2xl bg-slate-50 px-4 py-3">
+                                                                      <div className="mb-1 flex items-center justify-between gap-3">
+                                                                           <p className="truncate text-sm font-black text-brand-ink">{entry.authorUsername || '익명'}</p>
+                                                                           <p className="shrink-0 text-[10px] font-bold text-slate-400">{new Date(entry.$createdAt).toLocaleDateString()}</p>
                                                                       </div>
-                                                                      <input
-                                                                           value={bgmDraft.bgmTitle}
-                                                                           onChange={(event) => setBgmDraft(prev => ({ ...prev, bgmTitle: event.target.value }))}
-                                                                           className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
-                                                                           placeholder="BGM 제목"
-                                                                      />
-                                                                      <div className="flex gap-2">
-                                                                           <div className="relative flex-1">
-                                                                                <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
-                                                                                <input
-                                                                                     value={bgmDraft.bgmUrl}
-                                                                                     onChange={(event) => setBgmDraft(prev => ({ ...prev, bgmUrl: event.target.value }))}
-                                                                                     className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
-                                                                                     placeholder="https://youtube.com/watch?v=..."
-                                                                                />
-                                                                           </div>
-                                                                           <button type="button" onClick={handleSaveBgm} className="rounded-lg bg-sky-900 px-4 py-2 text-sm font-black text-white">추가</button>
-                                                                      </div>
-                                                                 </div>
-                                                            )}
+                                                                      <p className="line-clamp-2 text-sm font-semibold leading-6 text-slate-600">{entry.content}</p>
+                                                                 </article>
+                                                            ))}
                                                        </div>
                                                   )}
                                              </section>
