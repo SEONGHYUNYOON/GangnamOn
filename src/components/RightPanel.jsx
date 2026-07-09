@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink } from 'lucide-react';
+import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink, UserRound, MessageCircle } from 'lucide-react';
 import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role, SITE_HOST_ID } from '../lib/appwrite';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
@@ -10,6 +10,7 @@ import GangnamNews from './GangnamNews';
 const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer, isDark = false, beanCount = 0, setBeanCount, user = null, onLoginSuccess, onLogout, onStartChat }) => {
      const [onlineCount, setOnlineCount] = useState(0);
      const [onlineUsers, setOnlineUsers] = useState([]);
+     const [activeLiveUserId, setActiveLiveUserId] = useState(null);
      const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
      // 로그인 여부와 무관하게 모든 사용자에게 보이는 "사이트 전체" 방문자 수입니다.
      // (위 visitorStats는 로그인한 사람 본인의 미니홈피 방문자 수라 서로 다른 값입니다.)
@@ -609,32 +610,65 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                          {onlineUsers.slice(0, 6).map(onlineUser => {
                               const targetId = onlineUser.userId || onlineUser.$id;
                               const isMe = user?.id && targetId === user.id;
+                              const profilePayload = {
+                                   $id: targetId,
+                                   username: onlineUser.username,
+                                   fullName: onlineUser.username,
+                                   avatarUrl: onlineUser.avatarUrl || '',
+                                   location: onlineUser.location || '강남',
+                              };
                               return (
-                                   <button
+                                   <div
                                         key={onlineUser.$id || onlineUser.userId}
-                                        type="button"
-                                        disabled={isMe}
-                                        onClick={() => onStartChat && onStartChat({
-                                             $id: targetId,
-                                             username: onlineUser.username,
-                                             fullName: onlineUser.username,
-                                             avatarUrl: onlineUser.avatarUrl || '',
-                                        })}
-                                        className={`flex w-full items-center justify-between bg-white z-10 rounded-xl -mx-1 px-1 py-0.5 text-left transition-colors ${isMe ? 'cursor-default opacity-60' : 'hover:bg-brand-light cursor-pointer'}`}
+                                        className="relative z-10"
                                    >
-                                        <div className="flex items-center gap-3">
-                                             <div className="relative">
-                                                  <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm overflow-hidden">
-                                                       <img src={resolveAvatarUrl(onlineUser)} alt={onlineUser.username} />
+                                        <button
+                                             type="button"
+                                             onClick={() => setActiveLiveUserId(activeLiveUserId === targetId ? null : targetId)}
+                                             className="flex w-full items-center justify-between rounded-xl bg-white -mx-1 px-1 py-0.5 text-left transition-colors hover:bg-brand-light"
+                                        >
+                                             <div className="flex items-center gap-3">
+                                                  <div className="relative">
+                                                       <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm overflow-hidden">
+                                                            <img src={resolveAvatarUrl(onlineUser)} alt={onlineUser.username} />
+                                                       </div>
+                                                       <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
                                                   </div>
-                                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                                                  <span className="text-sm font-bold text-gray-700">{onlineUser.username}{isMe ? ' (나)' : ''}</span>
                                              </div>
-                                             <span className="text-sm font-bold text-gray-700">{onlineUser.username}{isMe ? ' (나)' : ''}</span>
-                                        </div>
-                                        <span className="text-[10px] font-medium text-gray-400">
-                                             {isMe ? '' : '1:1 대화'}
-                                        </span>
-                                   </button>
+                                             <span className="text-[10px] font-medium text-gray-400">
+                                                  선택
+                                             </span>
+                                        </button>
+                                        {activeLiveUserId === targetId && (
+                                             <div className="absolute left-11 top-9 z-20 w-36 overflow-hidden rounded-xl border border-surface-border bg-white shadow-soft-lg">
+                                                  <button
+                                                       type="button"
+                                                       onClick={() => {
+                                                            setActiveLiveUserId(null);
+                                                            onOpenMinihome && onOpenMinihome(profilePayload);
+                                                       }}
+                                                       className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs font-black text-brand-ink transition-colors hover:bg-brand-light"
+                                                  >
+                                                       <UserRound className="h-3.5 w-3.5 text-brand-accent" />
+                                                       프로필 보기
+                                                  </button>
+                                                  <button
+                                                       type="button"
+                                                       disabled={isMe}
+                                                       onClick={() => {
+                                                            if (isMe) return;
+                                                            setActiveLiveUserId(null);
+                                                            onStartChat && onStartChat(profilePayload);
+                                                       }}
+                                                       className={`flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs font-black transition-colors ${isMe ? 'cursor-not-allowed text-slate-300' : 'text-brand-ink hover:bg-brand-light'}`}
+                                                  >
+                                                       <MessageCircle className="h-3.5 w-3.5 text-brand-accent" />
+                                                       1:1 채팅
+                                                  </button>
+                                             </div>
+                                        )}
+                                   </div>
                               );
                          })}
                          {onlineUsers.length === 0 && (
