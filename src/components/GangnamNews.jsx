@@ -27,6 +27,18 @@ const FALLBACK_NEWS = [
 
 const LOCAL_INFO = [
      {
+          title: '강남구청 민원·행정',
+          date: '상시',
+          link: 'https://www.gangnam.go.kr/',
+          description: '민원, 여권, 세금, 생활 행정 서비스를 확인합니다.',
+     },
+     {
+          title: '강남구 동주민센터',
+          date: '상시',
+          link: 'https://www.gangnam.go.kr/contents/jumin_center/1/view.do',
+          description: '전입, 주민등록, 복지 상담 등 가까운 주민센터를 찾습니다.',
+     },
+     {
           title: '비짓강남 관광·전시 정보',
           date: '상시',
           link: 'https://www.visitgangnam.net/',
@@ -43,6 +55,60 @@ const LOCAL_INFO = [
           date: '상시',
           link: 'https://health.gangnam.go.kr/',
           description: '보건, 예방접종, 건강검진 안내를 확인합니다.',
+     },
+     {
+          title: '강남경찰서 민원실',
+          date: '상시',
+          link: 'https://www.smpa.go.kr/gn/',
+          description: '분실, 교통민원, 생활 안전 관련 경찰 민원을 확인합니다.',
+     },
+     {
+          title: '강남소방서 안전 정보',
+          date: '상시',
+          link: 'https://fire.seoul.go.kr/gangnam/',
+          description: '소방 민원, 안전교육, 생활 안전 정보를 확인합니다.',
+     },
+     {
+          title: '삼성세무서·역삼세무서',
+          date: '상시',
+          link: 'https://www.nts.go.kr/',
+          description: '사업자, 종합소득세, 부가세 등 세무 업무를 확인합니다.',
+     },
+     {
+          title: '서울강남고용복지+센터',
+          date: '상시',
+          link: 'https://www.workplus.go.kr/',
+          description: '취업 상담, 실업급여, 고용지원 서비스를 확인합니다.',
+     },
+     {
+          title: '강남구립도서관',
+          date: '상시',
+          link: 'https://library.gangnam.go.kr/',
+          description: '도서 대출, 열람실, 문화 프로그램 정보를 확인합니다.',
+     },
+     {
+          title: '강남구 복지기관',
+          date: '상시',
+          link: 'https://www.gangnam.go.kr/contents/welfare/1/view.do',
+          description: '복지관, 돌봄, 취약계층 지원 기관을 찾습니다.',
+     },
+     {
+          title: '서울출입국·외국인청',
+          date: '상시',
+          link: 'https://www.immigration.go.kr/',
+          description: '체류, 비자, 외국인 등록 관련 기관 정보를 확인합니다.',
+     },
+     {
+          title: '강남구 공영주차장',
+          date: '상시',
+          link: 'https://www.gncity.or.kr/',
+          description: '공영주차장 위치, 요금, 운영 정보를 확인합니다.',
+     },
+     {
+          title: '교통 민원·도로 안내',
+          date: '상시',
+          link: 'https://topis.seoul.go.kr/',
+          description: '교통 상황, 도로 통제, 대중교통 정보를 확인합니다.',
      },
 ];
 
@@ -92,15 +158,16 @@ export const useGangnamNews = (limit = 5) => {
 
 const GangnamNews = ({ compact = false }) => {
      const { news, loading, source } = useGangnamNews(compact ? 3 : 6);
+     const [showAllLocalInfo, setShowAllLocalInfo] = useState(false);
 
      if (compact) {
-          const compactItems = LOCAL_INFO;
+          const compactItems = showAllLocalInfo ? LOCAL_INFO : LOCAL_INFO.slice(0, 4);
           return (
                <section className="rounded-card border border-surface-border bg-white p-4 shadow-soft">
                     <div className="mb-3 flex items-center justify-between">
                          <div className="flex items-center gap-2">
                               <Newspaper className="h-4 w-4 text-brand-accent" />
-                              <h3 className="text-xs font-black text-brand-ink">강남 생활 정보</h3>
+                              <h3 className="text-sm font-black text-brand-ink">강남 생활 정보</h3>
                          </div>
                          {loading && <RefreshCw className="h-3.5 w-3.5 animate-spin text-slate-300" />}
                     </div>
@@ -111,13 +178,21 @@ const GangnamNews = ({ compact = false }) => {
                                    href={item.link || 'https://www.gangnam.go.kr/'}
                                    target="_blank"
                                    rel="noreferrer"
-                                   className="block rounded-xl bg-surface-muted px-3 py-2 transition-colors hover:bg-brand-light"
+                                   className="block rounded-xl bg-surface-muted px-3 py-2.5 transition-colors hover:bg-brand-light"
                               >
-                                   <p className="line-clamp-2 text-[11px] font-black leading-5 text-brand-ink">{item.title}</p>
+                                   <p className="line-clamp-2 text-xs font-black leading-5 text-brand-ink">{item.title}</p>
+                                   <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-slate-500">{item.description}</p>
                                    <p className="mt-1 text-[10px] font-bold text-slate-400">{formatDate(item.date)}</p>
                               </a>
                          ))}
                     </div>
+                    <button
+                         type="button"
+                         onClick={() => setShowAllLocalInfo(prev => !prev)}
+                         className="mt-3 w-full rounded-xl border border-surface-border bg-white py-2 text-xs font-black text-brand-accent transition-colors hover:bg-brand-light"
+                    >
+                         {showAllLocalInfo ? '접기' : `전체보기 (${LOCAL_INFO.length})`}
+                    </button>
                </section>
           );
      }

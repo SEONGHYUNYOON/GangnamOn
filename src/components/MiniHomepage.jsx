@@ -276,29 +276,49 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
 
      const handleSaveProfile = async () => {
           if (!isOwner) return;
+          const cleanProfile = {
+               username: (profileData?.username || displayName || '강남 이웃').slice(0, 64),
+               fullName: (profileData?.fullName || displayName || '강남 이웃').slice(0, 64),
+               location: (editForm.location || displayLocation || '강남').slice(0, 64),
+               mbti: (editForm.mbti || '').slice(0, 8),
+               job: (editForm.job || '').slice(0, 80),
+               statusMessage: (editForm.bio || '').slice(0, 500),
+               avatarUrl: avatarUrl || profileData?.avatarUrl,
+               gender: profileData?.gender || user?.user_metadata?.gender || 'female',
+          };
+
           try {
-               await databases.updateDocument({
+               const savePayload = {
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.profiles,
                     documentId: user.id,
-                    data: {
-                         location: editForm.location,
-                         mbti: editForm.mbti,
-                         job: editForm.job,
-                         statusMessage: editForm.bio,
-                    },
-               });
+                    data: cleanProfile,
+               };
+
+               try {
+                    await databases.updateDocument(savePayload);
+               } catch (updateError) {
+                    if (updateError?.code !== 404) throw updateError;
+                    await databases.createDocument({
+                         ...savePayload,
+                         permissions: [
+                              Permission.read(Role.any()),
+                              Permission.update(Role.user(user.id)),
+                              Permission.delete(Role.user(user.id)),
+                         ],
+                    });
+               }
+
                setProfileData(prev => ({
                     ...prev,
-                    location: editForm.location,
-                    mbti: editForm.mbti,
-                    job: editForm.job,
-                    statusMessage: editForm.bio,
+                    ...cleanProfile,
                }));
                setIsEditing(false);
+               if (onProfileUpdate) await onProfileUpdate();
           } catch (error) {
                console.error('Profile update failed:', error);
-               alert('프로필 저장 실패');
+               const detail = error?.message ? `\n(${error.message})` : '';
+               alert(`프로필 저장 실패${detail}`);
           }
      };
 
@@ -549,13 +569,13 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      return (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-3 backdrop-blur-sm" onClick={onClose}>
                <div
-                    className="flex h-[min(86vh,760px)] w-full max-w-[900px] flex-col overflow-hidden rounded-[22px] border border-sky-200 bg-[#eaf6ff] shadow-2xl"
+                    className="flex h-[min(88vh,820px)] w-full max-w-[980px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl"
                     onClick={(event) => event.stopPropagation()}
                >
-                    <div className="flex h-12 shrink-0 items-center justify-between border-b border-sky-200 bg-[#f8fcff] px-4">
+                    <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 bg-white/95 px-5 backdrop-blur">
                          <div className="min-w-0">
-                              <p className="truncate text-sm font-black text-sky-900">{displayName}님의 미니홈피</p>
-                              <p className="text-[11px] font-bold text-sky-500">TODAY {todayCount} | TOTAL {totalCount.toLocaleString()}</p>
+                              <p className="truncate text-sm font-black text-brand-ink">{displayName}님의 미니홈피</p>
+                              <p className="text-[11px] font-bold text-slate-400">TODAY {todayCount} | TOTAL {totalCount.toLocaleString()}</p>
                          </div>
                          <div className="flex items-center gap-2">
                               <button type="button" className="rounded-full border border-sky-200 bg-white p-2 text-sky-700 hover:bg-sky-50" title="쪽지 보내기">
@@ -567,16 +587,16 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                          </div>
                     </div>
 
-                    <div className="grid min-h-0 flex-1 gap-3 p-3 md:grid-cols-[250px_1fr]">
-                         <aside className="min-h-0 rounded-2xl border border-sky-200 bg-white p-4">
-                              <div className="mb-3 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 text-center">
-                                   <p className="text-[11px] font-black text-sky-700">TODAY</p>
+                    <div className="grid min-h-0 flex-1 gap-4 bg-slate-50/70 p-4 md:grid-cols-[260px_1fr]">
+                         <aside className="min-h-0 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+                              <div className="mb-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-center">
+                                   <p className="text-[11px] font-black text-brand-accent">TODAY</p>
                                    <p className="text-2xl font-black text-brand-ink">{todayCount}</p>
                               </div>
 
-                              <label className="group relative block w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                              <label className="group relative block w-full overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50">
                                    {isOwner && <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />}
-                                   <img src={avatarUrl} alt="프로필" className="h-44 w-full object-cover transition-transform group-hover:scale-[1.02]" />
+                                   <img src={avatarUrl} alt="프로필" className="aspect-square w-full object-contain transition-transform group-hover:scale-[1.01]" />
                                    {isOwner && (
                                         <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100">
                                              {avatarUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
@@ -590,7 +610,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                    <p className="mt-1 text-xs font-bold text-slate-500">{displayLocation} · {profileData?.mbti || 'MBTI 미설정'}</p>
                                    {profileData?.job && <p className="mt-1 text-xs font-bold text-amber-700">{profileData.job}</p>}
                                    <p className="mt-2 inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-black text-amber-800">{rank.badge} {rank.title}</p>
-                                   <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-600">{statusMessage}</p>
+                                   <p className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-600">{statusMessage}</p>
                               </div>
 
                               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
@@ -609,9 +629,9 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                               </div>
                          </aside>
 
-                         <main className="min-h-0 overflow-hidden rounded-2xl border border-sky-200 bg-white">
-                              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                                   <div className="flex gap-1">
+                         <main className="min-h-0 overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+                              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
+                                   <div className="flex flex-wrap gap-1">
                                         {panes.map((pane) => {
                                              const Icon = pane.icon;
                                              return (
@@ -619,7 +639,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                        key={pane.id}
                                                        type="button"
                                                        onClick={() => setActivePane(pane.id)}
-                                                       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black transition-colors ${activePane === pane.id ? 'bg-sky-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-sky-50'}`}
+                                                       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black transition-colors ${activePane === pane.id ? 'bg-brand text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                                   >
                                                        <Icon className="h-3.5 w-3.5" />
                                                        {pane.label}
@@ -631,9 +651,12 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                    {isOwner && (
                                         <button
                                              type="button"
-                                             onClick={() => {
-                                                  if (isEditing) handleSaveProfile();
-                                                  setIsEditing(!isEditing);
+                                             onClick={async () => {
+                                                  if (isEditing) {
+                                                       await handleSaveProfile();
+                                                       return;
+                                                  }
+                                                  setIsEditing(true);
                                              }}
                                              className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-50"
                                         >
@@ -648,10 +671,10 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                         <div className="space-y-4">
                                              <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
 
-                                             <section className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-sky-50 p-4">
-                                                  <div className="mb-3 flex items-center gap-2">
+                                             <section className="animate-in fade-in slide-in-from-bottom-1 rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+                                                  <div className="mb-4 flex items-center gap-2">
                                                        <Sparkles className="h-4 w-4 text-amber-500" />
-                                                       <h3 className="text-sm font-black text-brand-ink">나를 어필하는 공간</h3>
+                                                       <h3 className="text-base font-black text-brand-ink">나를 어필하는 공간</h3>
                                                   </div>
                                                   {isEditing ? (
                                                        <div className="grid gap-2">
@@ -668,12 +691,12 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                                  {profileData?.job && <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-amber-700">💼 {profileData.job}</span>}
                                                                  <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-emerald-700">{rank.badge} {rank.title}</span>
                                                             </div>
-                                                            <p className="mt-3 text-sm font-semibold leading-7 text-slate-700">{statusMessage}</p>
+                                                            <p className="mt-4 text-base font-semibold leading-8 text-slate-700">{statusMessage}</p>
                                                        </>
                                                   )}
                                              </section>
 
-                                             <section className="rounded-2xl border border-slate-200 bg-white p-4">
+                                             <section className="animate-in fade-in slide-in-from-bottom-1 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
                                                   <div className="mb-3 flex items-center justify-between gap-3">
                                                        <div>
                                                             <p className="text-xs font-black text-rose-600">Daily Feed</p>
@@ -731,7 +754,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                        // $createdAt 내림차순(orderDesc)으로 불러오므로 최신 사진이 항상 맨 위입니다.
                                                        <div className="flex flex-col gap-4">
                                                             {homePosts.map((post) => (
-                                                                 <article key={post.$id} className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                                                                 <article key={post.$id} className="overflow-hidden rounded-[22px] border border-slate-100 bg-white shadow-sm">
                                                                       <div className="flex items-center gap-2 px-3 py-2.5">
                                                                            <img src={avatarUrl} alt={displayName} className="h-7 w-7 rounded-full object-cover" />
                                                                            <span className="text-xs font-black text-slate-700">{displayName}</span>
@@ -740,7 +763,9 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                                            </span>
                                                                       </div>
                                                                       {post.imageUrls?.[0] && (
-                                                                           <img src={post.imageUrls[0]} alt={post.title || '일상 사진'} className="aspect-square w-full object-cover" />
+                                                                           <div className="flex max-h-[560px] min-h-[280px] items-center justify-center bg-slate-50">
+                                                                                <img src={post.imageUrls[0]} alt={post.title || '일상 사진'} className="max-h-[560px] w-full object-contain" />
+                                                                           </div>
                                                                       )}
                                                                       <div className="p-3">
                                                                            <p className="text-sm font-bold text-slate-700">{post.content || post.title || '오늘의 일상'}</p>

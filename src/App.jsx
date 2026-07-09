@@ -905,7 +905,7 @@ function App() {
                                                        </div>
                                                   </section>
                                                   <ILoveSchool />
-                                                  <DiningCompanion />
+                                                  <DiningCompanion onCreate={() => { setCreateModalCategory('lunch_networking'); setIsCreateModalOpen(true); }} />
                                                   <MeetingFeed items={meetingItems.slice(0, 6)} onStartChat={handleStartChat} user={user} />
                                                   <UsedMarket
                                                        items={marketItems}

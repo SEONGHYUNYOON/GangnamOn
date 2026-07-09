@@ -8,8 +8,8 @@ const AuthWidget = ({ onLoginSuccess }) => {
      const [email, setEmail] = useState('');
      const [password, setPassword] = useState('');
      const [username, setUsername] = useState('');
-     const [region, setRegion] = useState('역삼1동');
-     const [gender, setGender] = useState('female'); // 'male' or 'female'
+     const [region, setRegion] = useState('');
+     const [gender, setGender] = useState(''); // 'male' or 'female'
      const [agreedToTerms, setAgreedToTerms] = useState(false);
      const [termsModalTab, setTermsModalTab] = useState(null); // null | 'terms' | 'privacy'
 
@@ -92,6 +92,14 @@ const AuthWidget = ({ onLoginSuccess }) => {
           e.preventDefault();
           if (!username) {
                setAuthError("닉네임을 입력해주세요!");
+               return;
+          }
+          if (!gender) {
+               setAuthError("성별을 선택해주세요.");
+               return;
+          }
+          if (!region) {
+               setAuthError("지역을 선택해주세요.");
                return;
           }
           if (!agreedToTerms) {
@@ -292,7 +300,9 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                              value={region}
                                              onChange={(e) => setRegion(e.target.value)}
                                              className="w-full pl-10 pr-4 py-3 bg-surface-muted border border-surface-border rounded-xl text-sm focus:outline-none focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/15 transition-all appearance-none cursor-pointer text-gray-700 font-medium"
+                                             required
                                         >
+                                             <option value="" disabled>지역 선택</option>
                                              {gangnamRegions.map((r) => (
                                                   <option key={r} value={r}>{r}</option>
                                              ))}

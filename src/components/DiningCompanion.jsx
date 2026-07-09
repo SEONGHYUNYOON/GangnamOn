@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { User, MapPin } from 'lucide-react';
+import { MapPin, PlusCircle } from 'lucide-react';
 import KakaoMap from './KakaoMap';
 
-const DiningCompanion = () => {
+const DiningCompanion = ({ onCreate }) => {
     const [filter, setFilter] = useState('all'); // all, korean, western, cafe
     const [genderFilter, setGenderFilter] = useState('all'); // all, mixed, male, female
     const [activeMapId, setActiveMapId] = useState(null);
@@ -118,32 +118,43 @@ const DiningCompanion = () => {
                     <p className="text-xs text-gray-500 mt-1">취향에 맞는 밥친구를 찾아보세요!</p>
                 </div>
 
-                {/* Gender Filter Buttons */}
-                <div className="flex bg-white p-1 rounded-xl overflow-x-auto scrollbar-hide border border-surface-border shadow-soft">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <button
-                        onClick={() => setGenderFilter('all')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'all' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        type="button"
+                        onClick={onCreate}
+                        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark"
                     >
-                        전체
+                        <PlusCircle className="h-4 w-4" />
+                        모임 개설
                     </button>
-                    <button
-                        onClick={() => setGenderFilter('mixed')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'mixed' ? 'bg-brand text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                    >
-                        👫 혼성
-                    </button>
-                    <button
-                        onClick={() => setGenderFilter('male')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'male' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                    >
-                        👨 남성만
-                    </button>
-                    <button
-                        onClick={() => setGenderFilter('female')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'female' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                    >
-                        👩 여성만
-                    </button>
+
+                    {/* Gender Filter Buttons */}
+                    <div className="flex bg-white p-1 rounded-xl overflow-x-auto scrollbar-hide border border-surface-border shadow-soft">
+                        <button
+                            onClick={() => setGenderFilter('all')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'all' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            전체
+                        </button>
+                        <button
+                            onClick={() => setGenderFilter('mixed')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'mixed' ? 'bg-brand text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            👫 혼성
+                        </button>
+                        <button
+                            onClick={() => setGenderFilter('male')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'male' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            👨 남성만
+                        </button>
+                        <button
+                            onClick={() => setGenderFilter('female')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${genderFilter === 'female' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            👩 여성만
+                        </button>
+                    </div>
                 </div>
             </div>
 

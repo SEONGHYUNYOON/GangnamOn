@@ -97,7 +97,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                {/* Logo */}
                <div className="mb-7 px-2 flex items-center justify-center">
                     <GangnamOnLogo
-                         className="h-14 w-auto cursor-pointer hover:scale-105 transition-transform duration-200"
+                         className="h-16 w-auto cursor-pointer hover:scale-105 transition-transform duration-200"
                          onClick={onLogoClick || (() => setActiveTab('home'))}
                     />
                </div>
