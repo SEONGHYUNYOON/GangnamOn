@@ -277,14 +277,16 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const handleSaveProfile = async () => {
           if (!isOwner) return;
           const cleanProfile = {
-               username: (profileData?.username || displayName || '강남 이웃').slice(0, 64),
-               fullName: (profileData?.fullName || displayName || '강남 이웃').slice(0, 64),
                location: (editForm.location || displayLocation || '강남').slice(0, 64),
                mbti: (editForm.mbti || '').slice(0, 8),
                job: (editForm.job || '').slice(0, 80),
                statusMessage: (editForm.bio || '').slice(0, 500),
+          };
+          const createProfile = {
+               username: (profileData?.username || displayName || '강남 이웃').slice(0, 64),
                avatarUrl: avatarUrl || profileData?.avatarUrl,
                gender: profileData?.gender || user?.user_metadata?.gender || 'female',
+               ...cleanProfile,
           };
 
           try {
@@ -300,7 +302,10 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                } catch (updateError) {
                     if (updateError?.code !== 404) throw updateError;
                     await databases.createDocument({
-                         ...savePayload,
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.profiles,
+                         documentId: user.id,
+                         data: createProfile,
                          permissions: [
                               Permission.read(Role.any()),
                               Permission.update(Role.user(user.id)),

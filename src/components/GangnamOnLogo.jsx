@@ -1,6 +1,6 @@
 import React from 'react';
 
-const GangnamOnLogo = ({ className = 'h-16 w-auto', onClick }) => {
+const GangnamOnLogo = ({ className = 'h-20 w-auto', onClick }) => {
      const GOLD = '#A77910';
      const DARK = '#111827';
 
@@ -51,7 +51,7 @@ const GangnamOnLogo = ({ className = 'h-16 w-auto', onClick }) => {
                     x="62"
                     y="66"
                     fontFamily="'Segoe Script', 'Brush Script MT', 'Pacifico', cursive"
-                    fontSize="14"
+                    fontSize="15.5"
                     fontWeight="600"
                     letterSpacing="0.7"
                     fill="#8B99AE"

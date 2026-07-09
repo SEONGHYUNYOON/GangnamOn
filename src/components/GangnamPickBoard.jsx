@@ -110,7 +110,7 @@ const PickCard = ({ post, onOpen, liked, onToggleLike }) => {
                          )}
                     </div>
 
-                    <p className="mt-2.5 line-clamp-3 text-sm leading-6 text-slate-600 [word-break:keep-all]">
+                    <p className="mt-2.5 line-clamp-6 text-sm leading-6 text-slate-600 [word-break:keep-all]">
                          {post.content}
                     </p>
 

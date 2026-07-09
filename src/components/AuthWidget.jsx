@@ -126,7 +126,6 @@ const AuthWidget = ({ onLoginSuccess }) => {
                     documentId: newAccount.$id,
                     data: {
                          username,
-                         fullName: username,
                          avatarUrl: defaultAvatar,
                          location: region,
                          gender,

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
      ArrowRight,
@@ -403,6 +403,7 @@ const openBusLocation = (routeName) => {
 };
 
 const TOPIS_CCTV_URL = 'https://topis.seoul.go.kr/map/openCctvMap.do';
+const getRandomItem = (items) => items[Math.floor(Math.random() * items.length)] || items[0];
 
 const SelectionOverlay = ({ title, items, currentId, onSelect, onClose, icon: Icon }) => (
      <Portal>
@@ -478,14 +479,14 @@ const DetailOverlay = ({ title, subtitle, children, onClose, mapQuery }) => (
 
 const GangnamTraffic = ({ embedded = false }) => {
      const [stationId, setStationId] = useState('gangnam');
-     const [busId, setBusId] = useState('146');
+     const [busId, setBusId] = useState(() => getRandomItem(busRoutes).id);
      const [favoriteBusIds, setFavoriteBusIds] = useState(() => {
           try {
                const saved = window.localStorage.getItem('gangnam:on:fav-buses');
-               const parsed = saved ? JSON.parse(saved) : ['146', '341'];
-               return Array.isArray(parsed) ? parsed : ['146', '341'];
+               const parsed = saved ? JSON.parse(saved) : [];
+               return Array.isArray(parsed) ? parsed : [];
           } catch {
-               return ['146', '341'];
+               return [];
           }
      });
      const [isStationOpen, setIsStationOpen] = useState(false);
@@ -493,14 +494,14 @@ const GangnamTraffic = ({ embedded = false }) => {
      const [lineDetail, setLineDetail] = useState(null);
      const [busDetail, setBusDetail] = useState(false);
      const [roadDetail, setRoadDetail] = useState(null);
-     const [selectedCctvId, setSelectedCctvId] = useState('gangnam-daero');
+     const [selectedCctvId, setSelectedCctvId] = useState(() => getRandomItem(cctvSpots).id);
      const [favoriteCctvIds, setFavoriteCctvIds] = useState(() => {
           try {
                const saved = window.localStorage.getItem('gangnam:on:fav-cctv');
-               const parsed = saved ? JSON.parse(saved) : ['gangnam-daero'];
-               return Array.isArray(parsed) ? parsed : ['gangnam-daero'];
+               const parsed = saved ? JSON.parse(saved) : [];
+               return Array.isArray(parsed) ? parsed : [];
           } catch {
-               return ['gangnam-daero'];
+               return [];
           }
      });
 
@@ -512,6 +513,34 @@ const GangnamTraffic = ({ embedded = false }) => {
      const isFavoriteBus = favoriteBusIds.includes(bus.id);
      const selectedCctv = cctvSpots.find((item) => item.id === selectedCctvId) || cctvSpots[0];
      const isFavoriteCctv = favoriteCctvIds.includes(selectedCctv.id);
+
+     useEffect(() => {
+          if (favoriteBusIds.length > 0) {
+               setBusId(favoriteBusIds[0]);
+               return undefined;
+          }
+
+          const rotate = () => setBusId(currentId => {
+               const candidates = busRoutes.filter((item) => item.id !== currentId);
+               return getRandomItem(candidates.length ? candidates : busRoutes).id;
+          });
+          const timer = window.setInterval(rotate, 10000);
+          return () => window.clearInterval(timer);
+     }, [favoriteBusIds]);
+
+     useEffect(() => {
+          if (favoriteCctvIds.length > 0) {
+               setSelectedCctvId(favoriteCctvIds[0]);
+               return undefined;
+          }
+
+          const rotate = () => setSelectedCctvId(currentId => {
+               const candidates = cctvSpots.filter((item) => item.id !== currentId);
+               return getRandomItem(candidates.length ? candidates : cctvSpots).id;
+          });
+          const timer = window.setInterval(rotate, 10000);
+          return () => window.clearInterval(timer);
+     }, [favoriteCctvIds]);
 
      const toggleFavoriteBus = () => {
           setFavoriteBusIds((current) => {
@@ -756,6 +785,9 @@ const GangnamTraffic = ({ embedded = false }) => {
                                    <Video className="h-4 w-4 text-brand-accent" />
                                    <p className="text-xs font-black text-brand-ink">도로 CCTV</p>
                               </div>
+                              <span className="text-[10px] font-bold text-slate-400">
+                                   {favoriteCctvIds.length ? '즐겨찾기 고정' : '10초 랜덤'}
+                              </span>
                               <button
                                    type="button"
                                    onClick={toggleFavoriteCctv}
@@ -898,6 +930,9 @@ const GangnamTraffic = ({ embedded = false }) => {
                                              </button>
                                         </div>
                                         <p className="mt-1 truncate text-[11px] font-semibold text-slate-500">{bus.description}</p>
+                                        {!isFavoriteBus && favoriteBusIds.length === 0 && (
+                                             <p className="mt-1 text-[10px] font-bold text-brand-accent">10초마다 추천 노선 자동 변경</p>
+                                        )}
                                    </div>
                               </div>
                               <div className="shrink-0 text-right">

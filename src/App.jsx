@@ -1072,17 +1072,48 @@ function App() {
                                         )}
 
                                         {activeTab === 'badge' && (
-                                             <div className="flex flex-col items-center justify-center h-[50vh] text-gray-400">
-                                                  <div className="text-center space-y-4">
-                                                       <div className="text-6xl animate-bounce">🏆</div>
-                                                       <h2 className="text-2xl font-bold text-gray-900">나의 강남 활동 Badge</h2>
-                                                       <p className="text-gray-500">
-                                                            현재 <strong>'강남 새싹 🌱'</strong> 등급입니다.<br />
-                                                            활동을 통해 레벨업 해보세요!
-                                                       </p>
-                                                       <button onClick={() => setIsMiniHomeOpen(true)} className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all">
-                                                            🏠 내 미니홈피 열기
-                                                       </button>
+                                             <div className="mx-auto max-w-4xl px-2 py-8">
+                                                  <div className="rounded-card border border-surface-border bg-white p-6 shadow-soft md:p-8">
+                                                       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                                                            <div>
+                                                                 <div className="mb-3 inline-flex rounded-full bg-brand-light px-3 py-1 text-xs font-black text-brand-accent">
+                                                                      활동 등급 안내
+                                                                 </div>
+                                                                 <h2 className="text-2xl font-black text-brand-ink">나의 강남 활동 Badge</h2>
+                                                                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
+                                                                      현재 <strong className="text-brand-accent">'강남 새싹'</strong> 등급입니다. 게시글, 댓글, 모임 참여처럼 실제 활동이 쌓이면 등급과 보상이 함께 올라갑니다.
+                                                                 </p>
+                                                            </div>
+                                                            <button onClick={() => setIsMiniHomeOpen(true)} className="rounded-xl bg-brand px-5 py-3 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark">
+                                                                 내 미니홈피 열기
+                                                            </button>
+                                                       </div>
+
+                                                       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                                            {[
+                                                                 { title: '강남 새싹', score: '0점+', reward: '기본 뱃지' },
+                                                                 { title: '동네 이웃', score: '80점+', reward: '프로필 강조' },
+                                                                 { title: '강남 토박이', score: '180점+', reward: '추천 노출 가산' },
+                                                                 { title: '동장', score: '350점+', reward: '커뮤니티 리더 뱃지' },
+                                                                 { title: '구청장', score: '700점+', reward: '프리미엄 테두리' },
+                                                                 { title: '시장', score: '1,200점+', reward: '상단 추천 후보' },
+                                                                 { title: '강남 레전드', score: '2,000점+', reward: '레전드 뱃지' },
+                                                                 { title: '운영 명예회원', score: '5,000점+', reward: '시즌 명예 표시' },
+                                                            ].map((rankItem) => (
+                                                                 <div key={rankItem.title} className="rounded-2xl border border-surface-border bg-surface-muted p-4">
+                                                                      <p className="text-base font-black text-brand-ink">{rankItem.title}</p>
+                                                                      <p className="mt-2 text-xs font-bold text-brand-accent">{rankItem.score}</p>
+                                                                      <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">{rankItem.reward}</p>
+                                                                 </div>
+                                                            ))}
+                                                       </div>
+
+                                                       <div className="mt-5 rounded-2xl bg-brand-light p-4">
+                                                            <p className="text-sm font-black text-brand-ink">승급 점수는 이렇게 쌓입니다</p>
+                                                            <p className="mt-2 text-xs font-semibold leading-6 text-slate-600">
+                                                                 게시글 작성 +12점, 중고거래 등록 +12점, 모임 개설 +12점, 댓글/방명록 활동 +2점, 미니홈피 일상 업로드 +8점 기준으로 운영됩니다. 반복성 홍보나 신고 누적 활동은 승급 점수에서 제외될 수 있습니다.
+                                                            </p>
+                                                       </div>
                                                   </div>
                                              </div>
                                         )}
