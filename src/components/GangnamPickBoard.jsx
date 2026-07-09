@@ -285,7 +285,7 @@ const GangnamPickBoard = () => {
                          </div>
                          <h2 className="text-xl font-black text-brand-ink">👍 강남 픽</h2>
                          <p className="mt-1 text-xs font-semibold text-slate-500">
-                              AI가 네이버 블로그 후기를 분석해 2시간마다 새로운 장소를 소개해요. 카드를 눌러보면 주소·전화번호·사진을 더 볼 수 있어요.
+                              AI가 네이버 블로그 후기를 분석해 12시간마다 새로운 장소를 소개해요. 카드를 눌러보면 주소·전화번호·사진을 더 볼 수 있어요.
                          </p>
                     </div>
                </div>

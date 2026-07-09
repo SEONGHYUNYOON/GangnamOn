@@ -3,9 +3,9 @@ import { InputFile } from 'node-appwrite/file';
 import * as cheerio from 'cheerio';
 
 // ────────────────────────────────────────────────────────────────
-// 강남 픽 자동 큐레이션 Function ("blogFeed") — v2
+// 강남 픽 자동 큐레이션 Function ("blogFeed") — v2.2
 //
-// 2시간마다(cron: 0 */2 * * *) 자동 실행되어:
+// 12시간마다(cron: 0 */12 * * *) 자동 실행되어:
 //   1) 네이버 블로그 검색 오픈API로 "강남 맛집/카페" 관련 블로그 글을 찾고
 //   2) 이미 올린 적 없는 글 하나를 골라
 //   3) 모바일 블로그 페이지(m.blog.naver.com)에서 본문 텍스트 + 사진 최대 5장을 가져오고
@@ -66,6 +66,21 @@ async function fetchNaverBlogPosts(keyword, clientId, clientSecret) {
     }));
 }
 
+// 네이버 이미지 URL의 해상도 파라미터(type=wXXX)를 고화질로 바꿔줍니다.
+// (blur-up 미리보기나 목록용 작은 썸네일 URL을 그대로 쓰면 카드에서 확대되며 흐려짐)
+function upsizeNaverImageUrl(url) {
+    if (!url) return url;
+    try {
+        const u = new URL(url);
+        if (u.searchParams.has('type')) {
+            u.searchParams.set('type', 'w966');
+        }
+        return u.toString();
+    } catch {
+        return url;
+    }
+}
+
 // 블로그 링크에서 blogId/logNo를 뽑아냅니다 (경로형 링크 + 쿼리파라미터형 링크 둘 다 지원)
 function parseBlogIdLogNo(link) {
     const pathMatch = link.match(/blog\.naver\.com\/([^/?]+)\/(\d+)/);
@@ -100,11 +115,13 @@ async function fetchBlogDetail(link) {
 
         const images = [];
         container.find('img').each((_, el) => {
-            const src = $(el).attr('src') || $(el).attr('data-lazy-src') || $(el).attr('data-src');
+            // data-lazy-src/data-src가 실제 고화질 원본이고, src는 로딩 전 흐린
+            // 미리보기(blur-up placeholder)인 경우가 많아서 우선순위를 바꿈
+            const src = $(el).attr('data-lazy-src') || $(el).attr('data-src') || $(el).attr('src');
             if (!src) return;
             if (!/(pstatic\.net|naver\.net)/.test(src)) return;
             if (src.includes('sticker')) return;
-            const normalized = src.startsWith('//') ? `https:${src}` : src;
+            const normalized = upsizeNaverImageUrl(src.startsWith('//') ? `https:${src}` : src);
             if (!images.includes(normalized)) images.push(normalized);
         });
 
@@ -179,7 +196,8 @@ async function fetchOgImage(pageUrl) {
         if (!res.ok) return null;
         const html = await res.text();
         const $ = cheerio.load(html);
-        return $('meta[property="og:image"]').attr('content') || null;
+        const content = $('meta[property="og:image"]').attr('content') || null;
+        return content ? upsizeNaverImageUrl(content) : null;
     } catch {
         return null;
     }

@@ -35,7 +35,7 @@
                 "any"
             ],
             "events": [],
-            "schedule": "0 */2 * * *",
+            "schedule": "0 */12 * * *",
             "timeout": 60,
             "enabled": true,
             "logging": true,
