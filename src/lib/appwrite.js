@@ -57,6 +57,7 @@ export const COLLECTIONS = {
      pageViews: 'page_views',
      guestbookEntries: 'guestbook_entries',
      pushSubscriptions: 'push_subscriptions',
+     postLikes: 'post_likes',
 };
 export const BUCKET_ID = 'post-images';
 export const ECONOMY_FUNCTION_ID = 'economy';

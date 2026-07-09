@@ -739,7 +739,7 @@ function App() {
                                         )}
 
                                         {/* NEW: GANGNAM PICK (AI 추천 맛집/카페) — 독립 메뉴 */}
-                                        {activeTab === 'gangnam_pick' && <GangnamPickBoard />}
+                                        {activeTab === 'gangnam_pick' && <GangnamPickBoard user={user} />}
 
                                         {/* 1. HOME TAB */}
                                         {activeTab === 'home' && (

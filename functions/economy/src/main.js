@@ -20,6 +20,18 @@ const POSTS = 'posts';
 const CHAT_ROOMS = 'chat_rooms';
 const CHAT_PARTICIPANTS = 'chat_participants';
 const CHAT_MESSAGES = 'chat_messages';
+const POST_LIKES = 'post_likes';
+
+// Appwrite 문서 ID는 36자 제한이 있어서, userId+postId를 그대로 이어붙이면
+// 넘칠 수 있습니다. 두 값을 해시해서 짧고 충돌 가능성이 낮은 고정 ID를 만듭니다.
+function hashString(str) {
+     let hash = 0;
+     for (let i = 0; i < str.length; i++) {
+          hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+     }
+     return hash.toString(36);
+}
+const safeLikeDocId = (userId, postId) => `like_${hashString(userId)}_${hashString(postId)}`.slice(0, 36);
 
 const safeRoomId = (idA, idB) => [idA, idB].sort().join('_dm_').replace(/[^a-zA-Z0-9._-]/g, '_');
 
@@ -230,6 +242,50 @@ export default async ({ req, res, log, error }) => {
                     await databases.updateDocument(DATABASE_ID, PROFILES, userId, profileUpdateData(profile, userId, { avatarUrl }));
 
                     return res.json({ success: true, avatarUrl });
+               }
+
+               case 'toggle_pick_like': {
+                    const { postId } = payload;
+                    if (!postId) {
+                         return res.json({ success: false, message: 'postId가 필요합니다.' }, 400);
+                    }
+
+                    const post = await databases.getDocument(DATABASE_ID, POSTS, postId);
+                    const likeDocId = safeLikeDocId(userId, postId);
+
+                    let liked;
+                    let nextLikes;
+                    try {
+                         await databases.getDocument(DATABASE_ID, POST_LIKES, likeDocId);
+                         // 이미 좋아요를 눌렀던 기록이 있으면 취소(삭제)합니다.
+                         await databases.deleteDocument(DATABASE_ID, POST_LIKES, likeDocId);
+                         liked = false;
+                         nextLikes = Math.max(0, (post.likesCount || 0) - 1);
+                    } catch {
+                         // 기록이 없으면(404) 새로 좋아요를 등록합니다.
+                         await databases.createDocument(DATABASE_ID, POST_LIKES, likeDocId, { userId, postId }, [
+                              Permission.read(Role.user(userId)),
+                         ]);
+                         liked = true;
+                         nextLikes = (post.likesCount || 0) + 1;
+                    }
+
+                    await databases.updateDocument(DATABASE_ID, POSTS, postId, { likesCount: nextLikes });
+
+                    return res.json({ success: true, liked, likesCount: nextLikes });
+               }
+
+               case 'record_pick_view': {
+                    const { postId } = payload;
+                    if (!postId) {
+                         return res.json({ success: false, message: 'postId가 필요합니다.' }, 400);
+                    }
+
+                    const post = await databases.getDocument(DATABASE_ID, POSTS, postId);
+                    const nextViews = (post.views || 0) + 1;
+                    await databases.updateDocument(DATABASE_ID, POSTS, postId, { views: nextViews });
+
+                    return res.json({ success: true, views: nextViews });
                }
 
                case 'admin_broadcast': {

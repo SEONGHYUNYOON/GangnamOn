@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2, X, Map, LayoutGrid, UtensilsCrossed, Palette } from 'lucide-react';
-import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
+import React, { useEffect, useMemo, useState } from 'react';
+import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2, X, Map, LayoutGrid, UtensilsCrossed, Palette, Puzzle, Dumbbell } from 'lucide-react';
+import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy } from '../lib/appwrite';
 
 const REGIONS = ['강남 전체', '역삼동', '신사동', '청담동', '삼성동', '논현동', '압구정', '강남역'];
 
@@ -9,12 +9,16 @@ const GROUP_TABS = [
      { key: 'restaurant', label: '맛집', icon: UtensilsCrossed },
      { key: 'cafe', label: '카페', icon: Coffee },
      { key: 'culture', label: '문화·예술', icon: Palette },
+     { key: 'hobby', label: '취미', icon: Puzzle },
+     { key: 'sport', label: '운동', icon: Dumbbell },
 ];
 
 const GROUP_META = {
      restaurant: { label: '맛집', icon: UtensilsCrossed, className: 'bg-amber-50 text-amber-700' },
      cafe: { label: '카페', icon: Coffee, className: 'bg-emerald-50 text-emerald-700' },
      culture: { label: '문화·예술', icon: Palette, className: 'bg-violet-50 text-violet-700' },
+     hobby: { label: '취미', icon: Puzzle, className: 'bg-sky-50 text-sky-700' },
+     sport: { label: '운동', icon: Dumbbell, className: 'bg-rose-50 text-rose-700' },
 };
 
 const PlaceholderThumb = ({ className = '' }) => (
@@ -24,26 +28,20 @@ const PlaceholderThumb = ({ className = '' }) => (
      </div>
 );
 
-const LikeButton = ({ initialCount }) => {
-     const [isLiked, setIsLiked] = useState(false);
-     const [count, setCount] = useState(initialCount);
+const LikeButton = ({ liked, count, onToggle }) => (
+     <button
+          onClick={(e) => {
+               e.stopPropagation();
+               onToggle();
+          }}
+          className={`flex items-center gap-1 transition-colors ${liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-400'}`}
+     >
+          <Heart className={`h-3.5 w-3.5 ${liked ? 'fill-rose-500' : ''}`} />
+          {count}
+     </button>
+);
 
-     return (
-          <button
-               onClick={(e) => {
-                    e.stopPropagation();
-                    setIsLiked((prev) => !prev);
-                    setCount((prev) => (isLiked ? prev - 1 : prev + 1));
-               }}
-               className={`flex items-center gap-1 transition-colors ${isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-400'}`}
-          >
-               <Heart className={`h-3.5 w-3.5 ${isLiked ? 'fill-rose-500' : ''}`} />
-               {count}
-          </button>
-     );
-};
-
-const PickCard = ({ post, onOpen }) => {
+const PickCard = ({ post, onOpen, liked, onToggleLike }) => {
      const thumb = post.imageUrls?.[0];
      const extraCount = Math.max(0, (post.imageUrls?.length || 0) - 1);
 
@@ -118,7 +116,7 @@ const PickCard = ({ post, onOpen }) => {
 
                     <div className="mt-3 flex items-center justify-between border-t border-surface-border pt-3">
                          <div className="flex items-center gap-3 text-[11px] font-semibold text-slate-400">
-                              <LikeButton initialCount={post.likesCount} />
+                              <LikeButton liked={liked} count={post.likesCount} onToggle={onToggleLike} />
                               <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{post.views || 0}</span>
                               <span>{post.time}</span>
                          </div>
@@ -141,7 +139,7 @@ const PickCard = ({ post, onOpen }) => {
      );
 };
 
-const PickDetailModal = ({ post, onClose }) => {
+const PickDetailModal = ({ post, onClose, liked, onToggleLike }) => {
      const [activeImg, setActiveImg] = useState(0);
      const images = post.imageUrls?.length ? post.imageUrls : [];
      const mapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(post.placeAddress || post.title)}`;
@@ -229,6 +227,11 @@ const PickDetailModal = ({ post, onClose }) => {
                               {post.content}
                          </p>
 
+                         <div className="mt-4 flex items-center gap-4 text-xs font-semibold text-slate-400">
+                              <LikeButton liked={liked} count={post.likesCount} onToggle={onToggleLike} />
+                              <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />조회 {post.views || 0}</span>
+                         </div>
+
                          <div className="mt-5 flex items-center gap-2">
                               {post.sourceUrl && (
                                    <a
@@ -252,12 +255,14 @@ const PickDetailModal = ({ post, onClose }) => {
      );
 };
 
-const GangnamPickBoard = () => {
+const GangnamPickBoard = ({ user }) => {
      const [posts, setPosts] = useState([]);
      const [loading, setLoading] = useState(true);
      const [region, setRegion] = useState('강남 전체');
      const [groupTab, setGroupTab] = useState('all');
      const [selectedPost, setSelectedPost] = useState(null);
+     const [likedIds, setLikedIds] = useState(new Set());
+     const [viewedIds, setViewedIds] = useState(new Set());
 
      useEffect(() => {
           const fetchPicks = async () => {
@@ -297,6 +302,77 @@ const GangnamPickBoard = () => {
           fetchPicks();
      }, []);
 
+     // 로그인한 사용자가 이전에 좋아요를 눌렀던 글 목록을 불러와, 새로고침/재로그인 후에도
+     // 하트가 채워진 상태로 정확히 보이도록 합니다 (이전에는 로컬 state만 써서 새로고침하면
+     // 항상 초기화된 것처럼 보였습니다).
+     useEffect(() => {
+          const fetchMyLikes = async () => {
+               if (!user?.id) {
+                    setLikedIds(new Set());
+                    return;
+               }
+               try {
+                    const res = await databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.postLikes,
+                         queries: [Query.equal('userId', user.id), Query.limit(200)],
+                    });
+                    setLikedIds(new Set(res.documents.map((doc) => doc.postId)));
+               } catch (e) {
+                    console.warn('좋아요 목록 로딩 실패:', e);
+               }
+          };
+          fetchMyLikes();
+     }, [user?.id]);
+
+     const handleToggleLike = async (postId) => {
+          if (!user?.id) {
+               alert('로그인이 필요합니다.');
+               return;
+          }
+          // 낙관적 업데이트: 서버 응답을 기다리지 않고 먼저 화면을 바꿔서 반응성을 높이고,
+          // 실패하면 원래 상태로 되돌립니다.
+          const wasLiked = likedIds.has(postId);
+          setLikedIds((prev) => {
+               const next = new Set(prev);
+               if (wasLiked) next.delete(postId); else next.add(postId);
+               return next;
+          });
+          setPosts((prev) => prev.map((p) => (
+               p.id === postId ? { ...p, likesCount: Math.max(0, p.likesCount + (wasLiked ? -1 : 1)) } : p
+          )));
+
+          const result = await callEconomy({ action: 'toggle_pick_like', postId });
+          if (!result.success) {
+               // 실패 시 롤백
+               setLikedIds((prev) => {
+                    const next = new Set(prev);
+                    if (wasLiked) next.add(postId); else next.delete(postId);
+                    return next;
+               });
+               setPosts((prev) => prev.map((p) => (
+                    p.id === postId ? { ...p, likesCount: Math.max(0, p.likesCount + (wasLiked ? 1 : -1)) } : p
+               )));
+               alert(result.message || '좋아요 처리에 실패했습니다.');
+               return;
+          }
+          // 서버가 계산한 정확한 값으로 동기화
+          setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, likesCount: result.likesCount } : p)));
+     };
+
+     const handleOpenPost = (post) => {
+          setSelectedPost(post);
+          // 같은 글을 여러 번 열어도 이번 방문(세션) 동안은 조회수를 한 번만 올립니다.
+          if (viewedIds.has(post.id)) return;
+          setViewedIds((prev) => new Set(prev).add(post.id));
+          setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, views: (p.views || 0) + 1 } : p)));
+          callEconomy({ action: 'record_pick_view', postId: post.id }).then((result) => {
+               if (result.success) {
+                    setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, views: result.views } : p)));
+               }
+          });
+     };
+
      const byGroup = groupTab === 'all' ? posts : posts.filter((p) => p.pickGroup === groupTab);
      const filtered = region === '강남 전체'
           ? byGroup
@@ -307,6 +383,11 @@ const GangnamPickBoard = () => {
           return acc;
      }, {});
 
+     const selectedPostLive = useMemo(
+          () => (selectedPost ? posts.find((p) => p.id === selectedPost.id) || selectedPost : null),
+          [selectedPost, posts]
+     );
+
      return (
           <div>
                {/* Header */}
@@ -314,16 +395,16 @@ const GangnamPickBoard = () => {
                     <div>
                          <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-brand-gold/30 bg-brand-light px-3 py-1 text-[11px] font-black text-brand-accent">
                               <Sparkles className="h-3.5 w-3.5" />
-                              AI가 골라주는 강남 맛집·카페·문화예술
+                              AI가 골라주는 강남 맛집·카페·문화예술·취미·운동
                          </div>
                          <h2 className="text-xl font-black text-brand-ink">👍 강남 픽</h2>
                          <p className="mt-1 text-xs font-semibold text-slate-500">
-                              AI가 네이버 블로그를 분석해 12시간마다 맛집·카페·전시/공연 소식을 새로 소개해요. 카드를 눌러보면 주소·전화번호·사진을 더 볼 수 있어요.
+                              AI가 네이버 블로그를 분석해 12시간마다 맛집·카페·전시/공연·취미·운동 소식을 새로 소개해요. 카드를 눌러보면 주소·전화번호·사진을 더 볼 수 있어요.
                          </p>
                     </div>
                </div>
 
-               {/* Group tabs (맛집 / 카페 / 문화·예술) */}
+               {/* Group tabs (맛집 / 카페 / 문화·예술 / 취미 / 운동) */}
                <div className="mb-3 flex flex-wrap gap-2">
                     {GROUP_TABS.map((tab) => {
                          const Icon = tab.icon;
@@ -380,13 +461,24 @@ const GangnamPickBoard = () => {
                ) : (
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                          {filtered.map((post) => (
-                              <PickCard key={post.id} post={post} onOpen={setSelectedPost} />
+                              <PickCard
+                                   key={post.id}
+                                   post={post}
+                                   onOpen={handleOpenPost}
+                                   liked={likedIds.has(post.id)}
+                                   onToggleLike={() => handleToggleLike(post.id)}
+                              />
                          ))}
                     </div>
                )}
 
-               {selectedPost && (
-                    <PickDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />
+               {selectedPostLive && (
+                    <PickDetailModal
+                         post={selectedPostLive}
+                         onClose={() => setSelectedPost(null)}
+                         liked={likedIds.has(selectedPostLive.id)}
+                         onToggleLike={() => handleToggleLike(selectedPostLive.id)}
+                    />
                )}
           </div>
      );

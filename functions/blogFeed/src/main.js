@@ -48,9 +48,19 @@ const KEYWORD_GROUPS = {
         '강남 전시', '강남 갤러리', '신사동 전시', '청담동 전시', '압구정 전시',
         '강남 공연', '강남 문화행사', '코엑스 전시', '예술의전당 전시', '강남 팝업 전시',
     ],
+    hobby: [
+        '강남 원데이클래스', '강남 취미클래스', '강남 공방', '강남 클래스',
+        '역삼동 원데이클래스', '신사동 공방', '강남 소모임', '강남 동호회',
+        '강남 캘리그라피 클래스', '강남 도자기 공방',
+    ],
+    sport: [
+        '강남 헬스장', '강남 필라테스', '강남 요가', '강남 러닝크루',
+        '강남 클라이밍', '역삼동 헬스장', '신사동 필라테스', '강남 스포츠센터',
+        '강남 수영장', '강남 골프연습장',
+    ],
 };
 const GROUPS = Object.keys(KEYWORD_GROUPS);
-const GROUP_LABEL = { restaurant: '맛집', cafe: '카페', culture: '문화·예술' };
+const GROUP_LABEL = { restaurant: '맛집', cafe: '카페', culture: '문화·예술', hobby: '취미', sport: '운동' };
 
 function pickRandomGroup() {
     return GROUPS[Math.floor(Math.random() * GROUPS.length)];
@@ -232,19 +242,21 @@ async function fetchOgImage(pageUrl) {
 // 카테고리별로 다른 프롬프트를 사용합니다.
 // - restaurant/cafe: 메뉴·가격·분위기 중심 소개
 // - culture: 전시/공연 이름·장소·기간·볼거리 중심 소개
-async function summarizeWithGemini(post, bodyExcerpt, apiKey, group) {
-    const isCulture = group === 'culture';
+// - hobby: 원데이클래스/공방/소모임 - 강좌명·장소·난이도·준비물 중심 소개
+// - sport: 운동시설/클래스 - 시설명·운동 종류·가격대·강도 중심 소개
+function buildPrompt(group, post, bodyExcerpt) {
+    const shared = `블로그 제목: ${post.title}
+블로그 요약: ${post.description}
+${bodyExcerpt ? `블로그 본문 일부: ${bodyExcerpt}` : ''}`;
 
-    const prompt = isCulture
-        ? `아래는 네이버 블로그의 강남권 전시/공연/문화행사 후기 또는 소식 글이야.
+    if (group === 'culture') {
+        return `아래는 네이버 블로그의 강남권 전시/공연/문화행사 후기 또는 소식 글이야.
 이 정보를 바탕으로 강남On 서비스의 "강남 픽 - 문화/예술" 게시판에 올릴 소개 게시글을 만들어줘.
 실제로 방문한 것처럼 과장하지 말고, 블로그 글을 소개하는 톤으로 써줘.
 전시/공연 이름, 장소(미술관/갤러리/공연장 등), 기간, 어떤 볼거리가 있는지가 블로그에 언급되어 있으면
 content에 자연스럽게 녹여줘. 기간이 언급되어 있으면 반드시 포함해줘.
 
-블로그 제목: ${post.title}
-블로그 요약: ${post.description}
-${bodyExcerpt ? `블로그 본문 일부: ${bodyExcerpt}` : ''}
+${shared}
 
 아래 JSON 형식으로만 답변해 (다른 설명 없이, 코드블록 없이):
 {
@@ -252,15 +264,50 @@ ${bodyExcerpt ? `블로그 본문 일부: ${bodyExcerpt}` : ''}
   "location": "강남구 내 동네 이름 (예: 역삼동, 신사동, 코엑스 등. 모르면 강남)",
   "title": "게시글 제목 (20자 이내, 이모지 1개 정도 사용 가능)",
   "content": "3~4문장짜리 소개 (존댓말, 전시/공연명·기간·볼거리 언급, 강남On 커뮤니티 말투)"
-}`
-        : `아래는 네이버 블로그 맛집/카페 후기 글이야.
+}`;
+    }
+
+    if (group === 'hobby') {
+        return `아래는 네이버 블로그의 강남권 원데이클래스/공방/취미 소모임 후기 또는 소식 글이야.
+이 정보를 바탕으로 강남On 서비스의 "강남 픽 - 취미" 게시판에 올릴 소개 게시글을 만들어줘.
+실제로 참여한 것처럼 과장하지 말고, 블로그 글을 소개하는 톤으로 써줘.
+클래스/공방 이름, 어떤 활동을 하는지, 난이도나 준비물, 소요시간에 대한 언급이 있으면
+content에 자연스럽게 녹여줘.
+
+${shared}
+
+아래 JSON 형식으로만 답변해 (다른 설명 없이, 코드블록 없이):
+{
+  "placeName": "클래스/공방/모임 이름 (알 수 없으면 블로그 제목에서 추정)",
+  "location": "강남구 내 동네 이름 (예: 역삼동, 신사동 등. 모르면 강남)",
+  "title": "게시글 제목 (20자 이내, 이모지 1개 정도 사용 가능)",
+  "content": "3~4문장짜리 소개 (존댓말, 활동 내용·난이도·준비물 언급, 강남On 커뮤니티 말투)"
+}`;
+    }
+
+    if (group === 'sport') {
+        return `아래는 네이버 블로그의 강남권 운동시설/스포츠 클래스 후기 또는 소식 글이야.
+이 정보를 바탕으로 강남On 서비스의 "강남 픽 - 운동" 게시판에 올릴 소개 게시글을 만들어줘.
+실제로 이용한 것처럼 과장하지 말고, 블로그 글을 소개하는 톤으로 써줘.
+시설/클래스 이름, 운동 종류, 가격대나 강도에 대한 언급이 있으면 content에 자연스럽게 녹여줘.
+
+${shared}
+
+아래 JSON 형식으로만 답변해 (다른 설명 없이, 코드블록 없이):
+{
+  "placeName": "운동시설/클래스 이름 (알 수 없으면 블로그 제목에서 추정)",
+  "location": "강남구 내 동네 이름 (예: 역삼동, 신사동 등. 모르면 강남)",
+  "title": "게시글 제목 (20자 이내, 이모지 1개 정도 사용 가능)",
+  "content": "3~4문장짜리 소개 (존댓말, 운동 종류·강도·가격대 언급, 강남On 커뮤니티 말투)"
+}`;
+    }
+
+    return `아래는 네이버 블로그 맛집/카페 후기 글이야.
 이 정보를 바탕으로 강남On 서비스의 "강남 픽" 게시판에 올릴 소개 게시글을 만들어줘.
 실제로 방문한 것처럼 과장하지 말고, 블로그 후기를 소개하는 톤으로 써줘.
 블로그에 대표 메뉴, 가격, 분위기에 대한 언급이 있으면 content에 자연스럽게 녹여줘.
 
-블로그 제목: ${post.title}
-블로그 요약: ${post.description}
-${bodyExcerpt ? `블로그 본문 일부: ${bodyExcerpt}` : ''}
+${shared}
 
 아래 JSON 형식으로만 답변해 (다른 설명 없이, 코드블록 없이):
 {
@@ -269,6 +316,10 @@ ${bodyExcerpt ? `블로그 본문 일부: ${bodyExcerpt}` : ''}
   "title": "게시글 제목 (20자 이내, 이모지 1개 정도 사용 가능)",
   "content": "3~4문장짜리 소개 (존댓말, 대표 메뉴/분위기 언급, 강남On 커뮤니티 말투)"
 }`;
+}
+
+async function summarizeWithGemini(post, bodyExcerpt, apiKey, group) {
+    const prompt = buildPrompt(group, post, bodyExcerpt);
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const res = await fetch(url, {

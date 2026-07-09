@@ -823,6 +823,39 @@
             ]
         },
         {
+            "$id": "post_likes",
+            "$permissions": [
+                "read(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "post_likes",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "postId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_idx",
+                    "type": "key",
+                    "attributes": [
+                        "userId"
+                    ]
+                }
+            ]
+        },
+        {
             "$id": "push_subscriptions",
             "$permissions": [
                 "read(\"users\")",
