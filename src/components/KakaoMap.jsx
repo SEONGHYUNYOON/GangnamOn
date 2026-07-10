@@ -7,9 +7,13 @@ const KakaoMap = ({
      style = { width: "100%", height: "200px" },
      label = "강남 위치",
      address = "서울 강남구",
-     showActions = true
+     showActions = true,
+     markers = [],
+     onMarkerClick,
 }) => {
      const mapContainer = useRef(null);
+     const mapRef = useRef(null);
+     const markerRefs = useRef([]);
      const [mapStatus, setMapStatus] = useState("loading");
 
      const lat = Number(latitude) || 37.4979;
@@ -60,6 +64,7 @@ const KakaoMap = ({
                };
 
                const map = new window.kakao.maps.Map(mapContainer.current, options);
+               mapRef.current = map;
 
                // Marker
                const markerPosition = new window.kakao.maps.LatLng(lat, lng);
@@ -75,6 +80,46 @@ const KakaoMap = ({
                window.clearTimeout(fallbackTimer);
           };
      }, [lat, lng, level]);
+
+     useEffect(() => {
+          if (mapStatus !== "kakao" || !mapRef.current || !window.kakao?.maps) return undefined;
+
+          markerRefs.current.forEach((marker) => marker.setMap(null));
+          markerRefs.current = [];
+
+          const bounds = new window.kakao.maps.LatLngBounds();
+          bounds.extend(new window.kakao.maps.LatLng(lat, lng));
+
+          markers.forEach((pin) => {
+               const position = new window.kakao.maps.LatLng(pin.lat, pin.lng);
+               const marker = new window.kakao.maps.Marker({ position, map: mapRef.current });
+               markerRefs.current.push(marker);
+               bounds.extend(position);
+
+               if (pin.label) {
+                    const overlay = new window.kakao.maps.CustomOverlay({
+                         position,
+                         content: `<div style="padding:4px 8px;border-radius:999px;background:#0f172a;color:#fbbf24;font-size:10px;font-weight:800;white-space:nowrap;box-shadow:0 4px 12px rgba(15,23,42,.25);transform:translateY(-28px);">${pin.label.slice(0, 14)}</div>`,
+                         yAnchor: 1,
+                    });
+                    overlay.setMap(mapRef.current);
+                    markerRefs.current.push({ setMap: (nextMap) => overlay.setMap(nextMap) });
+               }
+
+               if (onMarkerClick) {
+                    window.kakao.maps.event.addListener(marker, 'click', () => onMarkerClick(pin));
+               }
+          });
+
+          if (markers.length > 0) {
+               mapRef.current.setBounds(bounds, 48, 48, 48, 48);
+          }
+
+          return () => {
+               markerRefs.current.forEach((marker) => marker.setMap(null));
+               markerRefs.current = [];
+          };
+     }, [mapStatus, markers, lat, lng, onMarkerClick]);
 
      return (
           <div style={style} className="relative overflow-hidden rounded-xl border border-surface-border bg-surface-muted shadow-inner">

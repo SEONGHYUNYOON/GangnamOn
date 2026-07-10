@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Users, Star, Calendar, ChevronRight, Heart, Share2, Loader2, Clock } from 'lucide-react';
+import { MapPin, Users, Star, Calendar, ChevronRight, Heart, Share2, Loader2, Clock, Plus } from 'lucide-react';
 import MeetingDetail from './MeetingDetail';
+import { EmptyFeedCTA } from './FeedStates';
 
 const EventTimer = ({ expiresAt }) => {
      const [timeLeft, setTimeLeft] = useState('');
@@ -45,6 +46,7 @@ const MeetingFeed = ({
      actionLabel = '전체 모임 일정 보기',
      emptyTitle = '아직 등록된 모임이 없어요.',
      emptyDescription = '첫 번째 모임을 개설해보세요!',
+     onCreate,
 }) => {
      const [selectedMeeting, setSelectedMeeting] = useState(null);
      const [likedItems, setLikedItems] = useState(new Set());
@@ -225,13 +227,14 @@ const MeetingFeed = ({
                                    </div>
                               </div>
                          )) : (
-                              <div className="flex flex-col items-center justify-center py-12 bg-white rounded-3xl border border-dashed border-gray-300">
-                                   <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                        <Star className="w-8 h-8 text-gray-300" />
-                                   </div>
-                                   <p className="text-gray-500 font-bold">{emptyTitle}</p>
-                                   <p className="text-xs text-gray-400 mt-1">{emptyDescription}</p>
-                              </div>
+                              <EmptyFeedCTA
+                                   title={emptyTitle}
+                                   description={emptyDescription}
+                                   rewardText="모임 개설 후 참여자 모집을 시작해보세요"
+                                   actionLabel={onCreate ? '모임 개설하기' : undefined}
+                                   onAction={onCreate}
+                                   icon={Users}
+                              />
                          )}
                     </div>
                </div>

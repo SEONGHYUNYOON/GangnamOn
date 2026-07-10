@@ -191,12 +191,19 @@ const formatDate = (value) => {
 export const useGangnamNews = (limit = 5) => {
      const [news, setNews] = useState(FALLBACK_NEWS.slice(0, limit));
      const [loading, setLoading] = useState(true);
+     const [error, setError] = useState(false);
+     const [fromCache, setFromCache] = useState(false);
      const [source, setSource] = useState('강남구청');
+     const [failedSources, setFailedSources] = useState([]);
+     const [reloadKey, setReloadKey] = useState(0);
 
      useEffect(() => {
           let alive = true;
 
           const loadNews = async () => {
+               setLoading(true);
+               setError(false);
+               setFromCache(false);
                try {
                     const response = await fetch('/api/gangnam-news');
                     if (!response.ok) throw new Error('news request failed');
@@ -205,11 +212,18 @@ export const useGangnamNews = (limit = 5) => {
                     if (alive && data.items?.length) {
                          setNews(data.items.slice(0, limit));
                          setSource(data.source || '강남구청');
+                         setFailedSources(data.failedSources || []);
+                    } else if (alive) {
+                         throw new Error('empty news payload');
                     }
-               } catch (error) {
+               } catch (loadError) {
                     if (alive) {
+                         console.error('강남구 소식 로딩 실패:', loadError);
                          setNews(FALLBACK_NEWS.slice(0, limit));
-                         setSource('강남구청 강남이슈');
+                         setSource('강남구청 강남이슈 (캐시)');
+                         setFailedSources([]);
+                         setError(true);
+                         setFromCache(true);
                     }
                } finally {
                     if (alive) setLoading(false);
@@ -220,9 +234,11 @@ export const useGangnamNews = (limit = 5) => {
           return () => {
                alive = false;
           };
-     }, [limit]);
+     }, [limit, reloadKey]);
 
-     return { news, loading, source };
+     const reload = () => setReloadKey((key) => key + 1);
+
+     return { news, loading, error, fromCache, source, failedSources, reload };
 };
 
 export const GangnamLocalInfo = ({ type = 'life_info' }) => {
@@ -276,7 +292,7 @@ export const GangnamLocalInfo = ({ type = 'life_info' }) => {
 };
 
 const GangnamNews = ({ compact = false }) => {
-     const { news, loading, source } = useGangnamNews(compact ? 3 : 15);
+     const { news, loading, error, fromCache, source, failedSources, reload } = useGangnamNews(compact ? 3 : 15);
      const [showAllLocalInfo, setShowAllLocalInfo] = useState(false);
      const [sourceFilter, setSourceFilter] = useState('all');
 
@@ -343,6 +359,18 @@ const GangnamNews = ({ compact = false }) => {
                          <ExternalLink className="h-4 w-4" />
                     </a>
                </div>
+
+               {(error || failedSources.length > 0) && (
+                    <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+                         <span>
+                              {fromCache ? '실시간 소식을 불러오지 못해 캐시 목록을 보여드리고 있어요.' : '일부 게시판 연결에 문제가 있어요.'}
+                              {failedSources.length > 0 ? ` (${failedSources.join(', ')})` : ''}
+                         </span>
+                         <button type="button" onClick={reload} className="shrink-0 font-black underline underline-offset-4">
+                              다시 시도
+                         </button>
+                    </div>
+               )}
 
                <div className="mb-4 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                     {sourceTabs.map((tab) => (

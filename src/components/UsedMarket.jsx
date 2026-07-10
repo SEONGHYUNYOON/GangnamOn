@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { Heart, MapPin, MessageCircle, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { Heart, MapPin, MessageCircle, Plus, Search, SlidersHorizontal, Star, Users } from 'lucide-react';
 import PostDetailModal from './PostDetailModal';
+import { EmptyFeedCTA } from './FeedStates';
 
 const CATEGORIES = ['전체', '디지털/가전', '가구/인테리어', '의류/잡화', '유아동/도서', '스포츠/레저', '생활/주방', '기타'];
 
@@ -115,13 +116,14 @@ const UsedMarket = ({ items = [], onCreate }) => {
                          ))}
                     </div>
                ) : (
-                    <div className="rounded-2xl border border-dashed border-surface-border bg-surface-muted px-6 py-14 text-center">
-                         <p className="text-base font-black text-brand-ink">등록된 상품이 아직 없어요.</p>
-                         <p className="mt-2 text-sm font-semibold text-slate-500">첫 상품을 올려 강남 이웃과 거래를 시작해보세요.</p>
-                         <button type="button" onClick={onCreate} className="mt-5 rounded-xl bg-brand px-5 py-3 text-sm font-black text-white hover:bg-brand-dark">
-                              상품 글쓰기
-                         </button>
-                    </div>
+                    <EmptyFeedCTA
+                         title="등록된 상품이 아직 없어요"
+                         description="첫 나눔을 올리면 강남 이웃과 바로 거래를 시작할 수 있어요."
+                         rewardText="첫 상품 등록 시 재화(온) 적립 이벤트 진행 중"
+                         actionLabel="상품 글쓰기"
+                         onAction={onCreate}
+                         icon={Plus}
+                    />
                )}
 
                {selectedItem && <PostDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} />}

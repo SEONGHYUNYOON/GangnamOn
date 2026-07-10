@@ -9,7 +9,7 @@ const relationId = (ownerId, targetId, type) => `${ownerId}_${targetId}_${type}`
 const historyKey = (userId) => `gangnam:on:chat-search-history:${userId}`;
 const lastReadKey = (userId) => `gangnam:on:chat-last-read:${userId}`;
 
-const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
+const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer, onUnreadChange }) => {
      const [isOpen, setIsOpen] = useState(false);
      const [query, setQuery] = useState('');
      const [profiles, setProfiles] = useState([]);
@@ -35,6 +35,10 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer }) => {
      const favoriteIds = useMemo(() => new Set(relations.filter(item => item.relationType === 'favorite' || item.relationType === 'friend').map(item => item.targetId)), [relations]);
      const isPeerOnline = activePeer?.$id ? onlineIds.has(activePeer.$id) : false;
      const isBlocked = activePeer?.$id ? blockedIds.has(activePeer.$id) : false;
+
+     useEffect(() => {
+          onUnreadChange?.(unreadRoomIds.size);
+     }, [unreadRoomIds, onUnreadChange]);
 
      const filteredProfiles = useMemo(() => {
           const term = query.trim().toLowerCase();

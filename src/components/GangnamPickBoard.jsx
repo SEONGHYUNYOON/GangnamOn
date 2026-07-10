@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { MapPin, Phone, ExternalLink, Sparkles, Coffee, Heart, Eye, Loader2, X, Map, LayoutGrid, UtensilsCrossed, Palette, Puzzle, Dumbbell, ChevronLeft, ChevronRight } from 'lucide-react';
 import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy } from '../lib/appwrite';
+import { FeedError, SectionSkeleton } from './FeedStates';
 
 const REGIONS = ['강남 전체', '역삼동', '신사동', '청담동', '삼성동', '논현동', '압구정', '강남역'];
 
@@ -302,6 +303,8 @@ const PickDetailModal = ({ post, onClose, liked, onToggleLike }) => {
 const GangnamPickBoard = ({ user }) => {
      const [posts, setPosts] = useState([]);
      const [loading, setLoading] = useState(true);
+     const [loadError, setLoadError] = useState(false);
+     const [reloadKey, setReloadKey] = useState(0);
      const [region, setRegion] = useState('강남 전체');
      const [groupTab, setGroupTab] = useState('all');
      const [selectedPost, setSelectedPost] = useState(null);
@@ -311,6 +314,7 @@ const GangnamPickBoard = ({ user }) => {
      useEffect(() => {
           const fetchPicks = async () => {
                setLoading(true);
+               setLoadError(false);
                try {
                     const res = await databases.listDocuments({
                          databaseId: DATABASE_ID,
@@ -339,12 +343,13 @@ const GangnamPickBoard = ({ user }) => {
                     setPosts(mapped);
                } catch (e) {
                     console.error('강남 픽을 불러오지 못했습니다.', e);
+                    setLoadError(true);
                } finally {
                     setLoading(false);
                }
           };
           fetchPicks();
-     }, []);
+     }, [reloadKey]);
 
      // 로그인한 사용자가 이전에 좋아요를 눌렀던 글 목록을 불러와, 새로고침/재로그인 후에도
      // 하트가 채워진 상태로 정확히 보이도록 합니다 (이전에는 로컬 state만 써서 새로고침하면
@@ -489,10 +494,9 @@ const GangnamPickBoard = ({ user }) => {
                </div>
 
                {loading ? (
-                    <div className="flex flex-col items-center justify-center p-16">
-                         <Loader2 className="mb-3 h-8 w-8 animate-spin text-brand-accent" />
-                         <p className="text-sm font-bold text-slate-400">강남 픽을 불러오는 중...</p>
-                    </div>
+                    <SectionSkeleton label="강남 픽" />
+               ) : loadError ? (
+                    <FeedError title="강남 픽" onRetry={() => setReloadKey((key) => key + 1)} />
                ) : filtered.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-brand-gold/30 bg-brand-light/40 p-12 text-center">
                          <Coffee className="mx-auto mb-3 h-8 w-8 text-brand-accent/60" strokeWidth={1.5} />

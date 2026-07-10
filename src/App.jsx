@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react'
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react'
 import { account, client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, getCurrentUser, callEconomy, SITE_HOST_ID } from './lib/appwrite'
 import { normalizeForGangnamDisplay } from './lib/displayGangnam'
 import { resolveAvatarUrl } from './lib/avatar'
@@ -8,8 +8,11 @@ import ChatWidget from './components/ChatWidget'
 import Toast from './components/Toast'
 import WelcomeConfetti from './components/WelcomeConfetti'
 import KakaoMap from './components/KakaoMap'
-import GangnamNews, { GangnamLocalInfo } from './components/GangnamNews'
+import GangnamNews, { GangnamLocalInfo, useGangnamNews } from './components/GangnamNews'
 import AdminNewSignupPopup from './components/AdminNewSignupPopup'
+import { SectionSkeleton, FeedError } from './components/FeedStates'
+import { getSortedQuickActionIds, trackHomeQuickAction } from './lib/homePreferences'
+import { buildMeetingMapMarkers } from './lib/meetingMapPins'
 import './index.css'
 import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, CalendarDays, MapPin, BookOpen, Newspaper, Utensils, Home, Users, Plus, MessageCircle, RefreshCw } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -70,27 +73,19 @@ const VIRTUAL_MEETING_ITEMS = [
      { id: 'virtual-sports-3', category: '⚽ 스포츠', originalType: 'sports', isEvent: false, expiresAt: null, title: '배드민턴 셔틀 — 역삼 실내체육관, 초급/중급 팀 나눠서', host: 'FC강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '역삼동 강남문화체육관', participants: 4, maxParticipants: 8, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&h=400&fit=crop' },
 ];
 
-const SectionSkeleton = ({ label }) => (
-     <section className="card-surface p-5" aria-busy="true" aria-label={`${label} 불러오는 중`}>
-          <div className="mb-4 h-5 w-32 animate-pulse rounded-lg bg-slate-200" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-               {[0, 1, 2].map((item) => (
-                    <div key={item} className="h-32 animate-pulse rounded-2xl bg-slate-100" />
-               ))}
-          </div>
-     </section>
-);
+const QUICK_ACTION_STYLES = {
+     gangnam_pick: { icon: MapPin, tone: 'bg-sky-50 text-sky-700', line: 'bg-sky-400' },
+     school_find: { icon: BookOpen, tone: 'bg-amber-50 text-amber-700', line: 'bg-amber-400' },
+     wine: { icon: Utensils, tone: 'bg-rose-50 text-rose-700', line: 'bg-rose-400' },
+     news: { icon: Newspaper, tone: 'bg-emerald-50 text-emerald-700', line: 'bg-emerald-400' },
+};
 
-const FeedError = ({ title, onRetry }) => (
-     <section className="card-surface flex flex-col items-center px-5 py-10 text-center" role="status">
-          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-brand-accent">
-               <RefreshCw className="h-5 w-5" />
-          </div>
-          <h2 className="text-base font-black text-brand-ink">{title}을 불러오지 못했어요</h2>
-          <p className="mt-1 text-sm font-semibold text-slate-500">잠시 후 다시 시도하거나 다른 메뉴를 먼저 둘러보세요.</p>
-          <button type="button" onClick={onRetry} className="btn-brand mt-4 px-4 py-2 text-sm">다시 시도</button>
-     </section>
-);
+const QUICK_ACTION_COPY = {
+     gangnam_pick: { title: '핫플 가이드', desc: 'AI 강남 픽' },
+     school_find: { title: '동창 찾기', desc: '추억 속 친구' },
+     wine: { title: '밥친구', desc: '오늘의 약속' },
+     news: { title: '강남 트렌드', desc: '실시간 소식' },
+};
 
 function App() {
      const [activeTab, setActiveTab] = useState('home');
@@ -138,6 +133,9 @@ function App() {
      const [meetingItems, setMeetingItems] = useState([]);
      const [feedRefreshKey, setFeedRefreshKey] = useState(0);
      const [feedStatus, setFeedStatus] = useState({ meetings: 'loading', market: 'loading' });
+     const [quickActionOrder, setQuickActionOrder] = useState(() => getSortedQuickActionIds());
+     const [unreadChatCount, setUnreadChatCount] = useState(0);
+     const digestNews = useGangnamNews(2);
 
      // 로그인 상태 + 프로필 문서를 함께 불러와서, 기존 컴포넌트들이 쓰던
      // user.id / user.user_metadata.* 형태 그대로 쓸 수 있도록 맞춰줍니다.
@@ -372,7 +370,15 @@ function App() {
                          status: (g.currentParticipants >= (g.maxParticipants || 99)) ? 'closed' : 'open',
                          image: g.imageUrls?.[0] || 'https://via.placeholder.com/600'
                     }));
-                    setMeetingItems(mappedGatherings);
+                    const realOnly = mappedGatherings.filter((g) => !String(g.id).startsWith('virtual-'));
+                    if (realOnly.length < 3) {
+                         const fillers = VIRTUAL_MEETING_ITEMS
+                              .filter((virtual) => !realOnly.some((real) => real.title === virtual.title))
+                              .slice(0, 3 - realOnly.length);
+                         setMeetingItems([...realOnly, ...fillers]);
+                    } else {
+                         setMeetingItems(mappedGatherings);
+                    }
                     setFeedStatus(prev => ({ ...prev, meetings: 'success' }));
                } else {
                     console.error('모임 피드 로딩 실패:', gatheringResult.reason);
@@ -518,6 +524,18 @@ function App() {
           setActiveTab(newTab);
           window.scrollTo(0, 0);
      };
+
+     const handleQuickAction = (actionId, tab) => {
+          trackHomeQuickAction(actionId);
+          setQuickActionOrder(getSortedQuickActionIds());
+          handleTabChange(tab);
+     };
+
+     const homeMapMarkers = useMemo(() => buildMeetingMapMarkers(meetingItems, 6), [meetingItems]);
+     const featuredMeeting = useMemo(
+          () => meetingItems.find((item) => item.isHot) || meetingItems[0] || null,
+          [meetingItems],
+     );
 
      const handleStartChat = (profile) => {
           if (!user) {
@@ -866,29 +884,71 @@ function App() {
                                                        <div className="grid gap-3 lg:grid-cols-[1fr_260px]">
                                                             <div className="space-y-3">
                                                                  <div className="-mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-4 md:-mt-10 md:gap-3">
-                                                                      {[
-                                                                            { title: '핫플 가이드', desc: 'AI 강남 픽', icon: MapPin, action: () => handleTabChange('gangnam_pick'), tone: 'bg-sky-50 text-sky-700', line: 'bg-sky-400' },
-                                                                            { title: '동창 찾기', desc: '추억 속 친구', icon: BookOpen, action: () => handleTabChange('school_find'), tone: 'bg-amber-50 text-amber-700', line: 'bg-amber-400' },
-                                                                            { title: '밥친구', desc: '오늘의 약속', icon: Utensils, action: () => handleTabChange('wine'), tone: 'bg-rose-50 text-rose-700', line: 'bg-rose-400' },
-                                                                            { title: '강남 트렌드', desc: '실시간 소식', icon: Newspaper, action: () => handleTabChange('news'), tone: 'bg-emerald-50 text-emerald-700', line: 'bg-emerald-400' },
-                                                                      ].map((item) => {
-                                                                           const Icon = item.icon;
+                                                                      {quickActionOrder.map((actionId) => {
+                                                                           const copy = QUICK_ACTION_COPY[actionId];
+                                                                           const style = QUICK_ACTION_STYLES[actionId];
+                                                                           if (!copy || !style) return null;
+                                                                           const Icon = style.icon;
                                                                            return (
                                                                                 <button
-                                                                                     key={item.title}
+                                                                                     key={actionId}
                                                                                      type="button"
-                                                                                     onClick={item.action}
+                                                                                     onClick={() => handleQuickAction(actionId, actionId)}
                                                                                      className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-3.5 text-left shadow-[0_12px_35px_-24px_rgba(15,23,42,0.55)] transition-all hover:-translate-y-1 hover:border-brand-gold/20 md:p-4"
                                                                                 >
-                                                                                     <span className={`absolute inset-x-0 top-0 h-1 ${item.line}`} />
-                                                                                     <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${item.tone}`}>
+                                                                                     <span className={`absolute inset-x-0 top-0 h-1 ${style.line}`} />
+                                                                                     <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${style.tone}`}>
                                                                                           <Icon className="h-[18px] w-[18px]" />
                                                                                      </div>
-                                                                                     <h2 className="text-sm font-black text-brand-ink">{item.title}</h2>
-                                                                                     <p className="mt-1 text-[11px] font-bold text-slate-400">{item.desc}</p>
+                                                                                     <h2 className="text-sm font-black text-brand-ink">{copy.title}</h2>
+                                                                                     <p className="mt-1 text-[11px] font-bold text-slate-400">{copy.desc}</p>
                                                                                 </button>
                                                                            );
                                                                       })}
+                                                                 </div>
+
+                                                                 <div className="rounded-[20px] border border-brand-gold/15 bg-gradient-to-br from-white via-brand-light/40 to-white p-4 md:p-5">
+                                                                      <div className="mb-3 flex items-center justify-between gap-3">
+                                                                           <div>
+                                                                                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-brand-accent">Today in Gangnam</p>
+                                                                                <h3 className="mt-1 text-base font-black text-brand-ink">오늘의 강남 다이제스트</h3>
+                                                                           </div>
+                                                                           <button type="button" onClick={() => handleTabChange('news')} className="rounded-full bg-white px-3 py-1.5 text-[11px] font-black text-brand-accent shadow-sm">
+                                                                                소식 더보기
+                                                                           </button>
+                                                                      </div>
+                                                                      <div className="grid gap-2 md:grid-cols-2">
+                                                                           {(digestNews.loading ? [0, 1] : digestNews.news).map((item, index) => (
+                                                                                digestNews.loading ? (
+                                                                                     <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/80" />
+                                                                                ) : (
+                                                                                     <a
+                                                                                          key={`${item.title}-${item.date}`}
+                                                                                          href={item.link}
+                                                                                          target="_blank"
+                                                                                          rel="noreferrer"
+                                                                                          className="rounded-2xl bg-white/90 p-3 shadow-sm transition-transform hover:-translate-y-0.5"
+                                                                                     >
+                                                                                          <p className="text-[10px] font-black text-brand-accent">{item.source || '강남구청'}</p>
+                                                                                          <p className="mt-1 line-clamp-2 text-xs font-black leading-5 text-brand-ink">{item.title}</p>
+                                                                                     </a>
+                                                                                )
+                                                                           ))}
+                                                                           {featuredMeeting && (
+                                                                                <button
+                                                                                     type="button"
+                                                                                     onClick={() => handleTabChange(featuredMeeting.originalType || 'wine')}
+                                                                                     className="rounded-2xl bg-brand px-3 py-3 text-left text-white shadow-sm transition-transform hover:-translate-y-0.5 md:col-span-2"
+                                                                                >
+                                                                                     <p className="text-[10px] font-bold text-amber-200">🔥 지금 핫한 모임</p>
+                                                                                     <p className="mt-1 line-clamp-2 text-sm font-black">{featuredMeeting.title}</p>
+                                                                                     <p className="mt-1 text-[11px] font-semibold text-white/80">{featuredMeeting.location}</p>
+                                                                                </button>
+                                                                           )}
+                                                                      </div>
+                                                                      {digestNews.fromCache && (
+                                                                           <p className="mt-3 text-[11px] font-semibold text-amber-700">실시간 소식 연결에 문제가 있어 캐시 목록을 함께 보여드리고 있어요.</p>
+                                                                      )}
                                                                  </div>
 
                                                                  <div className="grid gap-3 md:grid-cols-2">
@@ -951,6 +1011,11 @@ function App() {
                                                                       level={4}
                                                                       label="강남역 중심"
                                                                       address="서울 강남구 강남대로 지하396"
+                                                                      markers={homeMapMarkers}
+                                                                      onMarkerClick={(pin) => {
+                                                                           const target = meetingItems.find((item) => item.id === pin.id);
+                                                                           if (target) handleTabChange(target.originalType || 'wine');
+                                                                      }}
                                                                       style={{ width: '100%', height: '100%', borderRadius: '14px' }}
                                                                  />
                                                             </div>
@@ -974,7 +1039,12 @@ function App() {
                                                        <SectionSkeleton label="동네 모임" />
                                                   ) : (
                                                        <Suspense fallback={<SectionSkeleton label="동네 모임" />}>
-                                                            <MeetingFeed items={meetingItems.slice(0, 6)} onStartChat={handleStartChat} user={user} />
+                                                            <MeetingFeed
+                                                                 items={meetingItems.slice(0, 6)}
+                                                                 onStartChat={handleStartChat}
+                                                                 user={user}
+                                                                 onCreate={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
+                                                            />
                                                        </Suspense>
                                                   )}
 
@@ -1263,10 +1333,10 @@ function App() {
                     <div className="mx-auto grid max-w-md grid-cols-5 items-end">
                          {[
                               { id: 'home', label: '홈', icon: Home, active: activeTab === 'home', action: () => handleTabChange('home') },
-                              { id: 'meetings', label: '모임', icon: Users, active: ['hiking', 'sports', 'pet', 'wine'].includes(activeTab), action: () => handleTabChange('wine') },
+                              { id: 'meetings', label: '모임', icon: Users, active: ['hiking', 'sports', 'pet', 'wine'].includes(activeTab), badge: meetingItems.length, action: () => handleTabChange('wine') },
                               { id: 'create', label: '글쓰기', icon: Plus, active: false, primary: true, action: () => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); } },
                               { id: 'community', label: '동네생활', icon: MessageCircle, active: ['town_story', 'daily_photo', 'anonymous', 'qna', 'share'].includes(activeTab), action: () => handleTabChange('town_story') },
-                              { id: 'my', label: '마이', icon: User, active: isMiniHomeOpen, action: () => handleOpenMinihome() },
+                              { id: 'my', label: '마이', icon: User, active: isMiniHomeOpen, badge: unreadChatCount, action: () => handleOpenMinihome() },
                          ].map((item) => {
                               const Icon = item.icon;
                               return (
@@ -1275,10 +1345,15 @@ function App() {
                                         type="button"
                                         onClick={item.action}
                                         aria-current={item.active ? 'page' : undefined}
-                                        className={`flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-black transition-colors ${item.primary ? '-mt-5' : ''} ${item.active ? 'text-brand-accent' : 'text-slate-400'}`}
+                                        className={`relative flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-black transition-colors ${item.primary ? '-mt-5' : ''} ${item.active ? 'text-brand-accent' : 'text-slate-400'}`}
                                    >
-                                        <span className={`flex items-center justify-center ${item.primary ? 'h-12 w-12 rounded-2xl bg-brand text-white shadow-lg shadow-slate-900/20' : 'h-7 w-7'}`}>
+                                        <span className={`relative flex items-center justify-center ${item.primary ? 'h-12 w-12 rounded-2xl bg-brand text-white shadow-lg shadow-slate-900/20' : 'h-7 w-7'}`}>
                                              <Icon className={item.primary ? 'h-6 w-6' : 'h-5 w-5'} />
+                                             {!item.primary && item.badge > 0 && (
+                                                  <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black text-white">
+                                                       {item.badge > 9 ? '9+' : item.badge}
+                                                  </span>
+                                             )}
                                         </span>
                                         <span>{item.label}</span>
                                    </button>
@@ -1404,7 +1479,7 @@ function App() {
                     }
                </Suspense>
 
-               <ChatWidget user={user} initialPeer={chatPeer} onConsumeInitialPeer={() => setChatPeer(null)} />
+               <ChatWidget user={user} initialPeer={chatPeer} onConsumeInitialPeer={() => setChatPeer(null)} onUnreadChange={setUnreadChatCount} />
 
                {isAdmin && newSignupAlert && (
                     <AdminNewSignupPopup
