@@ -12,7 +12,7 @@ const SOURCES = [
      },
      {
           label: '언론보도',
-          url: 'https://www.gangnam.go.kr/board/press_report/list.do?mid=ID01_0314',
+          url: 'https://www.gangnam.go.kr/board/external_article/list.do?mid=ID01_0314',
      },
 ];
 const RSS_URL = 'https://www.gangnam.go.kr/portal/bbs/rss.do?bbsId=B_000065';
@@ -25,6 +25,8 @@ const decodeHtml = (value = '') => value
      .replace(/&quot;/g, '"')
      .replace(/&#39;/g, "'")
      .replace(/<[^>]*>/g, '')
+     .replace(/\(새창\)/g, '')
+     .replace(/\s+/g, ' ')
      .trim();
 
 const getTag = (item, tag) => {
@@ -40,7 +42,7 @@ const normalizeLink = (href = '') => {
 };
 
 // 강남구청 게시판 목록 페이지(HTML 테이블)를 파싱합니다. 게시판마다 URL 구조는
-// 다르지만(article/list.do, B_000031/list.do, press_report/list.do), 렌더링되는
+// 다르지만(article/list.do, B_000031/list.do, external_article/list.do), 렌더링되는
 // 목록 테이블 구조는 동일한 CMS 스킨을 써서 같은 정규식으로 파싱됩니다.
 const parseBoardHtml = (html, sourceLabel) => {
      const rows = [...html.matchAll(/<tr[\s\S]*?<\/tr>/gi)];
@@ -113,8 +115,7 @@ export default async function handler(req, res) {
 
      if (merged.length) {
           // 제목 기준 중복 제거 후 출처별 최신 5건씩 섞어 보여줍니다.
-          // 언론보도 게시판은 현재 최신 글이 과거 날짜라 단순 최신순으로 자르면
-          // 보도자료만 보이는 것처럼 느껴질 수 있습니다.
+          // 각 하위 메뉴가 실제로 보이도록 출처별로 최신 항목을 섞어 보여줍니다.
           const seen = new Set();
           const uniqueItems = merged
                .sort((a, b) => new Date(b.date) - new Date(a.date))

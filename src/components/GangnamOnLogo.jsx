@@ -17,9 +17,10 @@ const GangnamOnLogo = ({ className = 'h-20 w-auto', onClick }) => {
                          <stop stopColor="#D6A427" />
                          <stop offset="1" stopColor="#9A7009" />
                     </linearGradient>
-                    <filter id="gangnamTextNeon" x="-16%" y="-34%" width="132%" height="180%" colorInterpolationFilters="sRGB">
-                         <feDropShadow dx="0" dy="0" stdDeviation="1.2" floodColor="#60A5FA" floodOpacity="0.26" />
-                         <feDropShadow dx="0" dy="1" stdDeviation="2.2" floodColor="#A77910" floodOpacity="0.16" />
+                    <filter id="gangnamTextNeon" x="-24%" y="-42%" width="148%" height="200%" colorInterpolationFilters="sRGB">
+                         <feDropShadow dx="0" dy="0" stdDeviation="1.8" floodColor="#38BDF8" floodOpacity="0.42" />
+                         <feDropShadow dx="0" dy="0" stdDeviation="3.2" floodColor="#60A5FA" floodOpacity="0.24" />
+                         <feDropShadow dx="0" dy="1" stdDeviation="2.6" floodColor="#A77910" floodOpacity="0.18" />
                     </filter>
                </defs>
 
@@ -30,6 +31,18 @@ const GangnamOnLogo = ({ className = 'h-20 w-auto', onClick }) => {
                     <circle cx="21.2" cy="21.5" r="3" fill="white" opacity="0.96" />
                </g>
 
+               <text
+                    x="60"
+                    y="43"
+                    fontFamily="Pretendard, SUIT, Inter, system-ui, sans-serif"
+                    fontSize="33"
+                    fontWeight="850"
+                    fill="#38BDF8"
+                    opacity="0.18"
+                    filter="url(#gangnamTextNeon)"
+               >
+                    강남
+               </text>
                <text
                     x="60"
                     y="43"
