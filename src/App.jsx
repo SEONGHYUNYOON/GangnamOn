@@ -835,36 +835,42 @@ function App() {
                                         {/* 1. HOME TAB */}
                                         {activeTab === 'home' && (
                                              <>
-                                                  <section className="rounded-card border border-surface-border bg-white p-4 shadow-soft md:p-5">
-                                                       <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                                                  <section className="overflow-hidden rounded-[24px] border border-brand-gold/15 bg-white shadow-[0_24px_80px_-42px_rgba(15,23,42,0.38)]">
+                                                       <div className="relative overflow-hidden bg-brand px-5 py-6 text-white md:px-7 md:py-8">
+                                                            <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-gold/20 blur-3xl" />
+                                                            <div className="absolute bottom-0 right-[30%] h-24 w-24 rounded-full bg-sky-400/10 blur-2xl" />
+                                                            <div className="relative flex flex-col justify-between gap-5 md:flex-row md:items-end">
                                                             <div>
-                                                                 <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-brand-gold/20 bg-brand-light px-3 py-1 text-[11px] font-black text-brand-accent">
+                                                                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-black text-amber-200 backdrop-blur-md">
                                                                       <MapPin className="h-3.5 w-3.5" />
-                                                                      오늘의 강남온
+                                                                      LIVE · 오늘의 강남온
                                                                  </div>
-                                                                 <h1 className="text-xl font-black leading-tight text-brand-ink [word-break:keep-all] md:text-2xl">
-                                                                      오늘 강남에서 뭐 할까?
+                                                                 <h1 className="text-2xl font-black leading-tight tracking-[-0.03em] [word-break:keep-all] md:text-4xl">
+                                                                      오늘 강남에서<br className="hidden sm:block" /> 무엇을 해볼까요?
                                                                  </h1>
-                                                                 <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">
-                                                                      지금 필요한 강남 생활 정보를 빠르게 고르세요.
+                                                                 <p className="mt-3 text-sm font-semibold leading-6 text-slate-300">
+                                                                      모임부터 핫플, 동네 소식까지 지금 필요한 강남을 한곳에서 만나보세요.
                                                                  </p>
                                                             </div>
                                                             <button
                                                                  onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
-                                                                 className="min-h-[40px] rounded-xl bg-brand px-4 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark active:scale-[0.98]"
+                                                                 className="flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-brand-gold px-5 text-sm font-black text-white shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-amber-500 active:translate-y-0"
                                                             >
+                                                                 <Plus className="h-4 w-4" />
                                                                  모임 개설하기
                                                             </button>
+                                                            </div>
                                                        </div>
 
+                                                       <div className="p-4 md:p-6">
                                                        <div className="grid gap-3 lg:grid-cols-[1fr_260px]">
                                                             <div className="space-y-3">
-                                                                 <div className="grid gap-2 sm:grid-cols-4">
+                                                                 <div className="-mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-4 md:-mt-10 md:gap-3">
                                                                       {[
-                                                                           { title: '핫플 가이드', desc: '강남 픽', icon: MapPin, action: () => handleTabChange('gangnam_pick'), tone: 'bg-sky-50 text-sky-800' },
-                                                                           { title: '동창 찾기', desc: '아이러브스쿨', icon: BookOpen, action: () => handleTabChange('school_find'), tone: 'bg-amber-50 text-amber-800' },
-                                                                           { title: '밥친구', desc: '근처 약속', icon: Utensils, action: () => handleTabChange('home'), tone: 'bg-rose-50 text-rose-800' },
-                                                                           { title: '강남 트렌드', desc: '오늘 소식', icon: Newspaper, action: () => handleTabChange('news'), tone: 'bg-emerald-50 text-emerald-800' },
+                                                                            { title: '핫플 가이드', desc: 'AI 강남 픽', icon: MapPin, action: () => handleTabChange('gangnam_pick'), tone: 'bg-sky-50 text-sky-700', line: 'bg-sky-400' },
+                                                                            { title: '동창 찾기', desc: '추억 속 친구', icon: BookOpen, action: () => handleTabChange('school_find'), tone: 'bg-amber-50 text-amber-700', line: 'bg-amber-400' },
+                                                                            { title: '밥친구', desc: '오늘의 약속', icon: Utensils, action: () => handleTabChange('wine'), tone: 'bg-rose-50 text-rose-700', line: 'bg-rose-400' },
+                                                                            { title: '강남 트렌드', desc: '실시간 소식', icon: Newspaper, action: () => handleTabChange('news'), tone: 'bg-emerald-50 text-emerald-700', line: 'bg-emerald-400' },
                                                                       ].map((item) => {
                                                                            const Icon = item.icon;
                                                                            return (
@@ -872,71 +878,83 @@ function App() {
                                                                                      key={item.title}
                                                                                      type="button"
                                                                                      onClick={item.action}
-                                                                                     className="rounded-xl border border-surface-border bg-white p-3 text-left transition-all hover:border-brand-gold/30 hover:bg-surface-muted"
+                                                                                     className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-3.5 text-left shadow-[0_12px_35px_-24px_rgba(15,23,42,0.55)] transition-all hover:-translate-y-1 hover:border-brand-gold/20 md:p-4"
                                                                                 >
-                                                                                     <div className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg ${item.tone}`}>
-                                                                                          <Icon className="h-4 w-4" />
+                                                                                     <span className={`absolute inset-x-0 top-0 h-1 ${item.line}`} />
+                                                                                     <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${item.tone}`}>
+                                                                                          <Icon className="h-[18px] w-[18px]" />
                                                                                      </div>
                                                                                      <h2 className="text-sm font-black text-brand-ink">{item.title}</h2>
-                                                                                     <p className="mt-0.5 text-[11px] font-bold text-slate-400">{item.desc}</p>
+                                                                                     <p className="mt-1 text-[11px] font-bold text-slate-400">{item.desc}</p>
                                                                                 </button>
                                                                            );
                                                                       })}
                                                                  </div>
 
                                                                  <div className="grid gap-3 md:grid-cols-2">
-                                                                      <div className="rounded-2xl border border-surface-border bg-surface-muted p-4">
+                                                                      <div className="rounded-[20px] bg-slate-50 p-4 md:p-5">
                                                                            <div className="mb-3 flex items-center justify-between">
-                                                                                <h3 className="text-sm font-black text-brand-ink">오늘 뜨는 모임</h3>
-                                                                                <button onClick={() => handleTabChange('wine')} className="text-[11px] font-black text-brand-accent">더보기</button>
+                                                                                <div>
+                                                                                     <p className="text-[10px] font-black uppercase tracking-[0.14em] text-brand-accent">Trending now</p>
+                                                                                     <h3 className="mt-1 text-base font-black text-brand-ink">오늘 뜨는 모임</h3>
+                                                                                </div>
+                                                                                <button onClick={() => handleTabChange('wine')} className="rounded-full bg-white px-3 py-1.5 text-[11px] font-black text-brand-accent shadow-sm">전체보기</button>
                                                                            </div>
-                                                                           <div className="space-y-2">
+                                                                           <div className="space-y-2.5">
                                                                                 {meetingItems.slice(0, 3).map((item) => (
-                                                                                     <button key={item.id} type="button" onClick={() => handleTabChange(item.originalType || 'wine')} className="flex w-full items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-left">
+                                                                                     <button key={item.id} type="button" onClick={() => handleTabChange(item.originalType || 'wine')} className="group flex w-full items-center gap-3 rounded-2xl bg-white p-2.5 text-left transition-all hover:shadow-md">
+                                                                                          <img src={item.image} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
                                                                                           <div className="min-w-0">
                                                                                                <p className="truncate text-xs font-black text-brand-ink">{item.title}</p>
-                                                                                               <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-400">{item.location}</p>
+                                                                                               <p className="mt-1 truncate text-[11px] font-semibold text-slate-400">{item.location}</p>
                                                                                           </div>
-                                                                                          <span className="shrink-0 text-[11px] font-black text-brand-accent">{item.participants}/{item.maxParticipants}</span>
+                                                                                          <span className="ml-auto shrink-0 rounded-full bg-brand-light px-2 py-1 text-[10px] font-black text-brand-accent">{item.participants}/{item.maxParticipants}</span>
                                                                                      </button>
                                                                                 ))}
                                                                            </div>
                                                                       </div>
 
-                                                                      <div className="rounded-2xl border border-surface-border bg-white p-4">
-                                                                           <h3 className="mb-3 text-sm font-black text-brand-ink">오늘 강남 추천</h3>
+                                                                      <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-[#f4e8ca] via-[#fbf7ee] to-white p-5">
+                                                                           <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full border-[18px] border-white/50" />
+                                                                           <p className="relative text-[10px] font-black uppercase tracking-[0.14em] text-brand-accent">Gangnam choice</p>
+                                                                           <h3 className="relative mb-4 mt-1 text-base font-black text-brand-ink">오늘 강남 추천</h3>
                                                                            <div className="grid grid-cols-3 gap-2">
-                                                                                <button onClick={() => handleTabChange('gangnam_pick')} className="rounded-xl bg-sky-50 p-3 text-center">
+                                                                                <button onClick={() => handleTabChange('gangnam_pick')} className="rounded-xl bg-white/80 p-3 text-center shadow-sm transition-transform hover:-translate-y-0.5">
                                                                                      <p className="text-base font-black text-sky-900">핫플</p>
                                                                                      <p className="text-[10px] font-bold text-sky-500">가이드</p>
                                                                                 </button>
-                                                                                <button onClick={() => handleTabChange('wine')} className="rounded-xl bg-amber-50 p-3 text-center">
+                                                                                <button onClick={() => handleTabChange('wine')} className="rounded-xl bg-white/80 p-3 text-center shadow-sm transition-transform hover:-translate-y-0.5">
                                                                                      <p className="text-base font-black text-amber-900">맛집</p>
                                                                                      <p className="text-[10px] font-bold text-amber-600">모임</p>
                                                                                 </button>
-                                                                                <button onClick={() => handleTabChange('share')} className="rounded-xl bg-emerald-50 p-3 text-center">
+                                                                                <button onClick={() => handleTabChange('share')} className="rounded-xl bg-white/80 p-3 text-center shadow-sm transition-transform hover:-translate-y-0.5">
                                                                                      <p className="text-base font-black text-emerald-900">나눔</p>
                                                                                      <p className="text-[10px] font-bold text-emerald-600">거래</p>
                                                                                 </button>
                                                                            </div>
-                                                                           <div className="mt-3 rounded-xl bg-surface-muted px-3 py-2">
-                                                                                <p className="text-[11px] font-bold text-slate-400">추천 동선</p>
-                                                                                <p className="mt-1 text-xs font-black text-brand-ink">핫플 확인 → 밥친구 찾기 → 중고거래 픽업</p>
+                                                                           <div className="relative mt-3 rounded-xl bg-brand px-3 py-3 text-white">
+                                                                                <p className="text-[10px] font-bold text-amber-200">추천 동선</p>
+                                                                                <p className="mt-1 text-xs font-black">핫플 확인 → 밥친구 찾기 → 픽업</p>
                                                                            </div>
                                                                       </div>
                                                                  </div>
                                                             </div>
 
-                                                            <div className="min-h-[250px] rounded-2xl border border-surface-border bg-surface-muted p-3">
+                                                            <div className="relative min-h-[250px] overflow-hidden rounded-[20px] bg-slate-100 p-2">
+                                                                 <div className="absolute left-4 top-4 z-10 rounded-xl bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
+                                                                      <p className="text-[10px] font-black text-brand-accent">NOW HERE</p>
+                                                                      <p className="mt-0.5 text-xs font-black text-brand-ink">강남역 중심</p>
+                                                                 </div>
                                                                  <KakaoMap
                                                                       latitude={37.4979}
                                                                       longitude={127.0276}
                                                                       level={4}
                                                                       label="강남역 중심"
                                                                       address="서울 강남구 강남대로 지하396"
-                                                                      style={{ width: '100%', height: '100%' }}
+                                                                      style={{ width: '100%', height: '100%', borderRadius: '14px' }}
                                                                  />
                                                             </div>
+                                                       </div>
                                                        </div>
                                                   </section>
                                                   <Suspense fallback={<SectionSkeleton label="동창 찾기" />}>
