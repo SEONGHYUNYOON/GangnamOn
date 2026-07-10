@@ -112,16 +112,20 @@ export default async function handler(req, res) {
      const merged = succeeded.flatMap((r) => r.value);
 
      if (merged.length) {
-          // 최신순 정렬 후 제목 기준 중복 제거, 최대 15건
+          // 제목 기준 중복 제거 후 출처별 최신 5건씩 섞어 보여줍니다.
+          // 언론보도 게시판은 현재 최신 글이 과거 날짜라 단순 최신순으로 자르면
+          // 보도자료만 보이는 것처럼 느껴질 수 있습니다.
           const seen = new Set();
-          const items = merged
+          const uniqueItems = merged
                .sort((a, b) => new Date(b.date) - new Date(a.date))
                .filter((item) => {
                     if (seen.has(item.title)) return false;
                     seen.add(item.title);
                     return true;
-               })
-               .slice(0, 15);
+               });
+          const items = SOURCES.flatMap((source) => uniqueItems
+               .filter((item) => item.source === source.label)
+               .slice(0, 5));
 
           return res.status(200).json({
                source: '강남구청 (강남이슈·보도자료·언론보도)',

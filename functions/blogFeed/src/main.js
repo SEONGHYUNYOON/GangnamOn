@@ -5,8 +5,8 @@ import * as cheerio from 'cheerio';
 // ────────────────────────────────────────────────────────────────
 // 강남 픽 자동 큐레이션 Function ("blogFeed") — v3
 //
-// 12시간마다(cron: 0 */12 * * *) 자동 실행되어, "맛집"/"카페"/"문화·예술" 세
-// 카테고리 중 하나를 무작위로 골라 그 카테고리에 맞는 블로그 글 1개를 찾아
+// 12시간마다(cron: 0 */12 * * *) 자동 실행되어, "맛집"/"카페"/"문화·예술"/"취미"/"운동"
+// 카테고리 중 3개를 무작위로 골라 각 카테고리에 맞는 블로그 글을 찾아
 // 게시합니다:
 //   1) 네이버 블로그 검색 오픈API로 카테고리별 키워드에 맞는 블로그 글을 찾고
 //   2) 이미 올린 적 없는 글 하나를 골라
@@ -20,7 +20,7 @@ import * as cheerio from 'cheerio';
 // 수동 테스트 실행 (Appwrite 콘솔 > Functions > blogFeed > Execute에서 아래처럼
 // Body를 JSON으로 넣고 실행하면, 지정한 카테고리로 여러 개를 한 번에 생성합니다):
 //   { "forceGroup": "culture", "count": 5 }
-// (평소 cron 자동 실행 때는 body가 없으므로 무작위 카테고리로 1개만 생성됩니다)
+// (평소 cron 자동 실행 때는 body가 없으므로 무작위 카테고리 3개를 생성 시도합니다)
 //
 // 필요한 환경변수 (Appwrite 콘솔 > Functions > blogFeed > Settings > Variables):
 //   - NAVER_CLIENT_ID / NAVER_CLIENT_SECRET  (developers.naver.com 에서 발급, "검색" API 하나로
@@ -62,8 +62,10 @@ const KEYWORD_GROUPS = {
 const GROUPS = Object.keys(KEYWORD_GROUPS);
 const GROUP_LABEL = { restaurant: '맛집', cafe: '카페', culture: '문화·예술', hobby: '취미', sport: '운동' };
 
-function pickRandomGroup() {
-    return GROUPS[Math.floor(Math.random() * GROUPS.length)];
+function pickRandomGroups(count) {
+    return [...GROUPS]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, Math.max(1, Math.min(count, GROUPS.length)));
 }
 
 function pickKeyword(group) {
@@ -432,7 +434,7 @@ export default async ({ req, res, log, error }) => {
     }
 
     // 수동 테스트 실행 지원: { "forceGroup": "culture", "count": 5 }
-    // body가 없으면(=정기 cron 실행) 무작위 카테고리로 1개만 생성됩니다.
+    // body가 없으면(=정기 cron 실행) 무작위 카테고리 3개를 생성 시도합니다.
     let payload = {};
     try {
         payload = req.body ? JSON.parse(req.body) : {};
@@ -440,7 +442,8 @@ export default async ({ req, res, log, error }) => {
         payload = {};
     }
     const forceGroup = GROUPS.includes(payload.forceGroup || payload.group) ? (payload.forceGroup || payload.group) : null;
-    const count = forceGroup ? Math.max(1, Math.min(Number(payload.count) || 1, 10)) : 1;
+    const count = Math.max(1, Math.min(Number(payload.count) || (forceGroup ? 1 : 3), 10));
+    const groupsToRun = forceGroup ? Array(count).fill(forceGroup) : pickRandomGroups(count);
 
     const apiKey = req.headers['x-appwrite-key'] || process.env.APPWRITE_FUNCTION_API_KEY || '';
     const client = new Client()
@@ -454,8 +457,7 @@ export default async ({ req, res, log, error }) => {
 
     try {
         const results = [];
-        for (let i = 0; i < count; i += 1) {
-            const group = forceGroup || pickRandomGroup();
+        for (const group of groupsToRun) {
             try {
                 const result = await runOnePick(group, ctx);
                 results.push(result);
@@ -468,7 +470,7 @@ export default async ({ req, res, log, error }) => {
         const succeeded = results.filter((r) => r.success);
         return res.json({
             success: succeeded.length > 0,
-            requested: count,
+            requested: groupsToRun.length,
             created: succeeded.length,
             results,
         });

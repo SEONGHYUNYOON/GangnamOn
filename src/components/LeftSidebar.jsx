@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, Palette, MessageCircle, Sparkles, Camera, Shield, Store, Zap, Flame, Lock, Home, EyeOff } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Star, Heart, Coffee, HelpCircle, Bell, User, Book, Users, Calendar, Palette, MessageCircle, Sparkles, Camera, Shield, Store, Zap, Flame, Lock, Home, EyeOff, Building2, ParkingCircle, Stethoscope, Siren } from 'lucide-react';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 import GangnamOnLogo from './GangnamOnLogo';
 
@@ -64,10 +64,21 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                subtitle: '찐 로컬들의 정보 공유',
                items: [
                     { id: 'qna', label: '무엇이든 물어보세요', icon: HelpCircle, subtext: 'Q&A' },
-                    { id: 'notice', label: '공지사항', icon: Bell, subtext: '운영 안내' },
                     { id: 'news', label: '강남구 소식', icon: Bell, subtext: '구청 뉴스/RSS' },
+                    { id: 'life_info', label: '생활기관 안내', icon: Building2, subtext: '구청/주민센터' },
+                    { id: 'parking_info', label: '주차·교통 생활', icon: ParkingCircle, subtext: '공영주차/교통민원' },
+                    { id: 'health_info', label: '보건·복지 안내', icon: Stethoscope, subtext: '보건소/복지센터' },
+                    { id: 'safety_info', label: '안전·민원 기관', icon: Siren, subtext: '경찰/소방/출입국' },
                     { id: 'housing_trade', label: '월세·전세 직거래', icon: Home, subtext: '부동산/룸메이트' },
                     { id: 'share', label: '당근보다 가까운 나눔', icon: Heart, subtext: '중고/나눔' },
+               ]
+          },
+          {
+               id: 'service',
+               tag: '서비스 안내',
+               subtitle: '강남온 운영 소식',
+               items: [
+                    { id: 'notice', label: '공지사항', icon: Bell, subtext: '운영 안내' },
                ]
           },
           {

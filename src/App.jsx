@@ -8,7 +8,7 @@ import ChatWidget from './components/ChatWidget'
 import Toast from './components/Toast'
 import WelcomeConfetti from './components/WelcomeConfetti'
 import KakaoMap from './components/KakaoMap'
-import GangnamNews from './components/GangnamNews'
+import GangnamNews, { GangnamLocalInfo } from './components/GangnamNews'
 import AdminNewSignupPopup from './components/AdminNewSignupPopup'
 import './index.css'
 import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, CalendarDays, MapPin, BookOpen, Newspaper, Utensils } from 'lucide-react'
@@ -1007,12 +1007,15 @@ function App() {
                                              </>
                                         )}
 
-                                        {(['qna', 'news', 'share', 'town_story', 'daily_photo'].includes(activeTab)) && (
+                                        {(['life_info', 'parking_info', 'health_info', 'safety_info'].includes(activeTab)) && (
+                                             <GangnamLocalInfo type={activeTab} />
+                                        )}
+
+                                        {(['qna', 'share', 'town_story', 'daily_photo'].includes(activeTab)) && (
                                              <>
                                                   <div className="flex items-center justify-between mb-2">
                                                        <h2 className="text-xl font-bold text-gray-900">
                                                             {activeTab === 'qna' && '🙋‍♀️ 무엇이든 물어보세요'}
-                                                            {activeTab === 'news' && '📢 우리 동네 소식통'}
                                                             {activeTab === 'share' && '🎁 당근보다 가까운 나눔'}
                                                             {activeTab === 'town_story' && '💬 타운 스토리'}
                                                             {activeTab === 'daily_photo' && '📸 데일리 포토'}

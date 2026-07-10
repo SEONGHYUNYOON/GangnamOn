@@ -853,6 +853,9 @@ const GangnamTraffic = ({ embedded = false }) => {
                                              </div>
                                              <Video className="h-5 w-5 text-brand-gold" />
                                         </div>
+                                        <p className="mt-4 rounded-lg bg-black/20 px-3 py-2 text-[11px] font-semibold leading-5 text-white/75">
+                                             원본 CCTV 영상은 TOPIS/카카오맵 플레이어에서 제공됩니다. 권한이 허용되는 공식 스트림 API가 확보되면 강남온 안에서 바로 재생되도록 연결할 수 있습니다.
+                                        </p>
                                         <div className="mt-5 grid gap-2">
                                              <a
                                                   href={TOPIS_CCTV_URL}

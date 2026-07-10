@@ -17,6 +17,10 @@ const GangnamOnLogo = ({ className = 'h-20 w-auto', onClick }) => {
                          <stop stopColor="#D6A427" />
                          <stop offset="1" stopColor="#9A7009" />
                     </linearGradient>
+                    <filter id="gangnamTextNeon" x="-16%" y="-34%" width="132%" height="180%" colorInterpolationFilters="sRGB">
+                         <feDropShadow dx="0" dy="0" stdDeviation="1.2" floodColor="#60A5FA" floodOpacity="0.26" />
+                         <feDropShadow dx="0" dy="1" stdDeviation="2.2" floodColor="#A77910" floodOpacity="0.16" />
+                    </filter>
                </defs>
 
                <g transform="translate(8 9)">
@@ -33,6 +37,7 @@ const GangnamOnLogo = ({ className = 'h-20 w-auto', onClick }) => {
                     fontSize="33"
                     fontWeight="850"
                     fill={DARK}
+                    filter="url(#gangnamTextNeon)"
                >
                     강남
                </text>
