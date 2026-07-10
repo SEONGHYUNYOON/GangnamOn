@@ -36,7 +36,7 @@ class ErrorBoundary extends React.Component {
                          </p>
 
                          {/* Developer Details (Optional: Can hide in production) */}
-                         {process.env.NODE_ENV === 'development' && this.state.error && (
+                         {import.meta.env.DEV && this.state.error && (
                               <div className="w-full max-w-lg bg-gray-100 p-4 rounded-lg text-left mb-6 overflow-auto max-h-40 text-xs font-mono text-red-600">
                                    {this.state.error.toString()}
                               </div>

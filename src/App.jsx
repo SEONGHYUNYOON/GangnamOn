@@ -11,7 +11,7 @@ import KakaoMap from './components/KakaoMap'
 import GangnamNews, { GangnamLocalInfo } from './components/GangnamNews'
 import AdminNewSignupPopup from './components/AdminNewSignupPopup'
 import './index.css'
-import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, CalendarDays, MapPin, BookOpen, Newspaper, Utensils } from 'lucide-react'
+import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, CalendarDays, MapPin, BookOpen, Newspaper, Utensils, Home, Users, Plus, MessageCircle, RefreshCw } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy Load Heavy Components
@@ -70,6 +70,28 @@ const VIRTUAL_MEETING_ITEMS = [
      { id: 'virtual-sports-3', category: '⚽ 스포츠', originalType: 'sports', isEvent: false, expiresAt: null, title: '배드민턴 셔틀 — 역삼 실내체육관, 초급/중급 팀 나눠서', host: 'FC강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '역삼동 강남문화체육관', participants: 4, maxParticipants: 8, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&h=400&fit=crop' },
 ];
 
+const SectionSkeleton = ({ label }) => (
+     <section className="card-surface p-5" aria-busy="true" aria-label={`${label} 불러오는 중`}>
+          <div className="mb-4 h-5 w-32 animate-pulse rounded-lg bg-slate-200" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+               {[0, 1, 2].map((item) => (
+                    <div key={item} className="h-32 animate-pulse rounded-2xl bg-slate-100" />
+               ))}
+          </div>
+     </section>
+);
+
+const FeedError = ({ title, onRetry }) => (
+     <section className="card-surface flex flex-col items-center px-5 py-10 text-center" role="status">
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-brand-accent">
+               <RefreshCw className="h-5 w-5" />
+          </div>
+          <h2 className="text-base font-black text-brand-ink">{title}을 불러오지 못했어요</h2>
+          <p className="mt-1 text-sm font-semibold text-slate-500">잠시 후 다시 시도하거나 다른 메뉴를 먼저 둘러보세요.</p>
+          <button type="button" onClick={onRetry} className="btn-brand mt-4 px-4 py-2 text-sm">다시 시도</button>
+     </section>
+);
+
 function App() {
      const [activeTab, setActiveTab] = useState('home');
      const [isMiniHomeOpen, setIsMiniHomeOpen] = useState(false);
@@ -114,6 +136,8 @@ function App() {
      // --- 1. Data State ---
      const [marketItems, setMarketItems] = useState([]);
      const [meetingItems, setMeetingItems] = useState([]);
+     const [feedRefreshKey, setFeedRefreshKey] = useState(0);
+     const [feedStatus, setFeedStatus] = useState({ meetings: 'loading', market: 'loading' });
 
      // 로그인 상태 + 프로필 문서를 함께 불러와서, 기존 컴포넌트들이 쓰던
      // user.id / user.user_metadata.* 형태 그대로 쓸 수 있도록 맞춰줍니다.
@@ -271,17 +295,34 @@ function App() {
           handleEmailVerificationCallback();
           refreshUser();
 
-          // Fetch Feed Data
+          // Fetch Feed Data. 각 섹션을 독립 처리해 한 API 장애가 홈 전체를 막지 않게 합니다.
           const fetchFeeds = async () => {
-               try {
-                    // Market
-                    const marketsRes = await databases.listDocuments({
+               setFeedStatus({ meetings: 'loading', market: 'loading' });
+
+               const [marketResult, gatheringResult, eventResult] = await Promise.allSettled([
+                    databases.listDocuments({
                          databaseId: DATABASE_ID,
                          collectionId: COLLECTIONS.posts,
                          queries: [Query.equal('type', 'market'), Query.orderDesc('$createdAt')],
-                    });
+                    }),
+                    databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.posts,
+                         queries: [
+                              Query.equal('type', ['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'office_rent', 'housing_trade']),
+                              Query.orderDesc('$createdAt'),
+                              Query.limit(100),
+                         ],
+                    }),
+                    databases.listDocuments({
+                         databaseId: DATABASE_ID,
+                         collectionId: COLLECTIONS.posts,
+                         queries: [Query.equal('type', 'event'), Query.limit(20)],
+                    }),
+               ]);
 
-                    setMarketItems(marketsRes.documents.map(m => ({
+               if (marketResult.status === 'fulfilled') {
+                    setMarketItems(marketResult.value.documents.map(m => ({
                          id: m.$id,
                          title: m.title,
                          price: m.price?.toLocaleString() || '0',
@@ -294,19 +335,15 @@ function App() {
                          seller: normalizeForGangnamDisplay(m.authorUsername) || m.authorUsername,
                          category: m.productCategory || '기타'
                     })));
+                    setFeedStatus(prev => ({ ...prev, market: 'success' }));
+               } else {
+                    console.error('중고거래 피드 로딩 실패:', marketResult.reason);
+                    setFeedStatus(prev => ({ ...prev, market: 'error' }));
+               }
 
-                    // Gatherings
-                    const gatheringsRes = await databases.listDocuments({
-                         databaseId: DATABASE_ID,
-                         collectionId: COLLECTIONS.posts,
-                         queries: [
-                              Query.equal('type', ['gathering', 'hiking', 'sports', 'pet', 'wine', 'startup_freelance', 'lunch_networking', 'recruit_proposal', 'office_rent', 'housing_trade']),
-                              Query.orderDesc('$createdAt'),
-                              Query.limit(100),
-                         ],
-                    });
-
-                    const mappedGatherings = gatheringsRes.documents.map(g => ({
+               let mappedGatherings = [];
+               if (gatheringResult.status === 'fulfilled') {
+                    mappedGatherings = gatheringResult.value.documents.map(g => ({
                          id: g.$id,
                          category: g.type === 'gathering' ? '⚡ 번개'
                               : g.type === 'hiking' ? '⛰️ 등산'
@@ -336,16 +373,16 @@ function App() {
                          image: g.imageUrls?.[0] || 'https://via.placeholder.com/600'
                     }));
                     setMeetingItems(mappedGatherings);
+                    setFeedStatus(prev => ({ ...prev, meetings: 'success' }));
+               } else {
+                    console.error('모임 피드 로딩 실패:', gatheringResult.reason);
+                    setMeetingItems(VIRTUAL_MEETING_ITEMS);
+                    setFeedStatus(prev => ({ ...prev, meetings: 'error' }));
+               }
 
-                    // 플로우 배너 자동 생성: 진행 중인 사장님 이벤트 + 지금 핫한 모임을 배너에 실어서
-                    // 클릭하면 바로 해당 메뉴로 이동하도록 연결 (목적성 강화)
-                    const liveEventsRes = await databases.listDocuments({
-                         databaseId: DATABASE_ID,
-                         collectionId: COLLECTIONS.posts,
-                         queries: [Query.equal('type', 'event'), Query.limit(20)],
-                    });
-
-                    const topLiveEvents = [...liveEventsRes.documents]
+               // 플로우 배너 로직은 기존 동작을 유지합니다.
+               if (eventResult.status === 'fulfilled') {
+                    const topLiveEvents = [...eventResult.value.documents]
                          .sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
                          .slice(0, 2);
 
@@ -372,8 +409,6 @@ function App() {
                     if (autoBanners.length > 0) {
                          setBannerMessages(prev => [...autoBanners, ...prev.filter(b => !String(b.id).startsWith('auto-'))]);
                     }
-               } catch (err) {
-                    console.error('피드 로딩 실패:', err);
                }
           };
           fetchFeeds();
@@ -402,7 +437,7 @@ function App() {
           return () => {
                window.removeEventListener('popstate', handlePopState);
           };
-     }, []);
+     }, [feedRefreshKey]);
 
      // 사이트 전체 방문 기록 — 미니홈피 방문(hostId=회원ID)과 구분되는, "누구든 사이트를
      // 한 번이라도 열면" 집계되는 진짜 전체 방문자 수입니다. 로그인 여부와 무관하게 하루에
@@ -707,7 +742,7 @@ function App() {
 
 
                {/* Central Container */}
-               <div className="w-full max-w-[1880px] flex min-h-screen relative pt-20 lg:pt-0 pb-8 px-3 lg:px-5 gap-5 xl:gap-8">
+               <div className="w-full max-w-[1880px] flex min-h-screen relative pt-20 lg:pt-0 pb-24 lg:pb-8 px-3 lg:px-5 gap-5 xl:gap-8">
 
                     {/* === Left Column (Fixed Width) === */}
                     <div className="w-[240px] xl:w-[280px] h-screen sticky top-0 hidden md:block overflow-y-auto no-scrollbar shrink-0 pt-5">
@@ -904,13 +939,39 @@ function App() {
                                                             </div>
                                                        </div>
                                                   </section>
-                                                  <ILoveSchool />
-                                                  <DiningCompanion onCreate={() => { setCreateModalCategory('lunch_networking'); setIsCreateModalOpen(true); }} />
-                                                  <MeetingFeed items={meetingItems.slice(0, 6)} onStartChat={handleStartChat} user={user} />
-                                                  <UsedMarket
-                                                       items={marketItems}
-                                                       onCreate={() => { setCreateModalCategory('market'); setIsCreateModalOpen(true); }}
-                                                  />
+                                                  <Suspense fallback={<SectionSkeleton label="동창 찾기" />}>
+                                                       <ILoveSchool />
+                                                  </Suspense>
+                                                  <Suspense fallback={<SectionSkeleton label="밥친구" />}>
+                                                       <DiningCompanion onCreate={() => { setCreateModalCategory('lunch_networking'); setIsCreateModalOpen(true); }} />
+                                                  </Suspense>
+
+                                                  {feedStatus.meetings === 'error' && (
+                                                       <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+                                                            <span>실시간 모임을 연결하지 못해 추천 모임을 보여드리고 있어요.</span>
+                                                            <button type="button" onClick={() => setFeedRefreshKey(key => key + 1)} className="shrink-0 font-black underline underline-offset-4">다시 연결</button>
+                                                       </div>
+                                                  )}
+                                                  {feedStatus.meetings === 'loading' ? (
+                                                       <SectionSkeleton label="동네 모임" />
+                                                  ) : (
+                                                       <Suspense fallback={<SectionSkeleton label="동네 모임" />}>
+                                                            <MeetingFeed items={meetingItems.slice(0, 6)} onStartChat={handleStartChat} user={user} />
+                                                       </Suspense>
+                                                  )}
+
+                                                  {feedStatus.market === 'loading' ? (
+                                                       <SectionSkeleton label="중고거래" />
+                                                  ) : feedStatus.market === 'error' ? (
+                                                       <FeedError title="중고거래" onRetry={() => setFeedRefreshKey(key => key + 1)} />
+                                                  ) : (
+                                                       <Suspense fallback={<SectionSkeleton label="중고거래" />}>
+                                                            <UsedMarket
+                                                                 items={marketItems}
+                                                                 onCreate={() => { setCreateModalCategory('market'); setIsCreateModalOpen(true); }}
+                                                            />
+                                                       </Suspense>
+                                                  )}
                                              </>
                                         )}
 
@@ -1146,7 +1207,7 @@ function App() {
                {/* === Mobile Top Nav (Fixed) === */}
                <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-100 p-3 lg:hidden z-50 flex items-center justify-between px-6 shadow-[0_5px_20px_rgba(0,0,0,0.05)]">
                     <div className="flex items-center gap-3">
-                         <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-500 hover:text-gray-900 active:bg-gray-100 rounded-full">
+                         <button type="button" aria-label="전체 메뉴 열기" onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-500 hover:text-gray-900 active:bg-gray-100 rounded-full">
                               <Menu className="w-6 h-6" />
                          </button>
                          <div className="flex items-center gap-1" onClick={reloadHome}>
@@ -1178,6 +1239,35 @@ function App() {
                          )}
                     </button>
                </div>
+
+               {/* === Mobile Bottom Navigation === */}
+               <nav aria-label="주요 메뉴" className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl lg:hidden">
+                    <div className="mx-auto grid max-w-md grid-cols-5 items-end">
+                         {[
+                              { id: 'home', label: '홈', icon: Home, active: activeTab === 'home', action: () => handleTabChange('home') },
+                              { id: 'meetings', label: '모임', icon: Users, active: ['hiking', 'sports', 'pet', 'wine'].includes(activeTab), action: () => handleTabChange('wine') },
+                              { id: 'create', label: '글쓰기', icon: Plus, active: false, primary: true, action: () => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); } },
+                              { id: 'community', label: '동네생활', icon: MessageCircle, active: ['town_story', 'daily_photo', 'anonymous', 'qna', 'share'].includes(activeTab), action: () => handleTabChange('town_story') },
+                              { id: 'my', label: '마이', icon: User, active: isMiniHomeOpen, action: () => handleOpenMinihome() },
+                         ].map((item) => {
+                              const Icon = item.icon;
+                              return (
+                                   <button
+                                        key={item.id}
+                                        type="button"
+                                        onClick={item.action}
+                                        aria-current={item.active ? 'page' : undefined}
+                                        className={`flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-black transition-colors ${item.primary ? '-mt-5' : ''} ${item.active ? 'text-brand-accent' : 'text-slate-400'}`}
+                                   >
+                                        <span className={`flex items-center justify-center ${item.primary ? 'h-12 w-12 rounded-2xl bg-brand text-white shadow-lg shadow-slate-900/20' : 'h-7 w-7'}`}>
+                                             <Icon className={item.primary ? 'h-6 w-6' : 'h-5 w-5'} />
+                                        </span>
+                                        <span>{item.label}</span>
+                                   </button>
+                              );
+                         })}
+                    </div>
+               </nav>
 
                {/* === Mobile Login Modal === */}
                {

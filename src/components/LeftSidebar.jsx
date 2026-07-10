@@ -182,7 +182,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
 
                          // 자동 펼침: 아직 수동으로 토글한 적 없다면, 현재 탭이 속한 그룹만 펼쳐진 상태로 시작
                          const containsActiveTab = group.items.some(item => item.id === activeTab);
-                         const isExpanded = expandedOverrides[group.id] ?? (containsActiveTab || group.id === 'life' || group.id === 'my');
+                         const isExpanded = expandedOverrides[group.id] ?? containsActiveTab;
 
                          // Standard Accordion Group Rendering
                          return (
