@@ -3,7 +3,7 @@ import { MessageCircle, Heart, User, MapPin, MoreHorizontal, ChevronDown, Loader
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
 import { normalizeForGangnamDisplay } from '../lib/displayGangnam';
 
-const NeighborhoodLife = ({ filter }) => {
+const NeighborhoodLife = ({ filter, refreshKey = 0, onCreate }) => {
      const [selectedRegion, setSelectedRegion] = useState('강남 전체');
      const [isDropdownOpen, setIsDropdownOpen] = useState(false);
      const [posts, setPosts] = useState([]);
@@ -63,7 +63,7 @@ const NeighborhoodLife = ({ filter }) => {
           };
 
           fetchPosts();
-     }, []);
+     }, [refreshKey]);
 
      // Filtering Logic
      const filteredPosts = posts.filter(p => {
@@ -168,7 +168,7 @@ const NeighborhoodLife = ({ filter }) => {
 
                                    {/* Optional Thumbnail */}
                                    {post.image && (
-                                        <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0">
+                                        <div className={`rounded-xl bg-gray-100 overflow-hidden shrink-0 ${post.rawType === 'daily_photo' ? 'w-28 h-28' : 'w-20 h-20'}`}>
                                              <img src={post.image} alt="thumb" className="w-full h-full object-cover" />
                                         </div>
                                    )}
@@ -197,7 +197,15 @@ const NeighborhoodLife = ({ filter }) => {
                ) : (
                     <div className="text-center py-20 text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
                          <p className="font-bold text-lg mb-2">앗! 게시물이 없네요 😅</p>
-                         <p className="text-sm">{selectedRegion} 지역의 첫 번째 소식을 남겨보세요!</p>
+                         <p className="text-sm mb-5">{selectedRegion} 지역의 첫 번째 소식을 남겨보세요!</p>
+                         {onCreate && (
+                              <button
+                                   onClick={onCreate}
+                                   className="rounded-xl bg-brand px-5 py-2.5 text-sm font-black text-white shadow-soft transition-all hover:bg-brand-dark"
+                              >
+                                   {filter === 'daily_photo' ? '첫 사진 올리기' : filter === 'qna' ? '첫 질문 남기기' : '첫 글 쓰기'}
+                              </button>
+                         )}
                     </div>
                )}
           </div>

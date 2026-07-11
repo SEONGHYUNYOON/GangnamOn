@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Image as ImageIcon, MapPin, Calendar, Users, DollarSign, Tag, ArrowLeft, Loader2, Megaphone, Clock } from 'lucide-react';
+import { X, Image as ImageIcon, MapPin, Calendar, Users, DollarSign, Tag, ArrowLeft, Loader2, Megaphone, Clock, Camera, MessageCircle, HelpCircle } from 'lucide-react';
 import { databases, storage, DATABASE_ID, COLLECTIONS, BUCKET_ID, ID, Permission, Role, getFileUrl } from '../lib/appwrite';
 import { resolveAvatarUrl } from '../lib/avatar';
 import KakaoMap from './KakaoMap';
@@ -43,15 +43,20 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
      const marketCategories = ['디지털/가전', '가구/인테리어', '의류/잡화', '유아동/도서', '스포츠/레저', '생활/주방', '기타'];
 
      const categories = [
+          { id: 'daily_photo', label: '📸 데일리 포토', icon: Camera },
+          { id: 'town_story', label: '💬 타운 스토리', icon: MessageCircle },
+          { id: 'question', label: '🙋 질문하기', icon: HelpCircle },
           { id: 'event', label: '🎉 이벤트 홍보(사장님)', icon: Megaphone },
-          { id: 'startup_freelance', label: '⚡ 스타트업/프리랜서', icon: Users }, // Zap changed to Users for better generic fit or import Zap if needed (it is imported)
-          { id: 'lunch_networking', label: '☕ 점심 네트워킹', icon: Calendar }, // Coffee changed to Calendar or keep Coffee if imported
+          { id: 'startup_freelance', label: '⚡ 스타트업/프리랜서', icon: Users },
+          { id: 'lunch_networking', label: '☕ 점심 네트워킹', icon: Calendar },
           { id: 'recruit_proposal', label: '👥 구인/협업', icon: Tag },
-          { id: 'office_rent', label: '🏢 사무실/임대', icon: MapPin }, // Store changed to MapPin
+          { id: 'office_rent', label: '🏢 사무실/임대', icon: MapPin },
           { id: 'housing_trade', label: '🏠 월세·전세 직거래', icon: MapPin },
           { id: 'gathering', label: '⚡ 동호회/모임', icon: Users },
           { id: 'market', label: '🥕 중고거래', icon: DollarSign },
      ];
+
+     const isCommunityPost = ['daily_photo', 'town_story', 'question'].includes(selectedCategory);
 
      const handleFileSelect = (e) => {
           const file = e.target.files[0];
@@ -101,6 +106,10 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
           }
           if (!formData.title) {
                alert("제목을 입력해주세요.");
+               return;
+          }
+          if (selectedCategory === 'daily_photo' && !selectedFile && !previewImage) {
+               alert("데일리 포토는 사진을 함께 올려주세요.");
                return;
           }
 
@@ -235,8 +244,12 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                    <div className="bg-white p-4 rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform">
                                         <ImageIcon className="w-8 h-8 text-purple-400" />
                                    </div>
-                                   <p className="font-bold text-lg mb-1 text-gray-600 group-hover:text-purple-600">사진 추가하기</p>
-                                   <p className="text-sm text-gray-400">클릭하여 이미지를 업로드하세요</p>
+                                   <p className="font-bold text-lg mb-1 text-gray-600 group-hover:text-purple-600">
+                                        {selectedCategory === 'daily_photo' ? '오늘의 사진 올리기' : '사진 추가하기'}
+                                   </p>
+                                   <p className="text-sm text-gray-400">
+                                        {selectedCategory === 'daily_photo' ? '강남에서 찍은 사진을 공유해보세요' : '클릭하여 이미지를 업로드하세요'}
+                                   </p>
                                    <p className="text-xs text-gray-300 mt-4">최대 5MB, JPG/PNG</p>
                               </div>
                          )}
@@ -285,17 +298,35 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        placeholder="글 제목을 입력해주세요"
+                                        placeholder={selectedCategory === 'daily_photo' ? '사진 제목을 입력해주세요' : '글 제목을 입력해주세요'}
                                         className="w-full text-xl font-bold placeholder-gray-300 border-none focus:ring-0 p-0"
                                    />
                                    <textarea
                                         rows={6}
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        placeholder="내용을 입력해주세요."
+                                        placeholder={selectedCategory === 'daily_photo' ? '사진 설명이나 촬영 장소를 적어주세요.' : '내용을 입력해주세요.'}
                                         className="w-full text-sm text-gray-600 placeholder-gray-300 border-none focus:ring-0 p-0 resize-none leading-relaxed"
                                    />
                               </div>
+
+                              {isCommunityPost && (
+                                   <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                        <div>
+                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">촬영 지역</label>
+                                             <div className="flex items-center bg-gray-50 px-3 py-3 rounded-xl">
+                                                  <MapPin className="w-4 h-4 text-gray-400 mr-2" />
+                                                  <input
+                                                       type="text"
+                                                       value={formData.location}
+                                                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                       className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold w-full placeholder-gray-400 text-gray-700"
+                                                       placeholder="예) 역삼동, 강남역, 청담동"
+                                                  />
+                                             </div>
+                                        </div>
+                                   </div>
+                              )}
 
                               <hr className="border-gray-100" />
 

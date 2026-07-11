@@ -74,14 +74,6 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                ]
           },
           {
-               id: 'service',
-               tag: '서비스 안내',
-               subtitle: '강남온 운영 소식',
-               items: [
-                    { id: 'notice', label: '공지사항', icon: Bell, subtext: '운영 안내' },
-               ]
-          },
-          {
                id: 'school',
                tag: '아이러브스쿨',
                subtitle: '추억과 사람 찾기',
@@ -237,6 +229,25 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                     })}
                </nav>
 
+               <div className="mt-6 border-t border-gray-100/80 pt-4">
+                    <button
+                         onClick={() => setActiveTab('notice')}
+                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group text-left ${activeTab === 'notice'
+                              ? 'bg-brand shadow-sm'
+                              : 'hover:bg-surface-muted'
+                              }`}
+                    >
+                         <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors shrink-0 ${activeTab === 'notice' ? 'bg-white/10' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
+                              <Bell className={`w-4 h-4 ${activeTab === 'notice' ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                         </div>
+                         <div className="min-w-0">
+                              <div className={`text-base font-semibold truncate ${activeTab === 'notice' ? 'text-white' : 'text-gray-800'}`}>
+                                   공지사항
+                              </div>
+                              <div className={`text-xs font-medium truncate ${activeTab === 'notice' ? 'text-slate-300' : 'text-gray-500'}`}>운영 안내</div>
+                         </div>
+                    </button>
+               </div>
 
                <div className="mt-auto pt-4 border-t border-gray-100/60 flex flex-col gap-2">
                     <div className="flex items-center justify-center gap-3">

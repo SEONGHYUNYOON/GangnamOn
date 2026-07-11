@@ -27,9 +27,15 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           temp: null,
           humidity: null,
           code: null,
+          condition: null,
           pm10: null,
+          observedAt: null,
+          updatedAt: null,
+          source: null,
           loading: true
      });
+
+     const WEATHER_REFRESH_MS = 600000;
 
      // --- Auth State: user는 App.jsx에서 props로 내려줍니다 (단일 소스) ---
 
@@ -84,48 +90,49 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      ];
 
      useEffect(() => {
-          // Fetch Weather Data (강남 역삼동)
+          // 기상청 초단기실황 (/api/weather 프록시) — 10분마다 갱신
           const fetchWeather = async () => {
                try {
-                    const [weatherRes, airRes] = await Promise.all([
-                         fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5012&longitude=127.0396&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FSeoul'),
-                         fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=37.5012&longitude=127.0396&current=pm10')
-                    ]).catch(e => {
-                         console.warn("API fetch failed, skipping weather:", e);
-                         return [null, null];
-                    });
-
-                    if (!weatherRes || !airRes || !weatherRes.ok || !airRes.ok) {
-                         console.warn("Weather API error or non-ok status");
-                         setWeather(prev => ({ ...prev, loading: false }));
+                    const response = await fetch(`/api/weather?t=${Date.now()}`, { cache: 'no-store' });
+                    if (!response.ok) {
+                         console.warn('Weather API error:', response.status);
+                         setWeather((prev) => ({ ...prev, loading: false }));
                          return;
                     }
 
-                    const weatherData = await weatherRes.json();
-                    const airData = await airRes.json();
-
-                    if (!weatherData?.current || !airData?.current) {
-                         console.warn("Invalid weather data structure");
-                         setWeather(prev => ({ ...prev, loading: false }));
+                    const data = await response.json();
+                    if (data?.temp == null || data?.humidity == null) {
+                         console.warn('Invalid weather data structure');
+                         setWeather((prev) => ({ ...prev, loading: false }));
                          return;
                     }
 
                     setWeather({
-                         temp: Math.round(weatherData.current.temperature_2m),
-                         humidity: weatherData.current.relative_humidity_2m,
-                         code: weatherData.current.weather_code,
-                         pm10: airData.current.pm10,
-                         loading: false
+                         temp: data.temp,
+                         humidity: data.humidity,
+                         code: data.code ?? 0,
+                         condition: data.condition ?? null,
+                         pm10: data.pm10 ?? null,
+                         observedAt: data.observedAt ?? null,
+                         updatedAt: data.updatedAt ?? new Date().toISOString(),
+                         source: data.source ?? null,
+                         loading: false,
                     });
                } catch (error) {
-                    console.error("Failed to fetch/parse weather:", error);
-                    setWeather(prev => ({ ...prev, loading: false }));
+                    console.error('Failed to fetch/parse weather:', error);
+                    setWeather((prev) => ({ ...prev, loading: false }));
                }
           };
 
           fetchWeather();
-          // Fetch weather every 10 minutes
-          const weatherInterval = setInterval(fetchWeather, 600000);
+          const weatherInterval = setInterval(fetchWeather, WEATHER_REFRESH_MS);
+
+          const handleVisibilityChange = () => {
+               if (document.visibilityState === 'visible') {
+                    fetchWeather();
+               }
+          };
+          document.addEventListener('visibilitychange', handleVisibilityChange);
 
           const trafficInterval = setInterval(() => {
                const statuses = ['smooth', 'slow', 'jammed'];
@@ -139,6 +146,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           return () => {
                clearInterval(weatherInterval);
                clearInterval(trafficInterval);
+               document.removeEventListener('visibilitychange', handleVisibilityChange);
           };
      }, []);
 
@@ -369,6 +377,15 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      };
 
      const weatherInfo = getWeatherInfo(weather.code);
+     const weatherLabel = weather.condition || weatherInfo.text;
+     const observedLabel = weather.observedAt
+          ? `${new Date(weather.observedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })} 기준`
+          : null;
+     const sourceLabel = weather.source === '기상청'
+          ? observedLabel
+          : weather.source
+               ? [weather.source, observedLabel].filter(Boolean).join(' · ')
+               : observedLabel;
      const dustInfo = getDustInfo(weather.pm10);
      const isRainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(weather.code);
      const activityRank = getActivityRank(beanCount / 50 + visitorStats.total);
@@ -598,7 +615,10 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                              {weatherInfo.icon}
                                              <span className="text-3xl font-bold text-gray-800">{weather.temp !== null ? weather.temp : '-'}°</span>
                                         </div>
-                                        <span className="text-xs font-bold text-gray-500 ml-1">강남 역삼동 · {weatherInfo.text}</span>
+                                        <span className="text-xs font-bold text-gray-500 ml-1">
+                                             강남 역삼동 · {weatherLabel}
+                                             {sourceLabel ? ` · ${sourceLabel}` : ''}
+                                        </span>
                                    </div>
                                    <div className="text-right">
                                         <div className={`flex items-center justify-end gap-1 text-xs font-bold px-2 py-1 rounded-lg mb-1 ${dustInfo.color} ${dustInfo.bg}`}>

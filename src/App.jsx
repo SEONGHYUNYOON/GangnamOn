@@ -97,6 +97,7 @@ function App() {
      const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
      const [isBannerModalOpen, setIsBannerModalOpen] = useState(false); // New Toggle
      const [ownersNoteRefreshKey, setOwnersNoteRefreshKey] = useState(0); // 새 이벤트 등록 시 Owner's Note 재조회 트리거
+     const [neighborhoodRefreshKey, setNeighborhoodRefreshKey] = useState(0);
      const [toastMessage, setToastMessage] = useState(null);
      const [welcomeConfetti, setWelcomeConfetti] = useState(null);
      const [beanCount, setBeanCount] = useState(1250); // 온(가상 화폐)
@@ -573,7 +574,12 @@ function App() {
                if (result.success) setBeanCount(result.beans);
           });
 
-          if (category === 'market') {
+          if (['daily_photo', 'town_story', 'question'].includes(category)) {
+               setNeighborhoodRefreshKey((prev) => prev + 1);
+               setToastMessage(category === 'daily_photo'
+                    ? '사진이 등록됐어요! +20 ON · 활동점수 +12 📸'
+                    : '게시글 등록! +20 ON · 활동점수 +12 🎉');
+          } else if (category === 'market') {
                const newItem = {
                     id: savedPost.$id,
                     title: savedPost.title,
@@ -1169,6 +1175,25 @@ function App() {
                                                             {activeTab === 'town_story' && '💬 타운 스토리'}
                                                             {activeTab === 'daily_photo' && '📸 데일리 포토'}
                                                        </h2>
+                                                       {activeTab !== 'share' && (
+                                                            <button
+                                                                 onClick={() => {
+                                                                      if (!user) {
+                                                                           setIsMobileLoginOpen(true);
+                                                                           setToastMessage('로그인 후 글을 작성할 수 있어요.');
+                                                                           return;
+                                                                      }
+                                                                      const category = activeTab === 'qna' ? 'question' : activeTab;
+                                                                      setCreateModalCategory(category);
+                                                                      setIsCreateModalOpen(true);
+                                                                 }}
+                                                                 className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-amber-50 hover:text-amber-800 border border-transparent hover:border-amber-200 transition-colors"
+                                                            >
+                                                                 {activeTab === 'daily_photo' && '+ 사진 올리기'}
+                                                                 {activeTab === 'town_story' && '+ 글쓰기'}
+                                                                 {activeTab === 'qna' && '+ 질문하기'}
+                                                            </button>
+                                                       )}
                                                   </div>
                                                   {activeTab === 'share' ? (
                                                        <UsedMarket
@@ -1176,7 +1201,20 @@ function App() {
                                                             onCreate={() => { setCreateModalCategory('market'); setIsCreateModalOpen(true); }}
                                                        />
                                                   ) : (
-                                                       <NeighborhoodLife filter={activeTab} />
+                                                       <NeighborhoodLife
+                                                            filter={activeTab}
+                                                            refreshKey={neighborhoodRefreshKey}
+                                                            onCreate={() => {
+                                                                 if (!user) {
+                                                                      setIsMobileLoginOpen(true);
+                                                                      setToastMessage('로그인 후 글을 작성할 수 있어요.');
+                                                                      return;
+                                                                 }
+                                                                 const category = activeTab === 'qna' ? 'question' : activeTab;
+                                                                 setCreateModalCategory(category);
+                                                                 setIsCreateModalOpen(true);
+                                                            }}
+                                                       />
                                                   )}
                                              </>
                                         )}

@@ -4,6 +4,19 @@ import { databases, DATABASE_ID, COLLECTIONS, Query, callEconomy } from '../lib/
 import { FeedError, SectionSkeleton } from './FeedStates';
 
 const REGIONS = ['강남 전체', '역삼동', '신사동', '청담동', '삼성동', '논현동', '압구정', '강남역'];
+const PICK_REFRESH_MS = 600000;
+
+const formatPickTime = (iso) => {
+     if (!iso) return '';
+     return new Date(iso).toLocaleString('ko-KR', {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+     });
+};
 
 const GROUP_TABS = [
      { key: 'all', label: '전체', icon: LayoutGrid },
@@ -275,6 +288,7 @@ const PickDetailModal = ({ post, onClose, liked, onToggleLike }) => {
                          <div className="mt-4 flex items-center gap-4 text-xs font-semibold text-slate-400">
                               <LikeButton liked={liked} count={post.likesCount} onToggle={onToggleLike} />
                               <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />조회 {post.views || 0}</span>
+                              {post.time && <span>{post.time}</span>}
                          </div>
 
                          <div className="mt-5 flex items-center gap-2">
@@ -322,7 +336,7 @@ const GangnamPickBoard = ({ user }) => {
                          queries: [
                               Query.equal('type', ['gangnam_pick']),
                               Query.orderDesc('$createdAt'),
-                              Query.limit(40),
+                              Query.limit(100),
                          ],
                     });
                     const mapped = res.documents.map((p) => ({
@@ -338,7 +352,8 @@ const GangnamPickBoard = ({ user }) => {
                          imageUrls: p.imageUrls || [],
                          likesCount: p.likesCount || 0,
                          views: p.views || 0,
-                         time: new Date(p.$createdAt).toLocaleDateString(),
+                         createdAt: p.$createdAt,
+                         time: formatPickTime(p.$createdAt),
                     }));
                     setPosts(mapped);
                } catch (e) {
@@ -350,6 +365,20 @@ const GangnamPickBoard = ({ user }) => {
           };
           fetchPicks();
      }, [reloadKey]);
+
+     useEffect(() => {
+          const interval = setInterval(() => setReloadKey((key) => key + 1), PICK_REFRESH_MS);
+          const handleVisibilityChange = () => {
+               if (document.visibilityState === 'visible') {
+                    setReloadKey((key) => key + 1);
+               }
+          };
+          document.addEventListener('visibilitychange', handleVisibilityChange);
+          return () => {
+               clearInterval(interval);
+               document.removeEventListener('visibilitychange', handleVisibilityChange);
+          };
+     }, []);
 
      // 로그인한 사용자가 이전에 좋아요를 눌렀던 글 목록을 불러와, 새로고침/재로그인 후에도
      // 하트가 채워진 상태로 정확히 보이도록 합니다 (이전에는 로컬 state만 써서 새로고침하면
@@ -423,9 +452,12 @@ const GangnamPickBoard = ({ user }) => {
      };
 
      const byGroup = groupTab === 'all' ? posts : posts.filter((p) => p.pickGroup === groupTab);
-     const filtered = region === '강남 전체'
-          ? byGroup
-          : byGroup.filter((p) => (p.placeAddress || p.locationName || '').includes(region));
+     const filtered = useMemo(() => {
+          const regionFiltered = region === '강남 전체'
+               ? byGroup
+               : byGroup.filter((p) => (p.placeAddress || p.locationName || '').includes(region));
+          return [...regionFiltered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+     }, [byGroup, region]);
 
      const groupCounts = GROUP_TABS.reduce((acc, tab) => {
           acc[tab.key] = tab.key === 'all' ? posts.length : posts.filter((p) => p.pickGroup === tab.key).length;
