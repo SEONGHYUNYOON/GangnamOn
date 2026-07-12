@@ -125,6 +125,7 @@ function isValidEmail(email = '') {
 }
 
 async function completePhoneSignup({ payload, userId, users, databases, res }) {
+     const duplicateEmailMessage = '이미 가입된 이메일 주소 입니다.';
      const email = String(payload.email || '').trim().toLowerCase();
      const password = String(payload.password || '');
      const username = String(payload.username || '').trim();
@@ -163,6 +164,18 @@ async function completePhoneSignup({ payload, userId, users, databases, res }) {
           return res.json({ success: false, message: '인증한 휴대폰 번호와 가입 번호가 다릅니다.' }, 400);
      }
 
+     const emailUsers = await users.list({
+          queries: [
+               Query.equal('email', email),
+               Query.limit(1),
+          ],
+          total: false,
+     });
+     const existingEmailUser = emailUsers.users?.find((user) => user.$id !== userId);
+     if (existingEmailUser) {
+          return res.json({ success: false, message: duplicateEmailMessage }, 409);
+     }
+
      try {
           await databases.getDocument(DATABASE_ID, PROFILES, userId);
           return res.json({ success: false, message: '이미 가입이 완료된 계정입니다.' }, 409);
@@ -184,7 +197,14 @@ async function completePhoneSignup({ payload, userId, users, databases, res }) {
           }, 409);
      }
 
-     await users.updateEmail(userId, email);
+     try {
+          await users.updateEmail(userId, email);
+     } catch (err) {
+          if (err.code === 409) {
+               return res.json({ success: false, message: duplicateEmailMessage }, 409);
+          }
+          throw err;
+     }
      await users.updatePassword(userId, password);
      await users.updateName(userId, username);
 

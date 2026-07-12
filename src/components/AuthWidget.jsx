@@ -23,6 +23,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
      const [isForgotMode, setIsForgotMode] = useState(false);
      const [authLoading, setAuthLoading] = useState(false);
      const [authError, setAuthError] = useState(null);
+     const duplicateEmailMessage = '이미 가입된 이메일 주소 입니다.';
 
      // 강남권 동 단위 (지역 선택)
      const gangnamRegions = [
@@ -71,6 +72,8 @@ const AuthWidget = ({ onLoginSuccess }) => {
                setAuthError('인증번호를 보냈어요. 문자로 받은 번호를 입력해주세요.');
           } catch (error) {
                console.error('휴대폰 인증번호 발송 실패:', error);
+               setPhoneUserId('');
+               setPhoneVerified(false);
                setAuthError(error.message || '인증번호 발송에 실패했습니다. Appwrite SMS 설정을 확인해주세요.');
           } finally {
                setPhoneSending(false);
@@ -217,8 +220,10 @@ const AuthWidget = ({ onLoginSuccess }) => {
                if (onLoginSuccess) onLoginSuccess({ isNewUser: true, username });
           } catch (error) {
                console.error("Signup error:", error);
-               if (error.code === 409) {
-                    setAuthError("이미 가입된 이메일입니다.");
+               const message = error.message || '';
+               if (error.code === 409 || message.includes('이미 가입된 이메일')) {
+                    setAuthError(duplicateEmailMessage);
+                    window.alert(duplicateEmailMessage);
                } else if (error.message === 'Failed to fetch') {
                     setAuthError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
                } else {
@@ -325,7 +330,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                         <div className="mb-2 flex items-start gap-2">
                                              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
                                              <p className="text-[11px] font-bold leading-5 text-amber-800">
-                                                  강남ON은 휴대폰 인증 후 가입할 수 있습니다. 한 휴대폰 번호로 다른 지역 ON 계정은 추가 생성할 수 있지만, 같은 지역 ON 계정은 1개만 만들 수 있습니다.
+                                                  강남ON은 휴대폰 인증 후 가입할 수 있습니다. 한 휴대폰 번호로 다른 지역 ON 계정은 추가 생성할 수 있지만, 같은 지역 ON 계정은 1개의 계정만 생성 할 수 있습니다.
                                              </p>
                                         </div>
                                         <div className="flex gap-2">
@@ -347,12 +352,12 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                                   type="button"
                                                   onClick={handleSendPhoneCode}
                                                   disabled={phoneSending || phoneVerified}
-                                                  className="rounded-xl bg-brand px-3 text-xs font-black text-white transition-all hover:bg-brand-dark disabled:opacity-50"
+                                                  className="min-w-[64px] rounded-xl bg-brand px-3 text-xs font-black text-white transition-all hover:bg-brand-dark disabled:opacity-50"
                                              >
                                                   {phoneSending ? '발송중' : phoneVerified ? '완료' : '인증'}
                                              </button>
                                         </div>
-                                        {phoneUserId && !phoneVerified && (
+                                        {!phoneVerified && (
                                              <div className="mt-2 flex gap-2">
                                                   <input
                                                        type="text"
@@ -365,10 +370,10 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                                   <button
                                                        type="button"
                                                        onClick={handleVerifyPhoneCode}
-                                                       disabled={phoneVerifying}
-                                                       className="rounded-xl border border-brand-gold/30 bg-white px-3 text-xs font-black text-brand-accent transition-all hover:bg-brand-light disabled:opacity-50"
+                                                       disabled={!phoneUserId || phoneVerifying}
+                                                       className="min-w-[76px] rounded-xl border border-brand-gold/30 bg-white px-3 text-xs font-black text-brand-accent transition-all hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-50"
                                                   >
-                                                       {phoneVerifying ? '확인중' : '확인'}
+                                                       {phoneVerifying ? '확인중' : '인증확인'}
                                                   </button>
                                              </div>
                                         )}
