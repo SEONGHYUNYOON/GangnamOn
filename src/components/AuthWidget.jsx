@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Lock, ChevronRight, User, MapPin, Smile } from 'lucide-react';
-import { account, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role, OAuthProvider } from '../lib/appwrite';
+import { Mail, Lock, ChevronRight, User, MapPin, Smile, Phone, ShieldCheck } from 'lucide-react';
+import { account, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role, OAuthProvider, completePhoneSignup } from '../lib/appwrite';
 import { getDefaultAvatarUrl } from '../lib/avatar';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 
@@ -10,6 +10,12 @@ const AuthWidget = ({ onLoginSuccess }) => {
      const [username, setUsername] = useState('');
      const [region, setRegion] = useState('');
      const [gender, setGender] = useState(''); // 'male' or 'female'
+     const [phone, setPhone] = useState('');
+     const [phoneCode, setPhoneCode] = useState('');
+     const [phoneUserId, setPhoneUserId] = useState('');
+     const [phoneVerified, setPhoneVerified] = useState(false);
+     const [phoneSending, setPhoneSending] = useState(false);
+     const [phoneVerifying, setPhoneVerifying] = useState(false);
      const [agreedToTerms, setAgreedToTerms] = useState(false);
      const [termsModalTab, setTermsModalTab] = useState(null); // null | 'terms' | 'privacy'
 
@@ -34,7 +40,63 @@ const AuthWidget = ({ onLoginSuccess }) => {
           '잠원동',
           '개포동',
           '세곡동'
-     ];
+          ];
+
+     const normalizeKoreanPhone = (value) => {
+          const trimmed = value.trim();
+          if (!trimmed) return '';
+          if (trimmed.startsWith('+')) return trimmed.replace(/[^\d+]/g, '');
+
+          const digits = trimmed.replace(/\D/g, '');
+          if (digits.startsWith('82')) return `+${digits}`;
+          if (digits.startsWith('0')) return `+82${digits.slice(1)}`;
+          return `+82${digits}`;
+     };
+
+     const handleSendPhoneCode = async () => {
+          const normalizedPhone = normalizeKoreanPhone(phone);
+          if (!normalizedPhone || normalizedPhone.length < 11) {
+               setAuthError('휴대폰 번호를 정확히 입력해주세요.');
+               return;
+          }
+
+          setPhoneSending(true);
+          setAuthError(null);
+
+          try {
+               const token = await account.createPhoneToken(ID.unique(), normalizedPhone);
+               setPhoneUserId(token.userId);
+               setPhone(normalizedPhone);
+               setPhoneVerified(false);
+               setAuthError('인증번호를 보냈어요. 문자로 받은 번호를 입력해주세요.');
+          } catch (error) {
+               console.error('휴대폰 인증번호 발송 실패:', error);
+               setAuthError(error.message || '인증번호 발송에 실패했습니다. Appwrite SMS 설정을 확인해주세요.');
+          } finally {
+               setPhoneSending(false);
+          }
+     };
+
+     const handleVerifyPhoneCode = async () => {
+          if (!phoneUserId || !phoneCode.trim()) {
+               setAuthError('인증번호를 입력해주세요.');
+               return;
+          }
+
+          setPhoneVerifying(true);
+          setAuthError(null);
+
+          try {
+               await account.updatePhoneSession(phoneUserId, phoneCode.trim());
+               setPhoneVerified(true);
+               setAuthError('휴대폰 인증이 완료됐어요.');
+          } catch (error) {
+               console.error('휴대폰 인증 실패:', error);
+               setAuthError(error.message || '인증번호가 올바르지 않거나 만료됐습니다.');
+          } finally {
+               setPhoneVerifying(false);
+          }
+     };
 
      const getOAuthRedirectUrl = (status) => {
           const redirectUrl = new URL(window.location.href);
@@ -102,6 +164,10 @@ const AuthWidget = ({ onLoginSuccess }) => {
                setAuthError("지역을 선택해주세요.");
                return;
           }
+          if (!phoneVerified) {
+               setAuthError("휴대폰 번호 인증을 완료해야 가입할 수 있습니다.");
+               return;
+          }
           if (!agreedToTerms) {
                setAuthError("이용약관 및 개인정보처리방침에 동의해주세요.");
                return;
@@ -114,30 +180,19 @@ const AuthWidget = ({ onLoginSuccess }) => {
           const defaultAvatar = getDefaultAvatarUrl(gender, username);
 
           try {
-               const newAccount = await account.create(ID.unique(), email, password, username);
-
-               // 이메일 인증 절차 없이 바로 로그인 처리 (보안 강화는 추후 별도 작업 예정)
-               await account.createEmailPasswordSession(email, password);
-
-               // 프로필 문서 생성
-               await databases.createDocument({
-                    databaseId: DATABASE_ID,
-                    collectionId: COLLECTIONS.profiles,
-                    documentId: newAccount.$id,
-                    data: {
-                         username,
-                         avatarUrl: defaultAvatar,
-                         location: region,
-                         gender,
-                         beans: 1250,
-                         unlockedStyles: ['lorelei', 'avataaars'],
-                    },
-                    permissions: [
-                         Permission.read(Role.any()),
-                         Permission.update(Role.user(newAccount.$id)),
-                         Permission.delete(Role.user(newAccount.$id)),
-                    ],
+               const signupResult = await completePhoneSignup({
+                    email,
+                    password,
+                    username,
+                    avatarUrl: defaultAvatar,
+                    location: region,
+                    gender,
+                    phone,
                });
+
+               if (!signupResult.success) {
+                    throw new Error(signupResult.message || '가입에 실패했습니다.');
+               }
 
                // 가입 보너스도 재화 발급 내역에 남겨서 관리자 대시보드의 "발급된 재화" 통계에 잡히도록 합니다.
                try {
@@ -145,7 +200,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                          databaseId: DATABASE_ID,
                          collectionId: COLLECTIONS.beanTransactions,
                          documentId: ID.unique(),
-                         data: { userId: newAccount.$id, type: 'signup_bonus', amount: 1250, note: '가입 축하 보너스' },
+                         data: { userId: signupResult.userId, type: 'signup_bonus', amount: 1250, note: '가입 축하 보너스' },
                          permissions: [Permission.read(Role.any())],
                     });
                } catch (txError) {
@@ -256,14 +311,73 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    {/* Username */}
                                    <div className="relative">
                                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                        <input
-                                             type="text"
+                                       <input
+                                            type="text"
                                              placeholder="닉네임 (활동명)"
                                              value={username}
                                              onChange={(e) => setUsername(e.target.value)}
                                              className="w-full pl-10 pr-4 py-3 bg-surface-muted border border-surface-border rounded-xl text-sm focus:outline-none focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/15 transition-all"
                                              required
                                         />
+                                   </div>
+
+                                   <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-3">
+                                        <div className="mb-2 flex items-start gap-2">
+                                             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                                             <p className="text-[11px] font-bold leading-5 text-amber-800">
+                                                  강남ON은 휴대폰 인증 후 가입할 수 있습니다. 한 휴대폰 번호로 다른 지역 ON 계정은 추가 생성할 수 있지만, 같은 지역 ON 계정은 1개만 만들 수 있습니다.
+                                             </p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                             <div className="relative flex-1">
+                                                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                  <input
+                                                       type="tel"
+                                                       placeholder="휴대폰 번호"
+                                                       value={phone}
+                                                       onChange={(e) => {
+                                                            setPhone(e.target.value);
+                                                            setPhoneVerified(false);
+                                                       }}
+                                                       className="w-full rounded-xl border border-surface-border bg-white py-3 pl-10 pr-3 text-sm transition-all focus:border-brand-gold/50 focus:outline-none focus:ring-2 focus:ring-brand-gold/15"
+                                                       required
+                                                  />
+                                             </div>
+                                             <button
+                                                  type="button"
+                                                  onClick={handleSendPhoneCode}
+                                                  disabled={phoneSending || phoneVerified}
+                                                  className="rounded-xl bg-brand px-3 text-xs font-black text-white transition-all hover:bg-brand-dark disabled:opacity-50"
+                                             >
+                                                  {phoneSending ? '발송중' : phoneVerified ? '완료' : '인증'}
+                                             </button>
+                                        </div>
+                                        {phoneUserId && !phoneVerified && (
+                                             <div className="mt-2 flex gap-2">
+                                                  <input
+                                                       type="text"
+                                                       inputMode="numeric"
+                                                       placeholder="인증번호 6자리"
+                                                       value={phoneCode}
+                                                       onChange={(e) => setPhoneCode(e.target.value)}
+                                                       className="flex-1 rounded-xl border border-surface-border bg-white px-3 py-3 text-sm transition-all focus:border-brand-gold/50 focus:outline-none focus:ring-2 focus:ring-brand-gold/15"
+                                                  />
+                                                  <button
+                                                       type="button"
+                                                       onClick={handleVerifyPhoneCode}
+                                                       disabled={phoneVerifying}
+                                                       className="rounded-xl border border-brand-gold/30 bg-white px-3 text-xs font-black text-brand-accent transition-all hover:bg-brand-light disabled:opacity-50"
+                                                  >
+                                                       {phoneVerifying ? '확인중' : '확인'}
+                                                  </button>
+                                             </div>
+                                        )}
+                                        {phoneVerified && (
+                                             <p className="mt-2 flex items-center gap-1 text-[11px] font-black text-green-600">
+                                                  <ShieldCheck className="h-3.5 w-3.5" />
+                                                  휴대폰 인증 완료
+                                             </p>
+                                        )}
                                    </div>
 
                                    {/* Gender Selection */}
@@ -409,6 +523,10 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                    setEmail('');
                                    setPassword('');
                                    setUsername('');
+                                   setPhone('');
+                                   setPhoneCode('');
+                                   setPhoneUserId('');
+                                   setPhoneVerified(false);
                                    setAgreedToTerms(false);
                               }}
                               onPointerDown={(e) => {

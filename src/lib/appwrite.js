@@ -62,6 +62,7 @@ export const COLLECTIONS = {
 };
 export const BUCKET_ID = 'post-images';
 export const ECONOMY_FUNCTION_ID = 'economy';
+export const SITE_ID = import.meta.env.VITE_ONTOWN_SITE_ID || 'gangnam';
 
 // page_views 컬렉션에서 "미니홈피 방문"이 아니라 "사이트 전체 방문"을 기록할 때 사용하는
 // 고정 hostId 값입니다. 실제 사용자 ID와 겹치지 않도록 예약된 값입니다.
@@ -120,6 +121,40 @@ export async function callEconomy(payload) {
           return { success: true, ...result };
      } catch (error) {
           console.error('economy function 호출 실패:', error);
+          return {
+               success: false,
+               message: error.message || '서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.',
+          };
+     }
+}
+
+export async function completePhoneSignup(payload) {
+     try {
+          const execution = await rawFunctions.createExecution(
+               ECONOMY_FUNCTION_ID,
+               JSON.stringify({ action: 'complete_phone_signup', siteId: SITE_ID, ...payload }),
+               false,
+               '/',
+               ExecutionMethod.POST
+          );
+
+          let result = {};
+          try {
+               result = JSON.parse(execution.responseBody || '{}');
+          } catch {
+               result = {};
+          }
+
+          if (execution.responseStatusCode >= 400 || result.success === false) {
+               return {
+                    success: false,
+                    message: result.message || '가입 처리 중 오류가 발생했습니다.',
+               };
+          }
+
+          return { success: true, ...result };
+     } catch (error) {
+          console.error('휴대폰 인증 가입 완료 실패:', error);
           return {
                success: false,
                message: error.message || '서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.',

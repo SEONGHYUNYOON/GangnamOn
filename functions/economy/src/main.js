@@ -1,4 +1,5 @@
-import { Client, Account, Databases, ID, Permission, Role, Query } from 'node-appwrite';
+import crypto from 'node:crypto';
+import { Client, Account, Databases, Users, ID, Permission, Role, Query } from 'node-appwrite';
 import { handlePushNotification } from './pushNotification.js';
 
 // ────────────────────────────────────────────────────────────────
@@ -22,6 +23,7 @@ const CHAT_PARTICIPANTS = 'chat_participants';
 const CHAT_MESSAGES = 'chat_messages';
 const POST_LIKES = 'post_likes';
 const BEAN_TRANSACTIONS = 'bean_transactions';
+const DEFAULT_SITE_ID = 'gangnam';
 
 // 재화가 오갈 때마다 bean_transactions에 한 줄 남깁니다. amount는 양수면 발급(적립),
 // 음수면 소모(사용)입니다. 관리자 대시보드의 "발급된 재화/소모된 재화" 통계가 이 내역을
@@ -100,6 +102,118 @@ function profileUpdateData(profile, userId, fields) {
      return data;
 }
 
+function normalizeKoreanPhone(value = '') {
+     const trimmed = String(value).trim();
+     if (!trimmed) return '';
+     if (trimmed.startsWith('+')) return trimmed.replace(/[^\d+]/g, '');
+
+     const digits = trimmed.replace(/\D/g, '');
+     if (digits.startsWith('82')) return `+${digits}`;
+     if (digits.startsWith('0')) return `+82${digits.slice(1)}`;
+     return `+82${digits}`;
+}
+
+function hashPhone(phone) {
+     const secret = process.env.PHONE_HASH_SECRET
+          || process.env.APPWRITE_FUNCTION_PROJECT_ID
+          || 'gangnam-on-phone-hash';
+     return crypto.createHmac('sha256', secret).update(phone).digest('hex');
+}
+
+function isValidEmail(email = '') {
+     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
+}
+
+async function completePhoneSignup({ payload, userId, users, databases, res }) {
+     const email = String(payload.email || '').trim().toLowerCase();
+     const password = String(payload.password || '');
+     const username = String(payload.username || '').trim();
+     const location = String(payload.location || '').trim();
+     const gender = String(payload.gender || '').trim();
+     const avatarUrl = String(payload.avatarUrl || '').trim();
+     const siteId = String(payload.siteId || DEFAULT_SITE_ID).trim().toLowerCase();
+     const normalizedPhone = normalizeKoreanPhone(payload.phone);
+
+     if (!isValidEmail(email)) {
+          return res.json({ success: false, message: '이메일 주소를 정확히 입력해주세요.' }, 400);
+     }
+     if (password.length < 8) {
+          return res.json({ success: false, message: '비밀번호는 8자 이상이어야 합니다.' }, 400);
+     }
+     if (!username || username.length > 64) {
+          return res.json({ success: false, message: '닉네임을 1~64자로 입력해주세요.' }, 400);
+     }
+     if (!location) {
+          return res.json({ success: false, message: '지역을 선택해주세요.' }, 400);
+     }
+     if (!['male', 'female'].includes(gender)) {
+          return res.json({ success: false, message: '성별을 선택해주세요.' }, 400);
+     }
+     if (!normalizedPhone) {
+          return res.json({ success: false, message: '휴대폰 번호가 필요합니다.' }, 400);
+     }
+
+     const authUser = await users.get(userId);
+     const authPhone = normalizeKoreanPhone(authUser.phone || '');
+
+     if (!authUser.phoneVerification) {
+          return res.json({ success: false, message: '휴대폰 인증을 먼저 완료해주세요.' }, 403);
+     }
+     if (authPhone && authPhone !== normalizedPhone) {
+          return res.json({ success: false, message: '인증한 휴대폰 번호와 가입 번호가 다릅니다.' }, 400);
+     }
+
+     try {
+          await databases.getDocument(DATABASE_ID, PROFILES, userId);
+          return res.json({ success: false, message: '이미 가입이 완료된 계정입니다.' }, 409);
+     } catch (err) {
+          if (err.code !== 404) throw err;
+     }
+
+     const phoneHash = hashPhone(normalizedPhone);
+     const existing = await databases.listDocuments(DATABASE_ID, PROFILES, [
+          Query.equal('siteId', siteId),
+          Query.equal('phoneHash', phoneHash),
+          Query.limit(1),
+     ]);
+
+     if ((existing.total || 0) > 0) {
+          return res.json({
+               success: false,
+               message: '이미 이 휴대폰 번호로 강남ON 계정이 생성되어 있습니다. 같은 지역에서는 휴대폰 번호당 1개 계정만 만들 수 있습니다.',
+          }, 409);
+     }
+
+     await users.updateEmail(userId, email);
+     await users.updatePassword(userId, password);
+     await users.updateName(userId, username);
+
+     await databases.createDocument(
+          DATABASE_ID,
+          PROFILES,
+          userId,
+          {
+               username,
+               fullName: username,
+               avatarUrl,
+               location,
+               gender,
+               beans: 1250,
+               unlockedStyles: ['lorelei', 'avataaars'],
+               phoneHash,
+               siteId,
+               phoneVerifiedAt: new Date().toISOString(),
+          },
+          [
+               Permission.read(Role.any()),
+               Permission.update(Role.user(userId)),
+               Permission.delete(Role.user(userId)),
+          ],
+     );
+
+     return res.json({ success: true, userId, username, siteId });
+}
+
 export default async ({ req, res, log, error }) => {
      let eventPayload = {};
      try {
@@ -147,8 +261,13 @@ export default async ({ req, res, log, error }) => {
           .setKey(apiKey);
 
      const databases = new Databases(client);
+     const users = new Users(client);
 
      try {
+          if (payload.action === 'complete_phone_signup') {
+               return completePhoneSignup({ payload, userId, users, databases, res });
+          }
+
           const profile = await databases.getDocument(DATABASE_ID, PROFILES, userId);
           const currentBeans = profile.beans ?? 0;
 

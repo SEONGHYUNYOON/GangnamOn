@@ -25,7 +25,9 @@
                 "databases.read",
                 "databases.write",
                 "documents.read",
-                "documents.write"
+                "documents.write",
+                "users.read",
+                "users.write"
             ],
             "path": "functions/economy"
         },
@@ -224,6 +226,25 @@
                     "type": "boolean",
                     "required": false,
                     "default": false
+                },
+                {
+                    "key": "phoneHash",
+                    "type": "string",
+                    "size": 128,
+                    "required": false
+                },
+                {
+                    "key": "siteId",
+                    "type": "string",
+                    "size": 32,
+                    "required": false,
+                    "default": "gangnam"
+                },
+                {
+                    "key": "phoneVerifiedAt",
+                    "type": "string",
+                    "size": 64,
+                    "required": false
                 }
             ],
             "indexes": [
@@ -232,6 +253,14 @@
                     "type": "unique",
                     "attributes": [
                         "username"
+                    ]
+                },
+                {
+                    "key": "phone_site_unique",
+                    "type": "unique",
+                    "attributes": [
+                        "phoneHash",
+                        "siteId"
                     ]
                 }
             ]
