@@ -59,6 +59,7 @@ export const COLLECTIONS = {
      pushSubscriptions: 'push_subscriptions',
      postLikes: 'post_likes',
      beanTransactions: 'bean_transactions',
+     schools: 'schools',
 };
 export const BUCKET_ID = 'post-images';
 export const ECONOMY_FUNCTION_ID = 'economy';

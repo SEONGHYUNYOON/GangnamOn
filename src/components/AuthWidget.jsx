@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, ChevronRight, User, MapPin, Smile } from 'lucide-react';
 import { account, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Role, OAuthProvider } from '../lib/appwrite';
 import { getDefaultAvatarUrl } from '../lib/avatar';
+import { GANGNAM_REGIONS } from '../lib/region';
 import TermsAndPrivacyModal from './TermsAndPrivacyModal';
 
 const AuthWidget = ({ onLoginSuccess }) => {
@@ -20,23 +21,6 @@ const AuthWidget = ({ onLoginSuccess }) => {
      const duplicateEmailMessage = '이미 가입된 이메일 주소 입니다.';
 
      // 강남권 동 단위 (지역 선택)
-     const gangnamRegions = [
-          '역삼1동',
-          '역삼2동',
-          '삼성동',
-          '논현1동',
-          '논현2동',
-          '신사동',
-          '청담동',
-          '압구정동',
-          '서초동',
-          '방배동',
-          '사평동',
-          '잠원동',
-          '개포동',
-          '세곡동'
-          ];
-
      const getOAuthRedirectUrl = (status) => {
           const redirectUrl = new URL(window.location.href);
           redirectUrl.search = '';
@@ -299,7 +283,7 @@ const AuthWidget = ({ onLoginSuccess }) => {
                                              required
                                         >
                                              <option value="" disabled>지역 선택</option>
-                                             {gangnamRegions.map((r) => (
+                                             {GANGNAM_REGIONS.map((r) => (
                                                   <option key={r} value={r}>{r}</option>
                                              ))}
                                         </select>

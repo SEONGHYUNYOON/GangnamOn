@@ -489,6 +489,71 @@
             ]
         },
         {
+            "$id": "schools",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "schools",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "schoolName",
+                    "type": "string",
+                    "size": 100,
+                    "required": true
+                },
+                {
+                    "key": "graduationYear",
+                    "type": "integer",
+                    "required": true
+                },
+                {
+                    "key": "description",
+                    "type": "string",
+                    "size": 500,
+                    "required": false
+                },
+                {
+                    "key": "creatorId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "roomId",
+                    "type": "string",
+                    "size": 64,
+                    "required": true
+                },
+                {
+                    "key": "memberCount",
+                    "type": "integer",
+                    "required": false,
+                    "default": 1
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "size": 24,
+                    "required": false,
+                    "default": "active"
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "school_year_unique",
+                    "type": "unique",
+                    "attributes": [
+                        "schoolName",
+                        "graduationYear"
+                    ]
+                }
+            ]
+        },
+        {
             "$id": "chat_rooms",
             "$permissions": [
                 "read(\"users\")",

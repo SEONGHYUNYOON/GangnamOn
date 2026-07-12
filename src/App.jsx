@@ -1029,7 +1029,7 @@ function App() {
                                                        </div>
                                                   </section>
                                                   <Suspense fallback={<SectionSkeleton label="동창 찾기" />}>
-                                                       <ILoveSchool />
+                                                       <ILoveSchool user={user} />
                                                   </Suspense>
                                                   <Suspense fallback={<SectionSkeleton label="밥친구" />}>
                                                        <DiningCompanion onCreate={() => { setCreateModalCategory('lunch_networking'); setIsCreateModalOpen(true); }} />
@@ -1221,7 +1221,7 @@ function App() {
 
                                         {/* 4. SCHOOL TAB */}
                                         {(['school_find', 'friend_find'].includes(activeTab)) && (
-                                             <ILoveSchool />
+                                             <ILoveSchool user={user} />
                                         )}
 
                                         {/* 5. CULTURE TAB (NEW) */}
@@ -1301,7 +1301,7 @@ function App() {
                                                        <div className="mt-5 rounded-2xl bg-brand-light p-4">
                                                             <p className="text-sm font-black text-brand-ink">승급 점수는 이렇게 쌓입니다</p>
                                                             <p className="mt-2 text-xs font-semibold leading-6 text-slate-600">
-                                                                 게시글 작성 +12점, 중고거래 등록 +12점, 모임 개설 +12점, 댓글/방명록 활동 +2점, 미니홈피 일상 업로드 +8점 기준으로 운영됩니다. 반복성 홍보나 신고 누적 활동은 승급 점수에서 제외될 수 있습니다.
+                                                                 게시글 작성 +12점, 중고거래 등록 +12점, 모임 개설 +12점, 댓글/방명록 활동 +2점, 미니홈피 사진 업로드 +8점 기준으로 운영됩니다. 반복성 홍보나 신고 누적 활동은 승급 점수에서 제외될 수 있습니다.
                                                             </p>
                                                        </div>
                                                   </div>

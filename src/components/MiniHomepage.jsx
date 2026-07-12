@@ -3,6 +3,7 @@ import { account, client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permis
 import { uploadProfileAvatar, uploadPostImage } from '../lib/imageUpload';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
+import { normalizeGangnamRegion } from '../lib/region';
 import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Send, Settings, ShoppingBag, Sparkles, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
@@ -52,7 +53,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
 
      const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
      const displayName = profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '강남 이웃';
-     const displayLocation = profileData?.location || user?.user_metadata?.location || '강남';
+     const displayLocation = normalizeGangnamRegion(profileData?.location || user?.user_metadata?.location || '강남');
      const avatarUrl = resolveAvatarUrl({
           avatarUrl: profileData?.avatarUrl || user?.user_metadata?.avatar_url,
           gender: profileData?.gender || user?.user_metadata?.gender,
@@ -308,7 +309,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const handleSaveProfile = async () => {
           if (!isOwner) return;
           const cleanProfile = {
-               location: (editForm.location || displayLocation || '강남').slice(0, 64),
+               location: normalizeGangnamRegion(editForm.location || displayLocation || '강남').slice(0, 64),
                mbti: (editForm.mbti || '').slice(0, 8),
                job: (editForm.job || '').slice(0, 80),
                statusMessage: (editForm.bio || '').slice(0, 500),
@@ -421,7 +422,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           setPhotoUploading(true);
           try {
                const imageUrl = await uploadPostImage(file);
-               const caption = photoCaption.trim() || '오늘의 일상';
+               const caption = photoCaption.trim() || '사진첩에 새 사진을 올렸어요.';
                await databases.createDocument({
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.posts,
@@ -459,7 +460,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                });
                setHomePosts(res.documents);
           } catch (error) {
-               console.error('일상 사진 업로드 실패:', error);
+               console.error('사진첩 업로드 실패:', error);
                alert('사진 업로드에 실패했습니다.');
           } finally {
                setPhotoUploading(false);
@@ -474,9 +475,25 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                return;
           }
 
+          if ((miniSettings.bgmPlaylistIds || []).includes(videoId)) {
+               alert('이미 BGM 목록에 추가된 영상입니다.');
+               return;
+          }
+
+          let youtubeTitle = '';
+          try {
+               const response = await fetch(`/api/youtube-title?url=${encodeURIComponent(bgmDraft.bgmUrl.trim())}`);
+               if (response.ok) {
+                    const payload = await response.json();
+                    youtubeTitle = payload.title || '';
+               }
+          } catch (error) {
+               console.warn('YouTube 제목 조회 실패:', error);
+          }
+
           const nextItem = {
                bgmUrl: bgmDraft.bgmUrl.trim(),
-               bgmTitle: bgmDraft.bgmTitle.trim() || '나의 미니홈피 BGM',
+               bgmTitle: youtubeTitle || `YouTube BGM ${videoId}`,
                bgmVideoId: videoId,
           };
           const next = {
@@ -501,6 +518,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                alert('BGM 저장에 실패했습니다.');
                return;
           }
+          setBgmDraft({ bgmUrl: '', bgmTitle: '' });
           setIsBgmOpen(false);
      };
 
@@ -660,8 +678,11 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
 
                               <div className="mt-4">
                                    <h2 className="text-2xl font-black tracking-tight text-brand-ink">{displayName}</h2>
-                                   <p className="mt-1 text-sm font-bold text-slate-500">{displayLocation} · {profileData?.mbti || 'MBTI 미설정'}</p>
-                                   {profileData?.job && <p className="mt-1 text-xs font-bold text-amber-700">{profileData.job}</p>}
+                                   <dl className="mt-2 grid gap-1 text-sm font-bold text-slate-600">
+                                        <div className="flex gap-1.5"><dt className="text-slate-400">사는 곳:</dt><dd>{displayLocation}</dd></div>
+                                        <div className="flex gap-1.5"><dt className="text-slate-400">MBTI:</dt><dd>{profileData?.mbti || '모름'}</dd></div>
+                                        <div className="flex gap-1.5"><dt className="text-slate-400">직업:</dt><dd>{profileData?.job || '미설정'}</dd></div>
+                                   </dl>
                                    <p className="mt-2 inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-black text-amber-800">{rank.badge} {rank.title}</p>
                                    <p className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-600">{statusMessage}</p>
                               </div>
@@ -677,7 +698,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                    </div>
                                    <div className="rounded-2xl bg-rose-50 p-3">
                                         <p className="text-lg font-black text-rose-800">{homePosts.length}</p>
-                                        <p className="text-[10px] font-bold text-rose-500">일상</p>
+                                        <p className="text-[10px] font-bold text-rose-500">사진첩</p>
                                    </div>
                               </div>
 
@@ -723,12 +744,6 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                   <Youtube className="h-4 w-4 text-red-500" />
                                                   유튜브 링크를 음악만 재생되는 BGM으로 연결합니다.
                                              </div>
-                                             <input
-                                                  value={bgmDraft.bgmTitle}
-                                                  onChange={(event) => setBgmDraft(prev => ({ ...prev, bgmTitle: event.target.value }))}
-                                                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
-                                                  placeholder="BGM 제목"
-                                             />
                                              <div className="flex gap-2">
                                                   <div className="relative min-w-0 flex-1">
                                                        <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
@@ -822,9 +837,9 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                   ) : (
                                                        <>
                                                             <div className="flex flex-wrap gap-2">
-                                                                 <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-sky-700">📍 {displayLocation}</span>
-                                                                 {profileData?.mbti && <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-violet-700">🧠 {profileData.mbti}</span>}
-                                                                 {profileData?.job && <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-amber-700">💼 {profileData.job}</span>}
+                                                                 <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-sky-700">사는 곳: {displayLocation}</span>
+                                                                 <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-violet-700">MBTI: {profileData?.mbti || '모름'}</span>
+                                                                 <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-amber-700">직업: {profileData?.job || '미설정'}</span>
                                                                  <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-emerald-700">{rank.badge} {rank.title}</span>
                                                             </div>
                                                             <p className="mt-4 text-base font-semibold leading-8 text-slate-700">{statusMessage}</p>
@@ -835,8 +850,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                              <section className="animate-in fade-in slide-in-from-bottom-1 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
                                                   <div className="mb-3 flex items-center justify-between gap-3">
                                                        <div>
-                                                            <p className="text-xs font-black text-rose-600">Daily Feed</p>
-                                                            <h3 className="text-lg font-black text-brand-ink">일상 사진</h3>
+                                                            <p className="text-xs font-black text-rose-600">Photo Album</p>
+                                                            <h3 className="text-lg font-black text-brand-ink">사진첩</h3>
                                                        </div>
                                                        {isOwner && (
                                                             <button
@@ -859,7 +874,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                             <textarea
                                                                  value={photoCaption}
                                                                  onChange={(event) => setPhotoCaption(event.target.value)}
-                                                                 placeholder="오늘의 일상을 한 줄로 남겨보세요 (선택)"
+                                                                 placeholder="사진에 대한 이야기를 남겨보세요 (선택)"
                                                                  className="mb-2 min-h-16 w-full resize-none rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-100"
                                                                  maxLength={120}
                                                             />
@@ -882,7 +897,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 py-10 text-center">
                                                             <ImagePlus className="mx-auto mb-2 h-8 w-8 text-slate-300" />
                                                             <p className="text-sm font-bold text-slate-500">
-                                                                 {isOwner ? '첫 일상 사진을 올려 나를 어필해보세요!' : '아직 올라온 일상 사진이 없어요.'}
+                                                                 {isOwner ? '첫 사진을 올려 나를 어필해보세요!' : '아직 사진첩에 등록된 사진이 없어요.'}
                                                             </p>
                                                        </div>
                                                   ) : (
@@ -900,11 +915,11 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                                       </div>
                                                                       {post.imageUrls?.[0] && (
                                                                            <div className="flex max-h-[560px] min-h-[280px] items-center justify-center bg-slate-50">
-                                                                                <img src={post.imageUrls[0]} alt={post.title || '일상 사진'} className="max-h-[560px] w-full object-contain" />
+                                                                                <img src={post.imageUrls[0]} alt={post.title || '사진첩 사진'} className="max-h-[560px] w-full object-contain" />
                                                                            </div>
                                                                       )}
                                                                       <div className="p-3">
-                                                                           <p className="text-sm font-bold text-slate-700">{post.content || post.title || '오늘의 일상'}</p>
+                                                                           <p className="text-sm font-bold text-slate-700">{post.content || post.title || '사진첩에 새 사진을 올렸어요.'}</p>
                                                                       </div>
                                                                  </article>
                                                             ))}

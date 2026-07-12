@@ -107,7 +107,9 @@ const fetchSource = async ({ label, url }) => {
 
 export default async function handler(req, res) {
      res.setHeader('Access-Control-Allow-Origin', '*');
-     res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
+     // 강남구청의 공식 목록을 매일 한 번만 새로 읽습니다. Vercel Cron이 매일 아침
+     // 이 엔드포인트를 호출해 캐시를 갱신하고, 사용자는 같은 검증된 목록을 봅니다.
+     res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=3600');
 
      const results = await Promise.allSettled(SOURCES.map(fetchSource));
      const succeeded = results.filter((r) => r.status === 'fulfilled');

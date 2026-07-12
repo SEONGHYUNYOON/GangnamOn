@@ -166,7 +166,7 @@ const GangnamRomance = ({ beanCount, onHeartClick, onOpenRewardCenter, user }) =
                image: 'https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?auto=format&fit=crop&q=80&w=600&h=800'
           },
           {
-               id: 12, name: '개발자킴', age: 30, gender: 'male', location: '역삼1동', mbti: 'INTP', job: '개발자', tags: ['#코딩', '#얼리어답터', '#게임'],
+               id: 12, name: '개발자킴', age: 30, gender: 'male', location: '역삼동', mbti: 'INTP', job: '개발자', tags: ['#코딩', '#얼리어답터', '#게임'],
                image: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&q=80&w=600&h=800'
           }
      ];
