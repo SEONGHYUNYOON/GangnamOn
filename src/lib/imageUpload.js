@@ -125,3 +125,31 @@ export const uploadPostImage = async (file, maxSize = 1200) => {
 
      return getFileUrl(uploaded.$id);
 };
+
+const ALLOWED_VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'm4v'];
+export const MAX_VIDEO_SIZE = 50 * 1000 * 1000; // 버킷 maximumFileSize와 동일
+
+// Appwrite view URL에는 확장자가 없어 이미지/동영상을 구분할 수 없으므로
+// 동영상 URL에는 mediaType=video 쿼리를 붙여 렌더링 시점에 <video>로 분기합니다.
+export const isVideoUrl = (url = '') => url.includes('mediaType=video');
+
+export const uploadPostVideo = async (file) => {
+     if (!file) throw new Error('동영상 파일이 필요합니다.');
+
+     const ext = (file.name || '').split('.').pop()?.toLowerCase();
+     if (!ext || !ALLOWED_VIDEO_EXTENSIONS.includes(ext)) {
+          throw new Error('지원하지 않는 동영상 형식이에요. mp4, webm, mov 파일로 다시 시도해주세요.');
+     }
+     if (file.size > MAX_VIDEO_SIZE) {
+          throw new Error('동영상은 50MB 이하만 업로드할 수 있어요.');
+     }
+
+     const uploaded = await storage.createFile({
+          bucketId: BUCKET_ID,
+          fileId: ID.unique(),
+          file,
+          permissions: [Permission.read(Role.any())],
+     });
+
+     return `${getFileUrl(uploaded.$id)}&mediaType=video`;
+};

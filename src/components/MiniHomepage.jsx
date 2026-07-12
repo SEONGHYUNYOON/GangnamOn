@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { account, client, databases, DATABASE_ID, COLLECTIONS, ID, Query, Permission, Role, callEconomy, AVATAR_STYLE_PRICES } from '../lib/appwrite';
-import { uploadProfileAvatar, uploadPostImage } from '../lib/imageUpload';
+import { uploadProfileAvatar, uploadPostImage, uploadPostVideo, isVideoUrl } from '../lib/imageUpload';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
 import { normalizeGangnamRegion } from '../lib/region';
@@ -451,19 +451,20 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           event.target.value = '';
           if (!file || !isOwner) return;
 
-          if (!file.type.startsWith('image/')) {
-               alert('이미지 파일만 등록할 수 있습니다.');
+          const isVideo = file.type.startsWith('video/');
+          if (!isVideo && !file.type.startsWith('image/')) {
+               alert('이미지 또는 동영상 파일만 등록할 수 있습니다.');
                return;
           }
-          if (file.size > 8 * 1024 * 1024) {
-               alert('파일 크기는 8MB 이하여야 합니다.');
+          if (!isVideo && file.size > 8 * 1024 * 1024) {
+               alert('사진은 8MB 이하여야 합니다.');
                return;
           }
 
           setPhotoUploading(true);
           try {
-               const imageUrl = await uploadPostImage(file);
-               const caption = photoCaption.trim() || '사진첩에 새 사진을 올렸어요.';
+               const imageUrl = isVideo ? await uploadPostVideo(file) : await uploadPostImage(file);
+               const caption = photoCaption.trim() || (isVideo ? '사진첩에 새 영상을 올렸어요.' : '사진첩에 새 사진을 올렸어요.');
                await databases.createDocument({
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.posts,
@@ -883,7 +884,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                               <div className="h-full overflow-y-auto overscroll-contain p-4 pb-8">
                                    {activePane === 'home' && (
                                         <div className="space-y-4">
-                                             <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
+                                             <input ref={photoInputRef} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" className="hidden" onChange={handlePhotoFile} />
 
                                              <section className="animate-in fade-in slide-in-from-bottom-1 rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
                                                   <div className="mb-4 flex items-center gap-2">
@@ -937,7 +938,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                             <textarea
                                                                  value={photoCaption}
                                                                  onChange={(event) => setPhotoCaption(event.target.value)}
-                                                                 placeholder="사진에 대한 이야기를 남겨보세요 (선택)"
+                                                                 placeholder="사진·영상에 대한 이야기를 남겨보세요 (선택)"
                                                                  className="mb-2 min-h-16 w-full resize-none rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-100"
                                                                  maxLength={120}
                                                             />
@@ -947,7 +948,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                                  onClick={() => photoInputRef.current?.click()}
                                                                  className="w-full rounded-lg bg-white py-2.5 text-xs font-black text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50 disabled:opacity-50"
                                                             >
-                                                                 {photoUploading ? '업로드 중...' : '갤러리에서 사진 선택'}
+                                                                 {photoUploading ? '업로드 중...' : '갤러리에서 사진·동영상 선택'}
                                                             </button>
                                                        </div>
                                                   )}
@@ -988,7 +989,17 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                                       </div>
                                                                       {post.imageUrls?.[0] && (
                                                                            <div className="flex max-h-[560px] min-h-[280px] items-center justify-center bg-slate-50">
-                                                                                <img src={post.imageUrls[0]} alt={post.title || '사진첩 사진'} className="max-h-[560px] w-full object-contain" />
+                                                                                {isVideoUrl(post.imageUrls[0]) ? (
+                                                                                     <video
+                                                                                          src={post.imageUrls[0]}
+                                                                                          controls
+                                                                                          playsInline
+                                                                                          preload="metadata"
+                                                                                          className="max-h-[560px] w-full bg-black object-contain"
+                                                                                     />
+                                                                                ) : (
+                                                                                     <img src={post.imageUrls[0]} alt={post.title || '사진첩 사진'} className="max-h-[560px] w-full object-contain" />
+                                                                                )}
                                                                            </div>
                                                                       )}
                                                                       <div className="border-t border-slate-100 p-3">
