@@ -4,7 +4,7 @@ import { uploadProfileAvatar, uploadPostImage } from '../lib/imageUpload';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
 import { normalizeGangnamRegion } from '../lib/region';
-import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Pause, Play, Plus, Send, Settings, ShoppingBag, Sparkles, UserPlus, UserRound, X, Youtube } from 'lucide-react';
+import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Pause, Play, Plus, Send, Settings, ShoppingBag, Sparkles, Trash2, UserPlus, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
 const getMinihomeProfileKey = (user) => `gangnam:on:minihome-profile:${user?.id || user?.user_metadata?.username || 'guest'}`;
@@ -508,6 +508,22 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           }
      };
 
+     const handleDeletePhoto = async (post) => {
+          if (!isOwner || !post?.$id) return;
+          if (!window.confirm('이 사진을 삭제하시겠습니까?')) return;
+          try {
+               await databases.deleteDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.posts,
+                    documentId: post.$id,
+               });
+               setHomePosts(prev => prev.filter(item => item.$id !== post.$id));
+          } catch (error) {
+               console.error('사진 삭제 실패:', error);
+               alert('사진 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.');
+          }
+     };
+
      const handleSaveBgm = async () => {
           if (!isOwner) return;
           const videoId = extractYoutubeId(bgmDraft.bgmUrl);
@@ -941,22 +957,32 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                                   ) : (
                                                        // 인스타그램처럼 한 장씩 세로로 쌓아 보여줍니다. homePosts는 이미
                                                        // $createdAt 내림차순(orderDesc)으로 불러오므로 최신 사진이 항상 맨 위입니다.
-                                                       <div className="flex flex-col gap-4">
+                                                       <div className="flex flex-col gap-6">
                                                             {homePosts.map((post) => (
-                                                                 <article key={post.$id} className="overflow-hidden rounded-[22px] border border-slate-100 bg-white shadow-sm">
-                                                                      <div className="flex items-center gap-2 px-3 py-2.5">
+                                                                 <article key={post.$id} className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-md">
+                                                                      <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5">
                                                                            <img src={avatarUrl} alt={displayName} className="h-7 w-7 rounded-full object-cover" />
                                                                            <span className="text-xs font-black text-slate-700">{displayName}</span>
                                                                            <span className="ml-auto text-[10px] font-bold text-slate-400">
                                                                                 {new Date(post.$createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                                            </span>
+                                                                           {isOwner && (
+                                                                                <button
+                                                                                     type="button"
+                                                                                     onClick={() => handleDeletePhoto(post)}
+                                                                                     className="rounded-full p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-500"
+                                                                                     title="사진 삭제"
+                                                                                >
+                                                                                     <Trash2 className="h-3.5 w-3.5" />
+                                                                                </button>
+                                                                           )}
                                                                       </div>
                                                                       {post.imageUrls?.[0] && (
                                                                            <div className="flex max-h-[560px] min-h-[280px] items-center justify-center bg-slate-50">
                                                                                 <img src={post.imageUrls[0]} alt={post.title || '사진첩 사진'} className="max-h-[560px] w-full object-contain" />
                                                                            </div>
                                                                       )}
-                                                                      <div className="p-3">
+                                                                      <div className="border-t border-slate-100 p-3">
                                                                            <p className="text-sm font-bold text-slate-700">{post.content || post.title || '사진첩에 새 사진을 올렸어요.'}</p>
                                                                       </div>
                                                                  </article>
