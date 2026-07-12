@@ -40,6 +40,7 @@ const DbPresentation = lazy(() => import('./components/DbPresentation'))
 const ResetPasswordModal = lazy(() => import('./components/ResetPasswordModal'))
 const MyMeetingSchedule = lazy(() => import('./components/MyMeetingSchedule'))
 const NoticeBoard = lazy(() => import('./components/NoticeBoard'))
+const GangnamMapFeed = lazy(() => import('./components/GangnamMapFeed'))
 
 // 가상 모임 게시물 (홈 + 비즈니스 네트워크 탭에 노출)
 const VIRTUAL_MEETING_ITEMS = [
@@ -1152,6 +1153,8 @@ function App() {
 
                                         {/* 3. LIFE TAB & COMMUNITY TAB */}
                                         {activeTab === 'notice' && <NoticeBoard />}
+
+                                        {activeTab === 'map_feed' && <GangnamMapFeed />}
 
                                         {activeTab === 'anonymous' && (
                                              <>

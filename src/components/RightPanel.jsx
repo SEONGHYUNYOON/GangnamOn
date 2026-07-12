@@ -23,6 +23,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      });
 
      // --- Real-time Weather State ---
+     const [congestion, setCongestion] = useState({ areas: [], loading: true });
      const [weather, setWeather] = useState({
           temp: null,
           humidity: null,
@@ -88,6 +89,25 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           { id: 2, name: '강남사랑꾼', hearts: 98, rank: 2, change: 'same' },
           { id: 3, name: '강남역여신', hearts: 85, rank: 3, change: 'down' },
      ];
+
+     useEffect(() => {
+          // 서울시 실시간 도시데이터 — 강남 주요 지점 혼잡도 (5분 서버 캐시)
+          const fetchCongestion = async () => {
+               try {
+                    const response = await fetch('/api/citydata');
+                    if (!response.ok) return; // 키 미설정(503) 등은 위젯을 숨긴다
+                    const data = await response.json();
+                    if (Array.isArray(data?.areas) && data.areas.length) {
+                         setCongestion({ areas: data.areas, loading: false });
+                    }
+               } catch {
+                    // 실패 시 위젯 미노출
+               }
+          };
+          fetchCongestion();
+          const congestionInterval = setInterval(fetchCongestion, 5 * 60 * 1000);
+          return () => clearInterval(congestionInterval);
+     }, []);
 
      useEffect(() => {
           // 기상청 초단기실황 (/api/weather 프록시) — 10분마다 갱신
@@ -637,6 +657,25 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                          )}
                          </div>
                     </a>
+
+                    {congestion.areas.length > 0 && (
+                         <div className="mb-3 rounded-xl border border-surface-border bg-surface-muted p-3">
+                              <div className="mb-2 flex items-center justify-between">
+                                   <span className="text-[11px] font-black uppercase tracking-wider text-brand-accent">지금 강남</span>
+                                   <span className="text-[10px] font-bold text-slate-400">서울시 실시간 인구</span>
+                              </div>
+                              <div className="grid grid-cols-3 gap-1.5">
+                                   {congestion.areas.map((spot) => (
+                                        <div key={spot.area} className="rounded-lg bg-white px-2 py-2 text-center" title={spot.congestMessage}>
+                                             <p className="truncate text-[10px] font-bold text-slate-500">{spot.area}</p>
+                                             <p className="mt-0.5 text-[11px] font-black text-slate-700">
+                                                  {spot.congestEmoji} {spot.congestLevel}
+                                             </p>
+                                        </div>
+                                   ))}
+                              </div>
+                         </div>
+                    )}
 
                     <GangnamTraffic embedded />
                </section>

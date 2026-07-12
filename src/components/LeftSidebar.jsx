@@ -45,6 +45,7 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                tag: '소통 공간',
                subtitle: '우리끼리 속닥속닥',
                items: [
+                    { id: 'map_feed', label: '동네지도', icon: MapPin, subtext: '지도로 보는 우리동네' },
                     { id: 'town_story', label: '타운 스토리', icon: MessageCircle, subtext: '일상/잡담' },
                     { id: 'daily_photo', label: '데일리 포토', icon: Camera, subtext: '사진 갤러리' },
                     { id: 'anonymous', label: '익명 게시판', icon: EyeOff, subtext: '속마음 털어놓기' },
