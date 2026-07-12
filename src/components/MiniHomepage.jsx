@@ -710,9 +710,18 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                     onWheel={(event) => event.stopPropagation()}
                >
                     <div className="relative flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-slate-100 bg-white/95 px-5 py-2 backdrop-blur">
-                         <div className="min-w-0">
-                              <p className="truncate text-sm font-black text-brand-ink">{displayName}님의 미니홈피</p>
-                              <p className="text-[11px] font-bold text-slate-400">TODAY {todayCount} | TOTAL {totalCount.toLocaleString()}</p>
+                         <div className="flex min-w-0 items-center gap-2.5">
+                              <img src={avatarUrl} alt={displayName} className="h-9 w-9 shrink-0 rounded-full border border-slate-200 bg-slate-50 object-cover" />
+                              <div className="min-w-0">
+                                   <p className="truncate text-sm leading-5">
+                                        <span className="font-black text-brand-ink">{displayName}</span>
+                                        <span className="font-bold text-slate-400">님의 미니홈피</span>
+                                   </p>
+                                   <div className="mt-0.5 flex items-center gap-1">
+                                        <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-sky-600">TODAY {todayCount}</span>
+                                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-slate-500">TOTAL {totalCount.toLocaleString()}</span>
+                                   </div>
+                              </div>
                          </div>
                          <div className="ml-auto flex min-w-0 max-w-[280px] items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-1 sm:max-w-[360px] sm:gap-2 sm:px-2">
                               <Music2 className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
