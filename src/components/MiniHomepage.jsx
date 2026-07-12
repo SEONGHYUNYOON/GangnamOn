@@ -666,7 +666,16 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                          </div>
                          <div className="ml-auto flex min-w-0 max-w-[280px] items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-1 sm:max-w-[360px] sm:gap-2 sm:px-2">
                               <Music2 className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
-                              <span className="hidden truncate text-[11px] font-black text-slate-600 md:block">{bgmIds.length ? bgmTitles[0] : 'BGM 없음'}</span>
+                              <div className="relative w-24 min-w-0 overflow-hidden sm:w-40">
+                                   {bgmIds.length > 0 ? (
+                                        <div className="flex w-max animate-marquee whitespace-nowrap [animation-duration:12s]">
+                                             <span className="pr-10 text-[11px] font-black text-slate-600">♪ {bgmTitles[0] || 'BGM'}</span>
+                                             <span className="pr-10 text-[11px] font-black text-slate-600">♪ {bgmTitles[0] || 'BGM'}</span>
+                                        </div>
+                                   ) : (
+                                        <span className="text-[11px] font-black text-slate-400">BGM 없음</span>
+                                   )}
+                              </div>
                               {bgmIds.length > 0 && (
                                    <button type="button" onClick={() => setIsBgmPlaying((playing) => !playing)} className="shrink-0 rounded-full p-1.5 text-slate-600 hover:bg-white" title={isBgmPlaying ? 'BGM 일시정지' : 'BGM 재생'}>
                                         {isBgmPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
