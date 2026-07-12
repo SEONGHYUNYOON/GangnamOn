@@ -4,7 +4,7 @@ import { uploadProfileAvatar, uploadPostImage, uploadPostVideo, isVideoUrl } fro
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
 import { normalizeGangnamRegion } from '../lib/region';
-import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Pause, Play, Plus, Send, Settings, ShoppingBag, Sparkles, Trash2, UserPlus, UserRound, X, Youtube } from 'lucide-react';
+import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Pause, Play, Plus, Search, Send, Settings, ShoppingBag, Sparkles, Trash2, UserPlus, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
 const getMinihomeProfileKey = (user) => `gangnam:on:minihome-profile:${user?.id || user?.user_metadata?.username || 'guest'}`;
@@ -71,6 +71,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const [isBgmPlaying, setIsBgmPlaying] = useState(true);
      const [miniSettings, setMiniSettings] = useState(() => getInitialBgmSettings(user));
      const [bgmDraft, setBgmDraft] = useState({ bgmUrl: '', bgmTitle: '' });
+     const [bgmSearch, setBgmSearch] = useState({ query: '', results: [], loading: false, error: '' });
      const [editForm, setEditForm] = useState({ location: '', mbti: '', job: '', bio: '' });
      const [todayCount, setTodayCount] = useState(0);
      const [totalCount, setTotalCount] = useState(0);
@@ -525,16 +526,50 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           }
      };
 
+     // 링크 붙여넣기와 유튜브 검색 두 경로가 같은 저장 로직을 쓴다.
+     const addBgmEntry = async ({ videoId, url, title }) => {
+          if (!isOwner || !videoId) return false;
+          if ((miniSettings.bgmPlaylistIds || []).includes(videoId)) {
+               alert('이미 BGM 목록에 추가된 곡입니다.');
+               return false;
+          }
+
+          const bgmUrl = (url || `https://www.youtube.com/watch?v=${videoId}`).trim();
+          const nextItem = {
+               bgmUrl,
+               bgmTitle: title || `YouTube BGM ${videoId}`,
+               bgmVideoId: videoId,
+          };
+          const next = {
+               ...nextItem,
+               bgmPlaylistUrls: [...(miniSettings.bgmPlaylistUrls || []), bgmUrl],
+               bgmPlaylistTitles: [...(miniSettings.bgmPlaylistTitles || []), nextItem.bgmTitle],
+               bgmPlaylistIds: [...(miniSettings.bgmPlaylistIds || []), videoId],
+          };
+
+          setMiniSettings(next);
+          window.localStorage.setItem(getMinihomeStorageKey(user), JSON.stringify(next));
+          try {
+               await databases.updateDocument({
+                    databaseId: DATABASE_ID,
+                    collectionId: COLLECTIONS.profiles,
+                    documentId: user.id,
+                    data: next,
+               });
+               setProfileData(prev => ({ ...prev, ...next }));
+               return true;
+          } catch (error) {
+               console.error('BGM 저장 실패:', error);
+               alert('BGM 저장에 실패했습니다.');
+               return false;
+          }
+     };
+
      const handleSaveBgm = async () => {
           if (!isOwner) return;
           const videoId = extractYoutubeId(bgmDraft.bgmUrl);
-          if (bgmDraft.bgmUrl.trim() && !videoId) {
+          if (!videoId) {
                alert('유튜브 링크 또는 영상 ID를 확인해주세요.');
-               return;
-          }
-
-          if ((miniSettings.bgmPlaylistIds || []).includes(videoId)) {
-               alert('이미 BGM 목록에 추가된 영상입니다.');
                return;
           }
 
@@ -549,35 +584,23 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                console.warn('YouTube 제목 조회 실패:', error);
           }
 
-          const nextItem = {
-               bgmUrl: bgmDraft.bgmUrl.trim(),
-               bgmTitle: youtubeTitle || `YouTube BGM ${videoId}`,
-               bgmVideoId: videoId,
-          };
-          const next = {
-               ...nextItem,
-               bgmPlaylistUrls: videoId ? [...(miniSettings.bgmPlaylistUrls || []), nextItem.bgmUrl] : [],
-               bgmPlaylistTitles: videoId ? [...(miniSettings.bgmPlaylistTitles || []), nextItem.bgmTitle] : [],
-               bgmPlaylistIds: videoId ? [...(miniSettings.bgmPlaylistIds || []), videoId] : [],
-          };
+          const added = await addBgmEntry({ videoId, url: bgmDraft.bgmUrl, title: youtubeTitle });
+          if (added) setBgmDraft({ bgmUrl: '', bgmTitle: '' });
+     };
 
-          setMiniSettings(next);
-          window.localStorage.setItem(getMinihomeStorageKey(user), JSON.stringify(next));
+     const handleBgmSearch = async () => {
+          const query = bgmSearch.query.trim();
+          if (!query || bgmSearch.loading) return;
+          setBgmSearch(prev => ({ ...prev, loading: true, error: '' }));
           try {
-               await databases.updateDocument({
-                    databaseId: DATABASE_ID,
-                    collectionId: COLLECTIONS.profiles,
-                    documentId: user.id,
-                    data: next,
-               });
-               setProfileData(prev => ({ ...prev, ...next }));
+               const response = await fetch(`/api/youtube-search?q=${encodeURIComponent(query)}`);
+               const payload = await response.json();
+               if (!response.ok) throw new Error(payload.error || '검색 실패');
+               setBgmSearch(prev => ({ ...prev, results: payload.results || [], loading: false }));
           } catch (error) {
-               console.error('BGM 저장 실패:', error);
-               alert('BGM 저장에 실패했습니다.');
-               return;
+               console.warn('유튜브 검색 실패:', error);
+               setBgmSearch(prev => ({ ...prev, loading: false, error: '검색에 실패했어요. 잠시 후 다시 시도해주세요.' }));
           }
-          setBgmDraft({ bgmUrl: '', bgmTitle: '' });
-          setIsBgmOpen(false);
      };
 
      const removeBgmItem = async (index) => {
@@ -776,10 +799,57 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                    </div>
                                    <div className="mt-3 flex gap-2">
                                         <div className="relative min-w-0 flex-1">
-                                             <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
-                                             <input value={bgmDraft.bgmUrl} onChange={(event) => setBgmDraft((prev) => ({ ...prev, bgmUrl: event.target.value }))} className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-sky-100" placeholder="YouTube 링크" />
+                                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
+                                             <input
+                                                  value={bgmSearch.query}
+                                                  onChange={(event) => setBgmSearch((prev) => ({ ...prev, query: event.target.value }))}
+                                                  onKeyDown={(event) => event.key === 'Enter' && handleBgmSearch()}
+                                                  className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-sky-100"
+                                                  placeholder="곡 제목·가수로 유튜브 검색"
+                                             />
                                         </div>
-                                        <button type="button" onClick={handleSaveBgm} className="rounded-lg bg-brand px-3 py-2 text-xs font-black text-white">추가</button>
+                                        <button type="button" onClick={handleBgmSearch} disabled={bgmSearch.loading} className="rounded-lg bg-brand px-3 py-2 text-xs font-black text-white disabled:opacity-50">
+                                             {bgmSearch.loading ? <Loader2 className="h-4 w-4 animate-spin" /> : '검색'}
+                                        </button>
+                                   </div>
+
+                                   {bgmSearch.error && (
+                                        <p className="mt-2 text-[11px] font-bold text-rose-500">{bgmSearch.error}</p>
+                                   )}
+
+                                   {bgmSearch.results.length > 0 && (
+                                        <div className="mt-2 max-h-52 space-y-1 overflow-y-auto overscroll-contain rounded-xl border border-slate-100 bg-slate-50 p-1.5">
+                                             {bgmSearch.results.map((result) => {
+                                                  const added = bgmIds.includes(result.videoId);
+                                                  return (
+                                                       <div key={result.videoId} className="flex items-center gap-2 rounded-lg bg-white px-2 py-1.5">
+                                                            {result.thumbnail && (
+                                                                 <img src={result.thumbnail} alt="" className="h-8 w-11 shrink-0 rounded-md object-cover" />
+                                                            )}
+                                                            <div className="min-w-0 flex-1">
+                                                                 <p className="truncate text-[11px] font-black text-slate-700">{result.title}</p>
+                                                                 <p className="truncate text-[10px] font-bold text-slate-400">{result.channel}</p>
+                                                            </div>
+                                                            <button
+                                                                 type="button"
+                                                                 disabled={added}
+                                                                 onClick={() => addBgmEntry({ videoId: result.videoId, title: result.title })}
+                                                                 className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black ${added ? 'bg-emerald-50 text-emerald-600' : 'bg-brand text-white hover:bg-brand-dark'}`}
+                                                            >
+                                                                 {added ? '추가됨' : '+ 추가'}
+                                                            </button>
+                                                       </div>
+                                                  );
+                                             })}
+                                        </div>
+                                   )}
+
+                                   <div className="mt-3 flex gap-2 border-t border-slate-100 pt-3">
+                                        <div className="relative min-w-0 flex-1">
+                                             <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
+                                             <input value={bgmDraft.bgmUrl} onChange={(event) => setBgmDraft((prev) => ({ ...prev, bgmUrl: event.target.value }))} className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-sky-100" placeholder="또는 YouTube 링크 붙여넣기" />
+                                        </div>
+                                        <button type="button" onClick={handleSaveBgm} className="rounded-lg bg-slate-700 px-3 py-2 text-xs font-black text-white">추가</button>
                                    </div>
                                    {bgmIds.length > 0 && (
                                         <div className="mt-2 max-h-32 space-y-1 overflow-y-auto overscroll-contain">
