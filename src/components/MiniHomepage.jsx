@@ -28,6 +28,39 @@ const extractYoutubeId = (value = '') => {
      return /^[a-zA-Z0-9_-]{6,}$/.test(input) ? input : '';
 };
 
+// BGM은 DB 재조회를 기다리지 않고 첫 렌더에서 바로 재생을 시작해야 한다.
+// 1) 파도타기 등으로 전달받은 프로필 문서에 이미 BGM 필드가 있으면 그대로 사용
+// 2) 내 미니홈피라면 localStorage 캐시를 동기적으로 읽어 사용
+const getInitialBgmSettings = (user) => {
+     const fromProfile = {
+          bgmUrl: user?.bgmUrl || '',
+          bgmTitle: user?.bgmTitle || '',
+          bgmVideoId: user?.bgmVideoId || extractYoutubeId(user?.bgmUrl || ''),
+          bgmPlaylistUrls: user?.bgmPlaylistUrls || [],
+          bgmPlaylistTitles: user?.bgmPlaylistTitles || [],
+          bgmPlaylistIds: user?.bgmPlaylistIds || [],
+     };
+     if (fromProfile.bgmVideoId || fromProfile.bgmPlaylistIds.length) return fromProfile;
+
+     try {
+          const saved = JSON.parse(window.localStorage.getItem(getMinihomeStorageKey(user)) || '{}');
+          return {
+               bgmUrl: saved.bgmUrl || '',
+               bgmTitle: saved.bgmTitle || '',
+               bgmVideoId: saved.bgmVideoId || extractYoutubeId(saved.bgmUrl || ''),
+               bgmPlaylistUrls: saved.bgmPlaylistUrls || [],
+               bgmPlaylistTitles: saved.bgmPlaylistTitles || [],
+               bgmPlaylistIds: saved.bgmPlaylistIds || [],
+          };
+     } catch {
+          return fromProfile;
+     }
+};
+
+const sameBgm = (a, b) =>
+     a.bgmVideoId === b.bgmVideoId &&
+     JSON.stringify(a.bgmPlaylistIds || []) === JSON.stringify(b.bgmPlaylistIds || []);
+
 const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOpenProfile, onProfileUpdate }) => {
      const [guestbookEntries, setGuestbookEntries] = useState([]);
      const [newComment, setNewComment] = useState('');
@@ -36,7 +69,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const [isEditing, setIsEditing] = useState(false);
      const [isBgmOpen, setIsBgmOpen] = useState(false);
      const [isBgmPlaying, setIsBgmPlaying] = useState(true);
-     const [miniSettings, setMiniSettings] = useState({ bgmUrl: '', bgmTitle: '', bgmVideoId: '', bgmPlaylistUrls: [], bgmPlaylistTitles: [], bgmPlaylistIds: [] });
+     const [miniSettings, setMiniSettings] = useState(() => getInitialBgmSettings(user));
      const [bgmDraft, setBgmDraft] = useState({ bgmUrl: '', bgmTitle: '' });
      const [editForm, setEditForm] = useState({ location: '', mbti: '', job: '', bio: '' });
      const [todayCount, setTodayCount] = useState(0);
@@ -124,7 +157,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                          bgmPlaylistTitles: data.bgmPlaylistTitles || [],
                          bgmPlaylistIds: data.bgmPlaylistIds || [],
                     };
-                    setMiniSettings(profileBgm);
+                    // 같은 BGM이면 상태를 갈아끼우지 않는다 — iframe src가 바뀌면 재생 중인 음악이 처음부터 다시 시작되기 때문
+                    setMiniSettings(prev => sameBgm(prev, profileBgm) ? prev : profileBgm);
                     setBgmDraft({ bgmUrl: profileBgm.bgmUrl, bgmTitle: profileBgm.bgmTitle });
                } catch (error) {
                     console.error('프로필 로딩 실패:', error);
