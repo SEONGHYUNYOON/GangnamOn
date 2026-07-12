@@ -4,7 +4,7 @@ import { uploadProfileAvatar, uploadPostImage } from '../lib/imageUpload';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
 import { normalizeGangnamRegion } from '../lib/region';
-import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Send, Settings, ShoppingBag, Sparkles, UserRound, X, Youtube } from 'lucide-react';
+import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Pause, Play, Plus, Send, Settings, ShoppingBag, Sparkles, UserPlus, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
 const getMinihomeProfileKey = (user) => `gangnam:on:minihome-profile:${user?.id || user?.user_metadata?.username || 'guest'}`;
@@ -35,6 +35,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const [activePane, setActivePane] = useState('home');
      const [isEditing, setIsEditing] = useState(false);
      const [isBgmOpen, setIsBgmOpen] = useState(false);
+     const [isBgmPlaying, setIsBgmPlaying] = useState(true);
      const [miniSettings, setMiniSettings] = useState({ bgmUrl: '', bgmTitle: '', bgmVideoId: '', bgmPlaylistUrls: [], bgmPlaylistTitles: [], bgmPlaylistIds: [] });
      const [bgmDraft, setBgmDraft] = useState({ bgmUrl: '', bgmTitle: '' });
      const [editForm, setEditForm] = useState({ location: '', mbti: '', job: '', bio: '' });
@@ -70,6 +71,14 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           { id: 'surf', label: '파도타기', icon: ChevronRight },
           { id: 'shop', label: '매장', icon: ShoppingBag },
      ], []);
+
+     useEffect(() => {
+          const previousOverflow = document.body.style.overflow;
+          document.body.style.overflow = 'hidden';
+          return () => {
+               document.body.style.overflow = previousOverflow;
+          };
+     }, []);
 
      useEffect(() => {
           const fetchProfile = async () => {
@@ -245,10 +254,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                }
           };
 
-          if (activePane === 'surf') {
-               fetchSurfProfiles();
-               fetchFriends();
-          }
+          if (activePane === 'surf') fetchSurfProfiles();
+          fetchFriends();
      }, [activePane, user?.id, currentUser?.id]);
 
      useEffect(() => {
@@ -565,6 +572,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                return;
           }
           if (!profile?.$id || profile.$id === currentUser.id || friendIds.has(profile.$id)) return;
+          if (!window.confirm('일촌을 신청하시겠습니까?')) return;
           const documentId = `${currentUser.id}_${profile.$id}_friend`.replace(/[^a-zA-Z0-9._-]/g, '_');
           try {
                await databases.createDocument({
@@ -585,8 +593,10 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                     ],
                });
                setFriendIds(prev => new Set([...prev, profile.$id]));
+               alert('일촌 신청이 완료되었습니다.');
           } catch (error) {
                console.warn('일촌 맺기 실패:', error);
+               alert('일촌 신청에 실패했습니다. 잠시 후 다시 시도해주세요.');
           }
      };
 
@@ -647,13 +657,41 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                <div
                     className="flex h-[min(90vh,860px)] w-full max-w-[1120px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl"
                     onClick={(event) => event.stopPropagation()}
+                    onWheel={(event) => event.stopPropagation()}
                >
-                    <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 bg-white/95 px-5 backdrop-blur">
+                    <div className="relative flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-slate-100 bg-white/95 px-5 py-2 backdrop-blur">
                          <div className="min-w-0">
                               <p className="truncate text-sm font-black text-brand-ink">{displayName}님의 미니홈피</p>
                               <p className="text-[11px] font-bold text-slate-400">TODAY {todayCount} | TOTAL {totalCount.toLocaleString()}</p>
                          </div>
-                         <div className="flex items-center gap-2">
+                         <div className="ml-auto flex min-w-0 max-w-[280px] items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-1 sm:max-w-[360px] sm:gap-2 sm:px-2">
+                              <Music2 className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
+                              <span className="hidden truncate text-[11px] font-black text-slate-600 md:block">{bgmIds.length ? bgmTitles[0] : 'BGM 없음'}</span>
+                              {bgmIds.length > 0 && (
+                                   <button type="button" onClick={() => setIsBgmPlaying((playing) => !playing)} className="shrink-0 rounded-full p-1.5 text-slate-600 hover:bg-white" title={isBgmPlaying ? 'BGM 일시정지' : 'BGM 재생'}>
+                                        {isBgmPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                                   </button>
+                              )}
+                              {isOwner && (
+                                   <button type="button" onClick={() => setIsBgmOpen((open) => !open)} className="shrink-0 rounded-full bg-brand p-1.5 text-white" title="BGM 추가">
+                                        <Plus className="h-3.5 w-3.5" />
+                                   </button>
+                              )}
+                              {isBgmPlaying && bgmIds.length > 0 && (
+                                   <iframe
+                                        title="Minihome background music"
+                                        className="pointer-events-none absolute -left-[9999px] h-px w-px opacity-0"
+                                        src={`https://www.youtube.com/embed/${bgmIds[0]}?autoplay=1&mute=0&loop=1&playlist=${bgmIds.join(',')}&rel=0&modestbranding=1&playsinline=1`}
+                                        allow="autoplay; encrypted-media"
+                                   />
+                              )}
+                         </div>
+                         <div className="flex shrink-0 items-center gap-2">
+                              {!isOwner && currentUser?.id && (
+                                   <button type="button" onClick={() => handleFriend(profileData)} className="rounded-full border border-amber-200 bg-amber-50 p-2 text-amber-800 hover:bg-amber-100" title={friendIds.has(user.id) ? '일촌' : '일촌 신청'} disabled={friendIds.has(user.id)}>
+                                        <UserPlus className="h-4 w-4" />
+                                   </button>
+                              )}
                               <button type="button" className="rounded-full border border-sky-200 bg-white p-2 text-sky-700 hover:bg-sky-50" title="쪽지 보내기">
                                    <Mail className="h-4 w-4" />
                               </button>
@@ -661,10 +699,35 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                    <X className="h-4 w-4" />
                               </button>
                          </div>
+                         {isBgmOpen && isOwner && (
+                              <div className="absolute right-16 top-[60px] z-30 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+                                   <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2 text-xs font-black text-slate-600"><Youtube className="h-4 w-4 text-red-500" /> BGM 추가</div>
+                                        <button type="button" onClick={() => setIsBgmOpen(false)} className="rounded-full p-1 text-slate-400 hover:bg-slate-100"><X className="h-3.5 w-3.5" /></button>
+                                   </div>
+                                   <div className="mt-3 flex gap-2">
+                                        <div className="relative min-w-0 flex-1">
+                                             <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
+                                             <input value={bgmDraft.bgmUrl} onChange={(event) => setBgmDraft((prev) => ({ ...prev, bgmUrl: event.target.value }))} className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-sky-100" placeholder="YouTube 링크" />
+                                        </div>
+                                        <button type="button" onClick={handleSaveBgm} className="rounded-lg bg-brand px-3 py-2 text-xs font-black text-white">추가</button>
+                                   </div>
+                                   {bgmIds.length > 0 && (
+                                        <div className="mt-2 max-h-32 space-y-1 overflow-y-auto overscroll-contain">
+                                             {bgmIds.map((id, index) => (
+                                                  <div key={`${id}-${index}`} className="flex items-center justify-between rounded-lg bg-slate-50 px-2.5 py-2">
+                                                       <span className="truncate text-[11px] font-bold text-slate-600">{index + 1}. {bgmTitles[index] || `BGM ${index + 1}`}</span>
+                                                       <button type="button" onClick={() => removeBgmItem(index)} className="text-[10px] font-black text-slate-400 hover:text-red-500">삭제</button>
+                                                  </div>
+                                             ))}
+                                        </div>
+                                   )}
+                              </div>
+                         )}
                     </div>
 
                     <div className="grid min-h-0 flex-1 gap-4 bg-slate-50/70 p-4 md:grid-cols-[310px_1fr]">
-                         <aside className="min-h-0 overflow-y-auto rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+                         <aside className="min-h-0 overflow-y-auto overscroll-contain rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
                               <label className="group relative block w-full overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50">
                                    {isOwner && <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />}
                                    <img src={avatarUrl} alt="프로필" className="aspect-square w-full object-contain transition-transform group-hover:scale-[1.01]" />
@@ -700,74 +763,6 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                         <p className="text-lg font-black text-rose-800">{homePosts.length}</p>
                                         <p className="text-[10px] font-bold text-rose-500">사진첩</p>
                                    </div>
-                              </div>
-
-                              <div className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50 p-4">
-                                   <div className="mb-3 flex items-center justify-between gap-3">
-                                        <div className="min-w-0">
-                                             <p className="text-[11px] font-black uppercase tracking-wide text-brand-accent">Mini BGM</p>
-                                             <h3 className="mt-0.5 truncate text-sm font-black text-brand-ink">{bgmIds.length ? bgmTitles[0] : 'BGM을 연결해보세요'}</h3>
-                                        </div>
-                                        <button type="button" onClick={() => setIsBgmOpen(!isBgmOpen)} className="rounded-full bg-brand px-3 py-1.5 text-[11px] font-black text-white">
-                                             {bgmIds.length ? '설정' : '추가'}
-                                        </button>
-                                   </div>
-
-                                   {bgmIds.length > 0 && (
-                                        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-3">
-                                             <iframe
-                                                  title="Minihome background music"
-                                                  className="pointer-events-none absolute -left-[9999px] h-px w-px opacity-0"
-                                                  src={`https://www.youtube.com/embed/${bgmIds[0]}?autoplay=1&mute=0&loop=1&playlist=${bgmIds.join(',')}&rel=0&modestbranding=1&playsinline=1`}
-                                                  allow="autoplay; encrypted-media"
-                                             />
-                                             <div className="flex items-center gap-3">
-                                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white">
-                                                       <Music2 className="h-4 w-4" />
-                                                  </div>
-                                                  <div className="min-w-0 flex-1">
-                                                       <p className="truncate text-xs font-black text-brand-ink">{bgmTitles[0]}</p>
-                                                       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                                                            <div className="h-full w-2/3 rounded-full bg-brand-gold" />
-                                                       </div>
-                                                  </div>
-                                             </div>
-                                             {bgmIds.length > 1 && (
-                                                  <p className="mt-2 text-[10px] font-bold text-slate-400">총 {bgmIds.length}곡이 순차 재생됩니다.</p>
-                                             )}
-                                        </div>
-                                   )}
-
-                                   {isBgmOpen && isOwner && (
-                                        <div className="mt-3 grid gap-2 rounded-2xl bg-white p-3">
-                                             <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                                                  <Youtube className="h-4 w-4 text-red-500" />
-                                                  유튜브 링크를 음악만 재생되는 BGM으로 연결합니다.
-                                             </div>
-                                             <div className="flex gap-2">
-                                                  <div className="relative min-w-0 flex-1">
-                                                       <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
-                                                       <input
-                                                            value={bgmDraft.bgmUrl}
-                                                            onChange={(event) => setBgmDraft(prev => ({ ...prev, bgmUrl: event.target.value }))}
-                                                            className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-100"
-                                                            placeholder="youtube.com/watch..."
-                                                       />
-                                                  </div>
-                                                  <button type="button" onClick={handleSaveBgm} className="rounded-lg bg-brand px-3 py-2 text-xs font-black text-white">저장</button>
-                                             </div>
-                                             {bgmIds.length > 0 && (
-                                                  <div className="space-y-1">
-                                                       {bgmIds.map((id, index) => (
-                                                            <div key={`${id}-${index}`} className="flex items-center justify-between rounded-lg bg-slate-50 px-2.5 py-2">
-                                                                 <span className="truncate text-[11px] font-bold text-slate-600">{index + 1}. {bgmTitles[index] || `BGM ${index + 1}`}</span>
-                                                                 <button type="button" onClick={() => removeBgmItem(index)} className="text-[10px] font-black text-slate-400 hover:text-red-500">삭제</button>
-                                                            </div>
-                                                       ))}
-                                                  </div>
-                                             )}
-                                        </div>
-                                   )}
                               </div>
 
                               <div className="mt-4 grid grid-cols-2 gap-2">
@@ -817,7 +812,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                    )}
                               </div>
 
-                              <div className="h-full overflow-y-auto p-4 pb-8">
+                              <div className="h-full overflow-y-auto overscroll-contain p-4 pb-8">
                                    {activePane === 'home' && (
                                         <div className="space-y-4">
                                              <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />

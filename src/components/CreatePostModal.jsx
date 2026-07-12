@@ -56,7 +56,7 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
           { id: 'market', label: '🥕 중고거래', icon: DollarSign },
      ];
 
-     const isCommunityPost = ['daily_photo', 'town_story', 'question'].includes(selectedCategory);
+     const meetingCategories = ['gathering', 'lunch_networking', 'startup_freelance', 'recruit_proposal'];
 
      const handleFileSelect = (e) => {
           const file = e.target.files[0];
@@ -133,6 +133,8 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                     type: selectedCategory,
                     title: formData.title,
                     locationName: formData.location,
+                    latitude: selectedMapPlace.lat,
+                    longitude: selectedMapPlace.lng,
                     // Append detail info to content as we don't have columns in basic schema
                     content: selectedCategory === 'gathering'
                          ? `[일시: ${formData.date} ${formData.time}]\n\n${formData.description}`
@@ -310,10 +312,10 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                    />
                               </div>
 
-                              {isCommunityPost && (
+                              {!meetingCategories.includes(selectedCategory) && (
                                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                                         <div>
-                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">촬영 지역</label>
+                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">게시글 위치</label>
                                              <div className="flex items-center bg-gray-50 px-3 py-3 rounded-xl">
                                                   <MapPin className="w-4 h-4 text-gray-400 mr-2" />
                                                   <input
@@ -321,8 +323,31 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                                        value={formData.location}
                                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                                        className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold w-full placeholder-gray-400 text-gray-700"
-                                                       placeholder="예) 역삼동, 강남역, 청담동"
+                                                       placeholder="장소를 입력하거나 아래 지도에서 선택"
                                                   />
+                                             </div>
+                                             <div className="mt-3 rounded-2xl border border-gray-100 bg-gray-50 p-3">
+                                                  <KakaoMap
+                                                       latitude={selectedMapPlace.lat}
+                                                       longitude={selectedMapPlace.lng}
+                                                       level={4}
+                                                       label={selectedMapPlace.label}
+                                                       address={selectedMapPlace.address}
+                                                       style={{ width: '100%', height: '180px' }}
+                                                       showActions={false}
+                                                       selectable
+                                                       onLocationSelect={(place) => {
+                                                            setSelectedMapPlace(place);
+                                                            setFormData((current) => ({ ...current, location: place.address }));
+                                                       }}
+                                                  />
+                                                  <div className="mt-3 grid grid-cols-2 gap-2">
+                                                       {gangnamPlacePresets.map((place) => (
+                                                            <button key={place.label} type="button" onClick={() => { setSelectedMapPlace(place); setFormData((current) => ({ ...current, location: `${place.label} · ${place.address}` })); }} className={`rounded-xl border px-3 py-2 text-left text-xs font-black ${selectedMapPlace.label === place.label ? 'border-purple-400 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-500'}`}>
+                                                                 {place.label}
+                                                            </button>
+                                                       ))}
+                                                  </div>
                                              </div>
                                         </div>
                                    </div>
@@ -349,19 +374,6 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                                   onChange={(e) => setFormData({ ...formData, eventDeadline: e.target.value })}
                                                   className="w-full py-3 px-4 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:border-brand/30 focus:ring-0 transition-all font-bold text-sm"
                                              />
-                                        </div>
-                                        <div>
-                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">매장 위치</label>
-                                             <div className="flex items-center bg-gray-50 px-3 py-3 rounded-xl">
-                                                  <MapPin className="w-4 h-4 text-gray-400 mr-2" />
-                                                  <input
-                                                       type="text"
-                                                       value={formData.location}
-                                                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                                       className="bg-transparent border-none p-0 focus:ring-0 text-sm font-bold w-full placeholder-gray-400 text-gray-700"
-                                                       placeholder="예) 강남역 3번 출구 앞"
-                                                  />
-                                             </div>
                                         </div>
                                    </div>
                               )}
@@ -423,16 +435,6 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                                   />
                                              </div>
                                         </div>
-                                        <div>
-                                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">위치</label>
-                                             <input
-                                                  type="text"
-                                                  value={formData.location}
-                                                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                                  placeholder="상세 위치 입력"
-                                                  className="w-full py-3 px-4 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:border-purple-200 font-bold text-sm"
-                                             />
-                                        </div>
                                    </div>
                               )}
 
@@ -486,6 +488,11 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                                        address={selectedMapPlace.address}
                                                        style={{ width: '100%', height: '180px' }}
                                                        showActions={false}
+                                                       selectable
+                                                       onLocationSelect={(place) => {
+                                                            setSelectedMapPlace(place);
+                                                            setFormData((current) => ({ ...current, location: place.address }));
+                                                       }}
                                                   />
                                                   <div className="mt-3 grid grid-cols-2 gap-2">
                                                        {gangnamPlacePresets.map((place) => (

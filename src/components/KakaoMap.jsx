@@ -10,10 +10,13 @@ const KakaoMap = ({
      showActions = true,
      markers = [],
      onMarkerClick,
+     selectable = false,
+     onLocationSelect,
 }) => {
      const mapContainer = useRef(null);
      const mapRef = useRef(null);
      const markerRefs = useRef([]);
+     const onLocationSelectRef = useRef(onLocationSelect);
      const [mapStatus, setMapStatus] = useState("loading");
 
      const lat = Number(latitude) || 37.4979;
@@ -26,6 +29,10 @@ const KakaoMap = ({
      }, [lat, lng]);
      const kakaoPlaceUrl = `https://map.kakao.com/link/map/${encodedLabel},${lat},${lng}`;
      const kakaoRouteUrl = `https://map.kakao.com/link/to/${encodedLabel},${lat},${lng}`;
+
+     useEffect(() => {
+          onLocationSelectRef.current = onLocationSelect;
+     }, [onLocationSelect]);
 
      useEffect(() => {
           let cancelled = false;
@@ -72,6 +79,18 @@ const KakaoMap = ({
                     position: markerPosition
                });
                marker.setMap(map);
+               if (selectable) {
+                    window.kakao.maps.event.addListener(map, 'click', (mouseEvent) => {
+                         const position = mouseEvent.latLng;
+                         marker.setPosition(position);
+                         onLocationSelectRef.current?.({
+                              lat: position.getLat(),
+                              lng: position.getLng(),
+                              label: '지도에서 선택한 위치',
+                              address: `위도 ${position.getLat().toFixed(5)}, 경도 ${position.getLng().toFixed(5)}`,
+                         });
+                    });
+               }
                setMapStatus("kakao");
           }
 
@@ -79,7 +98,7 @@ const KakaoMap = ({
                cancelled = true;
                window.clearTimeout(fallbackTimer);
           };
-     }, [lat, lng, level]);
+     }, [lat, lng, level, selectable]);
 
      useEffect(() => {
           if (mapStatus !== "kakao" || !mapRef.current || !window.kakao?.maps) return undefined;
@@ -166,6 +185,11 @@ const KakaoMap = ({
                          >
                               길찾기
                          </a>
+                    </div>
+               )}
+               {selectable && mapStatus === 'kakao' && (
+                    <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg bg-brand/90 px-3 py-2 text-[10px] font-black text-white shadow-soft">
+                         지도를 눌러 위치 선택
                     </div>
                )}
           </div>

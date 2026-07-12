@@ -32,13 +32,23 @@ const LOCAL_INFO = [
           link: 'https://www.gangnam.go.kr/',
           category: 'public',
           description: '민원, 여권, 세금, 생활 행정 서비스를 확인합니다.',
+          details: ['학동로 426(삼성동)', '대표 02-3423-5114', '야간·공휴일 02-3423-6000~3'],
      },
      {
           title: '강남구 동주민센터',
           date: '상시',
           link: 'https://www.gangnam.go.kr/contents/jumin_center/1/view.do',
           category: 'public',
-          description: '전입, 주민등록, 복지 상담 등 가까운 주민센터를 찾습니다.',
+          description: '전입, 주민등록, 인감, 복지 상담 등 22개 동 주민센터의 주소와 담당 업무를 찾습니다.',
+          details: ['전입신고·등초본', '복지·돌봄 상담', '동별 연락처 확인'],
+     },
+     {
+          title: '무인민원발급기 위치·운영시간',
+          date: '상시',
+          link: 'https://www.gangnam.go.kr/contents/minwonissue/1/view.do?mid=ID06_04162102',
+          category: 'public',
+          description: '주민등록등초본, 가족관계증명서, 토지·세금 증명서를 가까운 발급기에서 처리합니다.',
+          details: ['강남구청 옥외부스 24시간', '발급기별 운영시간 확인', '02-3423-5381'],
      },
      {
           title: '비짓강남 관광·전시 정보',
@@ -59,42 +69,56 @@ const LOCAL_INFO = [
           date: '상시',
           link: 'https://health.gangnam.go.kr/',
           category: 'health',
-          description: '보건, 예방접종, 건강검진 안내를 확인합니다.',
+          description: '1차 진료, 예방접종, 모자보건, 건강검진과 보건증 업무를 확인합니다.',
+          details: ['선릉로 668', '대표 02-3423-7200', '세곡보건지소·수서분소 안내'],
+     },
+     {
+          title: '강남구 웰에이징·치매안심센터',
+          date: '상시',
+          link: 'https://health.gangnam.go.kr/',
+          category: 'health',
+          description: '신체기능 평가, 치매검진, 인지 프로그램 등 지역 건강 서비스를 확인합니다.',
+          details: ['웰에이징센터 02-3423-7002', '치매안심센터 02-3423-7884', '평일 프로그램 운영'],
      },
      {
           title: '강남경찰서 민원실',
           date: '상시',
           link: 'https://www.smpa.go.kr/gn/',
           category: 'safety',
-          description: '분실, 교통민원, 생활 안전 관련 경찰 민원을 확인합니다.',
+          description: '분실, 교통민원, 범죄 신고와 생활 안전 관련 경찰 민원을 확인합니다.',
+          details: ['긴급 112', '교통·수사 민원 안내', '관할 지구대 확인'],
      },
      {
           title: '강남소방서 안전 정보',
           date: '상시',
           link: 'https://fire.seoul.go.kr/gangnam/',
           category: 'safety',
-          description: '소방 민원, 안전교육, 생활 안전 정보를 확인합니다.',
+          description: '화재·구급 신고, 소방 민원, 안전교육과 응급처치 정보를 확인합니다.',
+          details: ['긴급 119', '소방시설 민원', '심폐소생술·안전교육'],
      },
      {
           title: '삼성세무서·역삼세무서',
           date: '상시',
           link: 'https://www.nts.go.kr/',
           category: 'public',
-          description: '사업자, 종합소득세, 부가세 등 세무 업무를 확인합니다.',
+          description: '사업자등록, 종합소득세, 부가가치세와 각종 국세 증명을 확인합니다.',
+          details: ['국세상담 126', '홈택스 온라인 처리', '관할 세무서 확인'],
      },
      {
           title: '서울강남고용복지+센터',
           date: '상시',
           link: 'https://www.workplus.go.kr/',
           category: 'health',
-          description: '취업 상담, 실업급여, 고용지원 서비스를 확인합니다.',
+          description: '구직등록, 취업 상담, 실업급여, 국민취업지원제도 업무를 확인합니다.',
+          details: ['고용노동 상담 1350', '방문 전 예약·서류 확인', '구직·기업지원 창구'],
      },
      {
           title: '강남구립도서관',
           date: '상시',
           link: 'https://library.gangnam.go.kr/',
           category: 'culture',
-          description: '도서 대출, 열람실, 문화 프로그램 정보를 확인합니다.',
+          description: '25개 구립도서관의 도서 대출, 열람실, 휴관일과 문화 프로그램을 확인합니다.',
+          details: ['공공도서관 15개', '작은도서관 10개', '통합검색·대출 현황'],
      },
      {
           title: '강남구 복지기관',
@@ -108,14 +132,48 @@ const LOCAL_INFO = [
           date: '상시',
           link: 'https://www.immigration.go.kr/',
           category: 'safety',
-          description: '체류, 비자, 외국인 등록 관련 기관 정보를 확인합니다.',
+          description: '체류기간 연장, 비자, 외국인등록과 출입국 방문예약을 확인합니다.',
+          details: ['외국인종합안내 1345', '하이코리아 방문예약', '민원별 준비서류 확인'],
      },
      {
           title: '강남구 공영주차장',
           date: '상시',
           link: 'https://www.gncity.or.kr/',
           category: 'traffic',
-          description: '공영주차장 위치, 요금, 운영 정보를 확인합니다.',
+          description: '강남구도시관리공단이 운영하는 공영주차장 61개소의 위치, 요금과 할인 정보를 확인합니다.',
+          details: ['노상 24·노외 32·부설 5개소', '요금·정기권 확인', '할인 증빙 지참'],
+     },
+     {
+          title: '견인차량 즉시 검색',
+          date: '긴급',
+          link: 'https://gn.gncity.or.kr/Archive/SearchCar',
+          category: 'traffic',
+          description: '차량번호를 입력해 견인 여부와 보관 정보를 바로 확인합니다.',
+          details: ['차량번호로 조회', '검색 결과의 보관소 확인', '견인보관소 02-558-7230'],
+     },
+     {
+          title: '강남구 견인차량보관소·반환 절차',
+          date: '24시간 확인',
+          link: 'https://gn.gncity.or.kr/Archive/Present',
+          category: 'traffic',
+          description: '견인된 차량의 보관 위치와 차량을 되찾는 순서를 확인합니다.',
+          details: ['삼성로 628 인근 안내 확인', '신분증·차량 관계 증빙 준비', '견인·보관 비용 납부 후 인수'],
+     },
+     {
+          title: '불법주정차 단속 사전알림 신청',
+          date: '상시',
+          link: 'https://www.gangnam.go.kr/board/parking/list.do?mid=id02_010901',
+          category: 'traffic',
+          description: '고정형 CCTV 단속구역 진입 시 차량 이동 안내를 받을 수 있도록 신청합니다.',
+          details: ['별별강남 앱에서 신청', '강남구 관내 서비스', '주차관리과 02-3423-6458'],
+     },
+     {
+          title: '불법주정차 CCTV 단속 기준',
+          date: '2026 기준',
+          link: 'https://www.gangnam.go.kr/board/parking/14/view.do?mid=ID02_010901',
+          category: 'traffic',
+          description: '단속 시간, 촬영 범위와 주정차 단속 일반기준을 확인합니다.',
+          details: ['간선도로 07:00~22:00', '이면도로 08:00~22:00', '5분 이상 주정차 시 탑승 중에도 단속 가능'],
      },
      {
           title: '교통 민원·도로 안내',
@@ -129,7 +187,8 @@ const LOCAL_INFO = [
           date: '상시',
           link: 'https://www.gangnam.go.kr/contents/traffic_car/1/view.do',
           category: 'traffic',
-          description: '자동차 등록, 과태료, 교통 민원 정보를 확인합니다.',
+          description: '자동차 등록·이전·말소, 과태료, 번호판과 자동차 관련 민원을 확인합니다.',
+          details: ['방문 전 구비서류 확인', '자동차민원 대국민포털 병행', '과태료 조회·납부'],
      },
      {
           title: '강남구 재난안전 안내',
@@ -281,6 +340,16 @@ export const GangnamLocalInfo = ({ type = 'life_info' }) => {
                                         <p className="text-xs font-black text-brand-accent">{item.date}</p>
                                         <h3 className="mt-1 text-base font-black leading-6 text-brand-ink group-hover:text-brand-accent">{item.title}</h3>
                                         <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">{item.description}</p>
+                                        {item.details?.length > 0 && (
+                                             <ul className="mt-3 space-y-1 border-t border-slate-200/70 pt-3">
+                                                  {item.details.map((detail) => (
+                                                       <li key={detail} className="flex gap-2 text-xs font-bold leading-5 text-slate-600">
+                                                            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-brand-gold" />
+                                                            {detail}
+                                                       </li>
+                                                  ))}
+                                             </ul>
+                                        )}
                                    </div>
                                    <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-slate-300 group-hover:text-brand-accent" />
                               </div>

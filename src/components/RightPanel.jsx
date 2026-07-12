@@ -378,14 +378,14 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
 
      const weatherInfo = getWeatherInfo(weather.code);
      const weatherLabel = weather.condition || weatherInfo.text;
-     const observedLabel = weather.observedAt
-          ? `${new Date(weather.observedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })} 기준`
+     const weatherTimeLabel = weather.observedAt
+          ? new Date(weather.observedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })
           : null;
-     const sourceLabel = weather.source === '기상청'
-          ? observedLabel
-          : weather.source
-               ? [weather.source, observedLabel].filter(Boolean).join(' · ')
-               : observedLabel;
+     const weatherCaption = [
+          '강남 역삼동',
+          weatherLabel,
+          weatherTimeLabel ? `${weatherTimeLabel}기준` : null,
+     ].filter(Boolean).join(' · ');
      const dustInfo = getDustInfo(weather.pm10);
      const isRainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(weather.code);
      const activityRank = getActivityRank(beanCount / 50 + visitorStats.total);
@@ -602,7 +602,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                               </div>
                          )}
                          {/* Weather Section */}
-                         <div className="flex items-center justify-between relative z-10 min-h-12">
+                         <div className="relative z-10 space-y-1.5">
                          {weather.loading ? (
                               <div className="w-full flex justify-between items-center animate-pulse">
                                    <div className="h-8 w-24 bg-blue-200/50 rounded-lg"></div>
@@ -610,30 +610,29 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                               </div>
                          ) : (
                               <>
-                                   <div>
-                                        <div className="flex items-center gap-2 mb-1">
+                                   <div className="flex items-start justify-between gap-2">
+                                        <div className="flex items-center gap-2">
                                              {weatherInfo.icon}
                                              <span className="text-3xl font-bold text-gray-800">{weather.temp !== null ? weather.temp : '-'}°</span>
                                         </div>
-                                        <span className="text-xs font-bold text-gray-500 ml-1">
-                                             강남 역삼동 · {weatherLabel}
-                                             {sourceLabel ? ` · ${sourceLabel}` : ''}
-                                        </span>
-                                   </div>
-                                   <div className="text-right">
-                                        <div className={`flex items-center justify-end gap-1 text-xs font-bold px-2 py-1 rounded-lg mb-1 ${dustInfo.color} ${dustInfo.bg}`}>
-                                             <Zap className="w-3 h-3" />
-                                             <span>{dustInfo.text}</span>
-                                        </div>
-                                        <div className="flex items-center justify-end gap-1 text-xs text-gray-500">
-                                             <Cloud className="w-3 h-3" />
-                                             <span>습도 {weather.humidity !== null ? weather.humidity : '-'}%</span>
-                                        </div>
-                                        <div className="mt-1 flex items-center justify-end gap-1 text-[10px] font-black text-brand-accent">
-                                             <span>상세 날씨 보기</span>
-                                             <ExternalLink className="h-3 w-3" />
+                                        <div className="shrink-0 text-right">
+                                             <div className={`flex items-center justify-end gap-1 text-xs font-bold px-2 py-1 rounded-lg mb-1 ${dustInfo.color} ${dustInfo.bg}`}>
+                                                  <Zap className="w-3 h-3" />
+                                                  <span>{dustInfo.text}</span>
+                                             </div>
+                                             <div className="flex items-center justify-end gap-1 text-xs text-gray-500">
+                                                  <Cloud className="w-3 h-3" />
+                                                  <span>습도 {weather.humidity !== null ? weather.humidity : '-'}%</span>
+                                             </div>
+                                             <div className="mt-1 flex items-center justify-end gap-1 text-[10px] font-black text-brand-accent">
+                                                  <span>상세 날씨 보기</span>
+                                                  <ExternalLink className="h-3 w-3" />
+                                             </div>
                                         </div>
                                    </div>
+                                   <p className="m-0 whitespace-nowrap text-[11px] font-bold text-gray-500">
+                                        {weatherCaption}
+                                   </p>
                               </>
                          )}
                          </div>

@@ -63,389 +63,44 @@
         {
             "$id": "main",
             "name": "GangnamOn DB",
-            "enabled": true
+            "$createdAt": "2026-07-07T04:28:48.544+00:00",
+            "$updatedAt": "2026-07-08T07:48:26.512+00:00",
+            "enabled": true,
+            "type": "legacy",
+            "status": "ready",
+            "policies": [],
+            "archives": []
         }
     ],
     "collections": [
         {
-            "$id": "profiles",
+            "$id": "chat_rooms",
             "$permissions": [
-                "read(\"any\")",
+                "read(\"users\")",
                 "create(\"users\")"
             ],
             "databaseId": "main",
-            "name": "profiles",
+            "name": "chat_rooms",
             "enabled": true,
             "documentSecurity": true,
             "attributes": [
-                {
-                    "key": "username",
-                    "type": "string",
-                    "size": 64,
-                    "required": true
-                },
-                {
-                    "key": "fullName",
-                    "type": "string",
-                    "size": 64,
-                    "required": false
-                },
-                {
-                    "key": "avatarUrl",
-                    "type": "string",
-                    "size": 512,
-                    "required": false
-                },
-                {
-                    "key": "beans",
-                    "type": "integer",
-                    "required": false,
-                    "default": 1250
-                },
-                {
-                    "key": "location",
-                    "type": "string",
-                    "size": 64,
-                    "required": false,
-                    "default": "강남 역삼"
-                },
-                {
-                    "key": "bio",
-                    "type": "string",
-                    "size": 500,
-                    "required": false
-                },
-                {
-                    "key": "gender",
-                    "type": "string",
-                    "size": 16,
-                    "required": false
-                },
-                {
-                    "key": "birthYear",
-                    "type": "integer",
-                    "required": false
-                },
-                {
-                    "key": "mbti",
-                    "type": "string",
-                    "size": 8,
-                    "required": false
-                },
-                {
-                    "key": "interests",
-                    "type": "string",
-                    "size": 32,
-                    "required": false,
-                    "array": true
-                },
-                {
-                    "key": "mannerTemp",
-                    "type": "double",
-                    "required": false,
-                    "default": 36.5
-                },
-                {
-                    "key": "visitorsToday",
-                    "type": "integer",
-                    "required": false,
-                    "default": 0
-                },
-                {
-                    "key": "visitorsTotal",
-                    "type": "integer",
-                    "required": false,
-                    "default": 0
-                },
-                {
-                    "key": "unlockedStyles",
-                    "type": "string",
-                    "size": 32,
-                    "required": false,
-                    "array": true
-                },
-                {
-                    "key": "job",
-                    "type": "string",
-                    "size": 100,
-                    "required": false
-                },
-                {
-                    "key": "statusMessage",
-                    "type": "string",
-                    "size": 500,
-                    "required": false
-                },
-                {
-                    "key": "bgmUrl",
-                    "type": "string",
-                    "size": 512,
-                    "required": false
-                },
-                {
-                    "key": "bgmTitle",
-                    "type": "string",
-                    "size": 128,
-                    "required": false
-                },
-                {
-                    "key": "bgmVideoId",
-                    "type": "string",
-                    "size": 64,
-                    "required": false
-                },
-                {
-                    "key": "bgmPlaylistUrls",
-                    "type": "string",
-                    "size": 512,
-                    "required": false,
-                    "array": true
-                },
-                {
-                    "key": "bgmPlaylistTitles",
-                    "type": "string",
-                    "size": 128,
-                    "required": false,
-                    "array": true
-                },
-                {
-                    "key": "bgmPlaylistIds",
-                    "type": "string",
-                    "size": 64,
-                    "required": false,
-                    "array": true
-                },
-                {
-                    "key": "activityScore",
-                    "type": "integer",
-                    "required": false,
-                    "default": 0
-                },
-                {
-                    "key": "isAdmin",
-                    "type": "boolean",
-                    "required": false,
-                    "default": false
-                },
-                {
-                    "key": "phoneHash",
-                    "type": "string",
-                    "size": 128,
-                    "required": false
-                },
-                {
-                    "key": "siteId",
-                    "type": "string",
-                    "size": 32,
-                    "required": false,
-                    "default": "gangnam"
-                },
-                {
-                    "key": "phoneVerifiedAt",
-                    "type": "string",
-                    "size": 64,
-                    "required": false
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "username_idx",
-                    "type": "unique",
-                    "attributes": [
-                        "username"
-                    ]
-                },
-                {
-                    "key": "phone_site_unique",
-                    "type": "unique",
-                    "attributes": [
-                        "phoneHash",
-                        "siteId"
-                    ]
-                }
-            ]
-        },
-        {
-            "$id": "posts",
-            "$permissions": [
-                "read(\"any\")",
-                "create(\"users\")"
-            ],
-            "databaseId": "main",
-            "name": "posts",
-            "enabled": true,
-            "documentSecurity": true,
-            "attributes": [
-                {
-                    "key": "authorId",
-                    "type": "string",
-                    "size": 64,
-                    "required": true
-                },
-                {
-                    "key": "authorUsername",
-                    "type": "string",
-                    "size": 64,
-                    "required": false
-                },
-                {
-                    "key": "authorAvatarUrl",
-                    "type": "string",
-                    "size": 512,
-                    "required": false
-                },
                 {
                     "key": "type",
                     "type": "string",
-                    "size": 32,
-                    "required": true
-                },
-                {
-                    "key": "title",
-                    "type": "string",
-                    "size": 200,
-                    "required": false
-                },
-                {
-                    "key": "content",
-                    "type": "string",
-                    "size": 5000,
-                    "required": false
-                },
-                {
-                    "key": "price",
-                    "type": "integer",
+                    "status": "available",
+                    "error": "",
                     "required": false,
-                    "default": 0
-                },
-                {
-                    "key": "locationName",
-                    "type": "string",
-                    "size": 128,
-                    "required": false
-                },
-                {
-                    "key": "maxParticipants",
-                    "type": "integer",
-                    "required": false
-                },
-                {
-                    "key": "currentParticipants",
-                    "type": "integer",
-                    "required": false,
-                    "default": 1
-                },
-                {
-                    "key": "expiresAt",
-                    "type": "datetime",
-                    "required": false
-                },
-                {
-                    "key": "featuredUntil",
-                    "type": "datetime",
-                    "required": false
-                },
-                {
-                    "key": "imageUrls",
-                    "type": "string",
-                    "size": 512,
-                    "required": false,
-                    "array": true
-                },
-                {
-                    "key": "likesCount",
-                    "type": "integer",
-                    "required": false,
-                    "default": 0
-                },
-                {
-                    "key": "commentsCount",
-                    "type": "integer",
-                    "required": false,
-                    "default": 0
-                },
-                {
-                    "key": "views",
-                    "type": "integer",
-                    "required": false,
-                    "default": 0
-                },
-                {
-                    "key": "sourceUrl",
-                    "type": "string",
-                    "size": 512,
-                    "required": false
-                },
-                {
-                    "key": "placeAddress",
-                    "type": "string",
-                    "size": 256,
-                    "required": false
-                },
-                {
-                    "key": "placePhone",
-                    "type": "string",
-                    "size": 32,
-                    "required": false
-                },
-                {
-                    "key": "placeCategory",
-                    "type": "string",
-                    "size": 64,
-                    "required": false
-                },
-                {
-                    "key": "pickGroup",
-                    "type": "string",
-                    "size": 20,
-                    "required": false,
-                    "default": "restaurant"
-                },
-                {
-                    "key": "productCategory",
-                    "type": "string",
-                    "size": 32,
-                    "required": false,
-                    "default": "기타"
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:49.944+00:00",
+                    "$updatedAt": "2026-07-07T04:28:49.944+00:00",
+                    "size": 16,
+                    "default": "dm",
+                    "encrypt": false
                 }
             ],
-            "indexes": [
-                {
-                    "key": "type_idx",
-                    "type": "key",
-                    "attributes": [
-                        "type"
-                    ]
-                },
-                {
-                    "key": "author_idx",
-                    "type": "key",
-                    "attributes": [
-                        "authorId"
-                    ]
-                },
-                {
-                    "key": "source_url_idx",
-                    "type": "key",
-                    "attributes": [
-                        "sourceUrl"
-                    ]
-                },
-                {
-                    "key": "pick_group_idx",
-                    "type": "key",
-                    "attributes": [
-                        "pickGroup"
-                    ]
-                },
-                {
-                    "key": "product_category_idx",
-                    "type": "key",
-                    "attributes": [
-                        "productCategory"
-                    ]
-                }
-            ]
+            "indexes": [],
+            "bytesMax": 65535,
+            "bytesUsed": 1132
         },
         {
             "$id": "romance_interactions",
@@ -461,118 +116,466 @@
                 {
                     "key": "actorId",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:49.871+00:00",
+                    "$updatedAt": "2026-07-07T04:28:49.871+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "targetId",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:49.871+00:00",
+                    "$updatedAt": "2026-07-07T04:28:49.871+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "actionType",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:49.871+00:00",
+                    "$updatedAt": "2026-07-07T04:28:49.871+00:00",
                     "size": 16,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": [
                 {
+                    "$id": "138807_2_actor_target_idx",
+                    "$createdAt": "2026-07-07T04:28:49.892+00:00",
+                    "$updatedAt": "2026-07-07T04:28:49.892+00:00",
                     "key": "actor_target_idx",
                     "type": "unique",
+                    "status": "available",
+                    "error": "",
                     "attributes": [
                         "actorId",
                         "targetId"
-                    ]
+                    ],
+                    "lengths": [
+                        0,
+                        0
+                    ],
+                    "orders": []
                 }
-            ]
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 1646
         },
         {
-            "$id": "schools",
+            "$id": "profiles",
             "$permissions": [
                 "read(\"any\")",
-                "create(\"users\")"
+                "create(\"any\")",
+                "update(\"users\")"
             ],
             "databaseId": "main",
-            "name": "schools",
+            "name": "profiles",
             "enabled": true,
-            "documentSecurity": true,
+            "documentSecurity": false,
             "attributes": [
                 {
-                    "key": "schoolName",
+                    "key": "username",
                     "type": "string",
-                    "size": 100,
-                    "required": true
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:55:53.086+00:00",
+                    "$updatedAt": "2026-07-12T16:55:53.264+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
                 },
                 {
-                    "key": "graduationYear",
+                    "key": "fullName",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:55:58.716+00:00",
+                    "$updatedAt": "2026-07-12T16:55:58.855+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "avatarUrl",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:56:04.547+00:00",
+                    "$updatedAt": "2026-07-12T16:56:04.681+00:00",
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "beans",
                     "type": "integer",
-                    "required": true
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:56:10.396+00:00",
+                    "$updatedAt": "2026-07-12T16:56:10.524+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 1250
                 },
                 {
-                    "key": "description",
+                    "key": "location",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:56:16.101+00:00",
+                    "$updatedAt": "2026-07-12T16:56:16.283+00:00",
+                    "size": 64,
+                    "default": "강남 역삼",
+                    "encrypt": false
+                },
+                {
+                    "key": "bio",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:56:21.789+00:00",
+                    "$updatedAt": "2026-07-12T16:56:21.914+00:00",
                     "size": 500,
-                    "required": false
+                    "default": null,
+                    "encrypt": false
                 },
                 {
-                    "key": "creatorId",
+                    "key": "gender",
                     "type": "string",
-                    "size": 64,
-                    "required": true
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:56:27.754+00:00",
+                    "$updatedAt": "2026-07-12T16:56:27.901+00:00",
+                    "size": 16,
+                    "default": null,
+                    "encrypt": false
                 },
                 {
-                    "key": "roomId",
-                    "type": "string",
-                    "size": 64,
-                    "required": true
-                },
-                {
-                    "key": "memberCount",
+                    "key": "birthYear",
                     "type": "integer",
+                    "status": "available",
+                    "error": "",
                     "required": false,
-                    "default": 1
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:56:33.383+00:00",
+                    "$updatedAt": "2026-07-12T16:56:33.515+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
                 },
                 {
-                    "key": "status",
+                    "key": "mbti",
                     "type": "string",
-                    "size": 24,
+                    "status": "available",
+                    "error": "",
                     "required": false,
-                    "default": "active"
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:56:39.268+00:00",
+                    "$updatedAt": "2026-07-12T16:56:39.419+00:00",
+                    "size": 8,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "interests",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": true,
+                    "$createdAt": "2026-07-12T16:56:57.776+00:00",
+                    "$updatedAt": "2026-07-12T16:56:57.893+00:00",
+                    "size": 32,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "mannerTemp",
+                    "type": "double",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:57:03.550+00:00",
+                    "$updatedAt": "2026-07-12T16:57:03.676+00:00",
+                    "min": -1.7976931348623157e+308,
+                    "max": 1.7976931348623157e+308,
+                    "default": 36
+                },
+                {
+                    "key": "visitorsToday",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:57:09.522+00:00",
+                    "$updatedAt": "2026-07-12T16:57:09.655+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "visitorsTotal",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:57:15.217+00:00",
+                    "$updatedAt": "2026-07-12T16:57:15.344+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "unlockedStyles",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": true,
+                    "$createdAt": "2026-07-12T16:57:21.011+00:00",
+                    "$updatedAt": "2026-07-12T16:57:21.150+00:00",
+                    "size": 32,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "job",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:57:27.017+00:00",
+                    "$updatedAt": "2026-07-12T16:57:27.190+00:00",
+                    "size": 100,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "statusMessage",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:57:32.974+00:00",
+                    "$updatedAt": "2026-07-12T16:57:33.139+00:00",
+                    "size": 500,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "bgmUrl",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:57:38.842+00:00",
+                    "$updatedAt": "2026-07-12T16:57:41.477+00:00",
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "bgmTitle",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:57:44.599+00:00",
+                    "$updatedAt": "2026-07-12T16:57:44.755+00:00",
+                    "size": 128,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "bgmVideoId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:58:05.341+00:00",
+                    "$updatedAt": "2026-07-12T16:58:05.517+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "bgmPlaylistUrls",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": true,
+                    "$createdAt": "2026-07-12T16:58:11.079+00:00",
+                    "$updatedAt": "2026-07-12T16:58:11.261+00:00",
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "bgmPlaylistTitles",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": true,
+                    "$createdAt": "2026-07-12T16:58:16.812+00:00",
+                    "$updatedAt": "2026-07-12T16:58:16.948+00:00",
+                    "size": 128,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "bgmPlaylistIds",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": true,
+                    "$createdAt": "2026-07-12T16:58:22.452+00:00",
+                    "$updatedAt": "2026-07-12T16:58:22.574+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "activityScore",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:58:28.163+00:00",
+                    "$updatedAt": "2026-07-12T16:58:28.384+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "isAdmin",
+                    "type": "boolean",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:58:33.937+00:00",
+                    "$updatedAt": "2026-07-12T16:58:34.580+00:00",
+                    "default": false
+                },
+                {
+                    "key": "phoneHash",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:58:39.843+00:00",
+                    "$updatedAt": "2026-07-12T16:58:39.984+00:00",
+                    "size": 128,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "siteId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:58:45.946+00:00",
+                    "$updatedAt": "2026-07-12T16:58:46.112+00:00",
+                    "size": 32,
+                    "default": "gangnam",
+                    "encrypt": false
+                },
+                {
+                    "key": "phoneVerifiedAt",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:58:51.741+00:00",
+                    "$updatedAt": "2026-07-12T16:58:51.898+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": [
                 {
-                    "key": "school_year_unique",
+                    "$id": "138807_3_username_idx",
+                    "$createdAt": "2026-07-12T17:09:29.863+00:00",
+                    "$updatedAt": "2026-07-12T17:09:30.238+00:00",
+                    "key": "username_idx",
                     "type": "unique",
+                    "status": "available",
+                    "error": "",
                     "attributes": [
-                        "schoolName",
-                        "graduationYear"
-                    ]
-                }
-            ]
-        },
-        {
-            "$id": "chat_rooms",
-            "$permissions": [
-                "read(\"users\")",
-                "create(\"users\")"
-            ],
-            "databaseId": "main",
-            "name": "chat_rooms",
-            "enabled": true,
-            "documentSecurity": true,
-            "attributes": [
+                        "username"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
                 {
-                    "key": "type",
-                    "type": "string",
-                    "size": 16,
-                    "required": false,
-                    "default": "dm"
+                    "$id": "138807_3_phone_site_unique",
+                    "$createdAt": "2026-07-12T17:09:35.660+00:00",
+                    "$updatedAt": "2026-07-12T17:09:35.978+00:00",
+                    "key": "phone_site_unique",
+                    "type": "unique",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "phoneHash",
+                        "siteId"
+                    ],
+                    "lengths": [
+                        0,
+                        0
+                    ],
+                    "orders": []
                 }
             ],
-            "indexes": []
+            "bytesMax": 65535,
+            "bytesUsed": 12259
         },
         {
             "$id": "chat_participants",
@@ -588,341 +591,459 @@
                 {
                     "key": "roomId",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:50.137+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.137+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "userId",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:50.137+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.137+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": [
                 {
+                    "$id": "138807_4_room_user_idx",
+                    "$createdAt": "2026-07-07T04:28:50.164+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.164+00:00",
                     "key": "room_user_idx",
                     "type": "unique",
+                    "status": "available",
+                    "error": "",
                     "attributes": [
                         "roomId",
                         "userId"
-                    ]
+                    ],
+                    "lengths": [
+                        0,
+                        0
+                    ],
+                    "orders": []
                 }
-            ]
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 1581
         },
         {
-            "$id": "chat_messages",
+            "$id": "posts",
             "$permissions": [
-                "read(\"users\")",
+                "read(\"any\")",
                 "create(\"users\")"
             ],
             "databaseId": "main",
-            "name": "chat_messages",
+            "name": "posts",
             "enabled": true,
             "documentSecurity": true,
             "attributes": [
                 {
-                    "key": "roomId",
+                    "key": "authorId",
                     "type": "string",
-                    "size": 128,
-                    "required": true
-                },
-                {
-                    "key": "senderId",
-                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T11:28:15.320+00:00",
+                    "$updatedAt": "2026-07-07T11:28:22.306+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
-                    "key": "content",
+                    "key": "authorUsername",
                     "type": "string",
-                    "size": 2000,
-                    "required": true
-                },
-                {
-                    "key": "isNotice",
-                    "type": "boolean",
+                    "status": "available",
+                    "error": "",
                     "required": false,
-                    "default": false
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "room_idx",
-                    "type": "key",
-                    "attributes": [
-                        "roomId"
-                    ]
-                }
-            ]
-        },
-        {
-            "$id": "meeting_participants",
-            "$permissions": [
-                "read(\"users\")",
-                "create(\"users\")"
-            ],
-            "databaseId": "main",
-            "name": "meeting_participants",
-            "enabled": true,
-            "documentSecurity": true,
-            "attributes": [
-                {
-                    "key": "meetingId",
-                    "type": "string",
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:56:34.432+00:00",
+                    "$updatedAt": "2026-07-07T18:56:34.952+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
-                    "key": "userId",
+                    "key": "authorAvatarUrl",
                     "type": "string",
-                    "size": 64,
-                    "required": true
-                },
-                {
-                    "key": "status",
-                    "type": "string",
-                    "size": 24,
-                    "required": false
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "meeting_user_idx",
-                    "type": "unique",
-                    "attributes": [
-                        "meetingId",
-                        "userId"
-                    ]
-                },
-                {
-                    "key": "user_idx",
-                    "type": "key",
-                    "attributes": [
-                        "userId"
-                    ]
-                }
-            ]
-        },
-        {
-            "$id": "user_relations",
-            "$permissions": [
-                "read(\"users\")",
-                "create(\"users\")"
-            ],
-            "databaseId": "main",
-            "name": "user_relations",
-            "enabled": true,
-            "documentSecurity": true,
-            "attributes": [
-                {
-                    "key": "ownerId",
-                    "type": "string",
-                    "size": 64,
-                    "required": true
-                },
-                {
-                    "key": "targetId",
-                    "type": "string",
-                    "size": 64,
-                    "required": true
-                },
-                {
-                    "key": "relationType",
-                    "type": "string",
-                    "size": 24,
-                    "required": true
-                },
-                {
-                    "key": "targetUsername",
-                    "type": "string",
-                    "size": 64,
-                    "required": false
-                },
-                {
-                    "key": "targetAvatarUrl",
-                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:56:38.123+00:00",
+                    "$updatedAt": "2026-07-07T18:56:38.496+00:00",
                     "size": 512,
-                    "required": false
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "owner_target_type_idx",
-                    "type": "unique",
-                    "attributes": [
-                        "ownerId",
-                        "targetId",
-                        "relationType"
-                    ]
-                },
-                {
-                    "key": "owner_idx",
-                    "type": "key",
-                    "attributes": [
-                        "ownerId"
-                    ]
-                },
-                {
-                    "key": "owner_relation_idx",
-                    "type": "key",
-                    "attributes": [
-                        "ownerId",
-                        "relationType"
-                    ]
-                },
-                {
-                    "key": "target_idx",
-                    "type": "key",
-                    "attributes": [
-                        "targetId"
-                    ]
-                }
-            ]
-        },
-        {
-            "$id": "presence",
-            "$permissions": [
-                "read(\"any\")",
-                "create(\"users\")"
-            ],
-            "databaseId": "main",
-            "name": "presence",
-            "enabled": true,
-            "documentSecurity": true,
-            "attributes": [
-                {
-                    "key": "userId",
-                    "type": "string",
-                    "size": 64,
-                    "required": true
-                },
-                {
-                    "key": "username",
-                    "type": "string",
-                    "size": 64,
-                    "required": false
-                },
-                {
-                    "key": "avatarUrl",
-                    "type": "string",
-                    "size": 512,
-                    "required": false
-                },
-                {
-                    "key": "lastSeenAt",
-                    "type": "datetime",
-                    "required": true
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "last_seen_idx",
-                    "type": "key",
-                    "attributes": [
-                        "lastSeenAt"
-                    ]
-                }
-            ]
-        },
-        {
-            "$id": "page_views",
-            "$permissions": [
-                "read(\"any\")",
-                "create(\"any\")"
-            ],
-            "databaseId": "main",
-            "name": "page_views",
-            "enabled": true,
-            "documentSecurity": true,
-            "attributes": [
-                {
-                    "key": "hostId",
-                    "type": "string",
-                    "size": 64,
-                    "required": true
-                },
-                {
-                    "key": "visitorId",
-                    "type": "string",
-                    "size": 128,
-                    "required": true
-                },
-                {
-                    "key": "visitDate",
-                    "type": "string",
-                    "size": 10,
-                    "required": true
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "host_idx",
-                    "type": "key",
-                    "attributes": [
-                        "hostId"
-                    ]
-                },
-                {
-                    "key": "host_date_idx",
-                    "type": "key",
-                    "attributes": [
-                        "hostId",
-                        "visitDate"
-                    ]
-                }
-            ]
-        },
-        {
-            "$id": "bean_transactions",
-            "$permissions": [
-                "read(\"any\")",
-                "create(\"users\")"
-            ],
-            "databaseId": "main",
-            "name": "bean_transactions",
-            "enabled": true,
-            "documentSecurity": true,
-            "attributes": [
-                {
-                    "key": "userId",
-                    "type": "string",
-                    "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "type",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:56:41.885+00:00",
+                    "$updatedAt": "2026-07-07T18:56:42.343+00:00",
                     "size": 32,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
-                    "key": "amount",
-                    "type": "integer",
-                    "required": true
-                },
-                {
-                    "key": "note",
+                    "key": "title",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:56:45.635+00:00",
+                    "$updatedAt": "2026-07-07T18:56:46.060+00:00",
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:56:49.416+00:00",
+                    "$updatedAt": "2026-07-07T18:56:49.867+00:00",
+                    "size": 5000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "price",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:56:53.196+00:00",
+                    "$updatedAt": "2026-07-07T18:56:53.731+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "locationName",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:56:57.036+00:00",
+                    "$updatedAt": "2026-07-07T18:56:57.461+00:00",
                     "size": 128,
-                    "required": false
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "maxParticipants",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:57:00.858+00:00",
+                    "$updatedAt": "2026-07-07T18:57:01.302+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "currentParticipants",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:57:04.704+00:00",
+                    "$updatedAt": "2026-07-07T18:57:05.106+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 1
+                },
+                {
+                    "key": "expiresAt",
+                    "type": "datetime",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:57:08.711+00:00",
+                    "$updatedAt": "2026-07-07T18:57:09.166+00:00",
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "featuredUntil",
+                    "type": "datetime",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:57:12.676+00:00",
+                    "$updatedAt": "2026-07-07T18:57:13.252+00:00",
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "imageUrls",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": true,
+                    "$createdAt": "2026-07-07T18:57:16.411+00:00",
+                    "$updatedAt": "2026-07-07T18:57:16.945+00:00",
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "likesCount",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:57:20.284+00:00",
+                    "$updatedAt": "2026-07-07T18:57:20.818+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "commentsCount",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:57:24.284+00:00",
+                    "$updatedAt": "2026-07-07T18:57:24.758+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "views",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T18:57:28.204+00:00",
+                    "$updatedAt": "2026-07-07T18:57:28.613+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "sourceUrl",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T14:56:41.841+00:00",
+                    "$updatedAt": "2026-07-08T14:56:42.513+00:00",
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "placeAddress",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T15:24:42.253+00:00",
+                    "$updatedAt": "2026-07-08T15:24:42.433+00:00",
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "placePhone",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T15:24:43.738+00:00",
+                    "$updatedAt": "2026-07-08T15:24:43.923+00:00",
+                    "size": 32,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "placeCategory",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T15:24:45.227+00:00",
+                    "$updatedAt": "2026-07-08T15:24:46.028+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "pickGroup",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-09T07:19:54.118+00:00",
+                    "$updatedAt": "2026-07-09T07:19:54.640+00:00",
+                    "size": 20,
+                    "default": "restaurant",
+                    "encrypt": false
+                },
+                {
+                    "key": "productCategory",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-09T15:10:54.110+00:00",
+                    "$updatedAt": "2026-07-09T15:10:54.651+00:00",
+                    "size": 32,
+                    "default": "기타",
+                    "encrypt": false
+                },
+                {
+                    "key": "latitude",
+                    "type": "double",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:58:57.563+00:00",
+                    "$updatedAt": "2026-07-12T16:58:57.952+00:00",
+                    "min": -1.7976931348623157e+308,
+                    "max": 1.7976931348623157e+308,
+                    "default": null
+                },
+                {
+                    "key": "longitude",
+                    "type": "double",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T16:59:03.474+00:00",
+                    "$updatedAt": "2026-07-12T16:59:03.698+00:00",
+                    "min": -1.7976931348623157e+308,
+                    "max": 1.7976931348623157e+308,
+                    "default": null
                 }
             ],
             "indexes": [
                 {
-                    "key": "userId_idx",
-                    "type": "key",
-                    "attributes": [
-                        "userId"
-                    ]
-                },
-                {
+                    "$id": "138807_5_type_idx",
+                    "$createdAt": "2026-07-07T18:57:56.371+00:00",
+                    "$updatedAt": "2026-07-07T18:57:56.680+00:00",
                     "key": "type_idx",
                     "type": "key",
+                    "status": "available",
+                    "error": "",
                     "attributes": [
                         "type"
-                    ]
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_5_author_idx",
+                    "$createdAt": "2026-07-07T18:57:58.196+00:00",
+                    "$updatedAt": "2026-07-07T18:57:58.489+00:00",
+                    "key": "author_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "authorId"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_5_source_url_idx",
+                    "$createdAt": "2026-07-08T14:56:46.728+00:00",
+                    "$updatedAt": "2026-07-08T14:56:46.980+00:00",
+                    "key": "source_url_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "sourceUrl"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_5_pick_group_idx",
+                    "$createdAt": "2026-07-09T07:20:06.683+00:00",
+                    "$updatedAt": "2026-07-09T07:20:07.136+00:00",
+                    "key": "pick_group_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "pickGroup"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_5_product_category_idx",
+                    "$createdAt": "2026-07-09T15:10:56.608+00:00",
+                    "$updatedAt": "2026-07-09T15:10:56.968+00:00",
+                    "key": "product_category_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "productCategory"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
                 }
-            ]
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 28846
         },
         {
             "$id": "guestbook_entries",
@@ -938,82 +1059,599 @@
                 {
                     "key": "hostId",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:50.028+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.028+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "authorId",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:50.028+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.028+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "authorUsername",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:50.028+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.028+00:00",
                     "size": 64,
-                    "required": false
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "authorAvatarUrl",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:50.028+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.028+00:00",
                     "size": 512,
-                    "required": false
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "content",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:50.028+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.028+00:00",
                     "size": 500,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "isSecret",
                     "type": "boolean",
+                    "status": "available",
+                    "error": "",
                     "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-07T04:28:50.028+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.028+00:00",
                     "default": false
                 }
             ],
             "indexes": [
                 {
+                    "$id": "138807_6_host_idx",
+                    "$createdAt": "2026-07-07T04:28:50.048+00:00",
+                    "$updatedAt": "2026-07-07T04:28:50.048+00:00",
                     "key": "host_idx",
                     "type": "key",
+                    "status": "available",
+                    "error": "",
                     "attributes": [
                         "hostId"
-                    ]
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
                 }
-            ]
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 5891
         },
         {
-            "$id": "post_likes",
+            "$id": "chat_messages",
             "$permissions": [
-                "read(\"users\")"
+                "read(\"users\")",
+                "create(\"users\")"
             ],
             "databaseId": "main",
-            "name": "post_likes",
+            "name": "chat_messages",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
-                    "key": "userId",
+                    "key": "roomId",
                     "type": "string",
-                    "size": 64,
-                    "required": true
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:37.101+00:00",
+                    "$updatedAt": "2026-07-08T06:04:37.763+00:00",
+                    "size": 128,
+                    "default": null,
+                    "encrypt": false
                 },
                 {
-                    "key": "postId",
+                    "key": "senderId",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:37.976+00:00",
+                    "$updatedAt": "2026-07-08T06:04:38.650+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:38.816+00:00",
+                    "$updatedAt": "2026-07-08T06:04:39.411+00:00",
+                    "size": 2000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "isNotice",
+                    "type": "boolean",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-09T08:14:10.819+00:00",
+                    "$updatedAt": "2026-07-09T08:14:11.058+00:00",
+                    "default": false
                 }
             ],
             "indexes": [
                 {
+                    "$id": "138807_7_room_idx",
+                    "$createdAt": "2026-07-08T06:04:54.549+00:00",
+                    "$updatedAt": "2026-07-08T06:04:55.017+00:00",
+                    "key": "room_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "roomId"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                }
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 9840
+        },
+        {
+            "$id": "presence",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "presence",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:39.854+00:00",
+                    "$updatedAt": "2026-07-08T06:04:40.391+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "username",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:40.732+00:00",
+                    "$updatedAt": "2026-07-08T06:04:41.381+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "avatarUrl",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:42.182+00:00",
+                    "$updatedAt": "2026-07-08T06:04:42.923+00:00",
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "lastSeenAt",
+                    "type": "datetime",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:43.041+00:00",
+                    "$updatedAt": "2026-07-08T06:04:43.800+00:00",
+                    "format": "",
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "$id": "138807_8_last_seen_idx",
+                    "$createdAt": "2026-07-08T06:04:55.375+00:00",
+                    "$updatedAt": "2026-07-08T06:04:55.743+00:00",
+                    "key": "last_seen_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "lastSeenAt"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                }
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 3638
+        },
+        {
+            "$id": "page_views",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"any\")"
+            ],
+            "databaseId": "main",
+            "name": "page_views",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "hostId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:43.844+00:00",
+                    "$updatedAt": "2026-07-08T06:04:44.633+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "visitorId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:44.710+00:00",
+                    "$updatedAt": "2026-07-08T06:04:45.868+00:00",
+                    "size": 128,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "visitDate",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:04:45.776+00:00",
+                    "$updatedAt": "2026-07-08T06:04:46.428+00:00",
+                    "size": 10,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "$id": "138807_9_host_idx",
+                    "$createdAt": "2026-07-08T06:04:56.298+00:00",
+                    "$updatedAt": "2026-07-08T06:04:56.652+00:00",
+                    "key": "host_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "hostId"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_9_host_date_idx",
+                    "$createdAt": "2026-07-08T06:04:57.113+00:00",
+                    "$updatedAt": "2026-07-08T06:04:57.505+00:00",
+                    "key": "host_date_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "hostId",
+                        "visitDate"
+                    ],
+                    "lengths": [
+                        0,
+                        0
+                    ],
+                    "orders": []
+                }
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 1878
+        },
+        {
+            "$id": "meeting_participants",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "meeting_participants",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "meetingId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:52:11.533+00:00",
+                    "$updatedAt": "2026-07-08T06:52:12.026+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:52:12.509+00:00",
+                    "$updatedAt": "2026-07-08T06:52:13.178+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T06:52:13.443+00:00",
+                    "$updatedAt": "2026-07-08T06:52:13.870+00:00",
+                    "size": 24,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "$id": "138807_10_meeting_user_idx",
+                    "$createdAt": "2026-07-08T06:52:22.410+00:00",
+                    "$updatedAt": "2026-07-08T06:52:22.719+00:00",
+                    "key": "meeting_user_idx",
+                    "type": "unique",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "meetingId",
+                        "userId"
+                    ],
+                    "lengths": [
+                        0,
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_10_user_idx",
+                    "$createdAt": "2026-07-08T06:52:23.412+00:00",
+                    "$updatedAt": "2026-07-08T06:52:23.653+00:00",
                     "key": "user_idx",
                     "type": "key",
+                    "status": "available",
+                    "error": "",
                     "attributes": [
                         "userId"
-                    ]
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
                 }
-            ]
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 1678
+        },
+        {
+            "$id": "user_relations",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "user_relations",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "relationType",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T07:40:11.232+00:00",
+                    "$updatedAt": "2026-07-08T07:40:11.651+00:00",
+                    "size": 24,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "ownerId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T07:40:11.235+00:00",
+                    "$updatedAt": "2026-07-08T07:40:12.272+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "targetId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-08T07:40:11.326+00:00",
+                    "$updatedAt": "2026-07-08T07:40:12.840+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "targetUsername",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T07:40:11.406+00:00",
+                    "$updatedAt": "2026-07-08T07:40:13.336+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "targetAvatarUrl",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-08T07:40:22.861+00:00",
+                    "$updatedAt": "2026-07-08T07:40:23.311+00:00",
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "$id": "138807_11_owner_target_type_idx",
+                    "$createdAt": "2026-07-08T07:40:50.232+00:00",
+                    "$updatedAt": "2026-07-08T07:40:50.527+00:00",
+                    "key": "owner_target_type_idx",
+                    "type": "unique",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "ownerId",
+                        "targetId",
+                        "relationType"
+                    ],
+                    "lengths": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_11_owner_idx",
+                    "$createdAt": "2026-07-08T07:40:50.976+00:00",
+                    "$updatedAt": "2026-07-08T07:40:51.185+00:00",
+                    "key": "owner_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "ownerId"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_11_target_idx",
+                    "$createdAt": "2026-07-08T07:40:51.760+00:00",
+                    "$updatedAt": "2026-07-08T07:40:52.088+00:00",
+                    "key": "target_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "targetId"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_11_owner_relation_idx",
+                    "$createdAt": "2026-07-08T07:42:03.574+00:00",
+                    "$updatedAt": "2026-07-08T07:42:03.837+00:00",
+                    "key": "owner_relation_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "ownerId",
+                        "relationType"
+                    ],
+                    "lengths": [
+                        0,
+                        0
+                    ],
+                    "orders": []
+                }
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 3985
         },
         {
             "$id": "push_subscriptions",
@@ -1029,31 +1667,348 @@
                 {
                     "key": "userId",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-09T07:20:24.611+00:00",
+                    "$updatedAt": "2026-07-09T07:20:25.113+00:00",
                     "size": 64,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "endpoint",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-09T07:20:27.225+00:00",
+                    "$updatedAt": "2026-07-09T07:20:27.696+00:00",
                     "size": 512,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "keys",
                     "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-09T07:20:29.358+00:00",
+                    "$updatedAt": "2026-07-09T07:20:29.849+00:00",
                     "size": 512,
-                    "required": true
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": [
                 {
+                    "$id": "138807_12_user_idx",
+                    "$createdAt": "2026-07-09T07:20:46.172+00:00",
+                    "$updatedAt": "2026-07-09T07:20:46.474+00:00",
                     "key": "user_idx",
                     "type": "key",
+                    "status": "available",
+                    "error": "",
                     "attributes": [
                         "userId"
-                    ]
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
                 }
-            ]
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 5424
+        },
+        {
+            "$id": "post_likes",
+            "$permissions": [
+                "read(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "post_likes",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-09T09:28:48.411+00:00",
+                    "$updatedAt": "2026-07-09T09:28:48.765+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "postId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-09T09:28:50.882+00:00",
+                    "$updatedAt": "2026-07-09T09:28:51.209+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "$id": "138807_13_user_idx",
+                    "$createdAt": "2026-07-09T09:28:53.350+00:00",
+                    "$updatedAt": "2026-07-09T09:28:53.560+00:00",
+                    "key": "user_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                }
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 1581
+        },
+        {
+            "$id": "bean_transactions",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "bean_transactions",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-09T15:10:43.060+00:00",
+                    "$updatedAt": "2026-07-09T15:10:44.065+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-09T15:10:46.163+00:00",
+                    "$updatedAt": "2026-07-09T15:10:47.218+00:00",
+                    "size": 32,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "note",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-09T15:10:48.627+00:00",
+                    "$updatedAt": "2026-07-09T15:10:49.442+00:00",
+                    "size": 128,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "amount",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-09T15:10:51.141+00:00",
+                    "$updatedAt": "2026-07-09T15:10:51.862+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "$id": "138807_14_userId_idx",
+                    "$createdAt": "2026-07-09T15:10:53.621+00:00",
+                    "$updatedAt": "2026-07-09T15:10:53.964+00:00",
+                    "key": "userId_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                },
+                {
+                    "$id": "138807_14_type_idx",
+                    "$createdAt": "2026-07-09T15:10:53.870+00:00",
+                    "$updatedAt": "2026-07-09T15:10:54.397+00:00",
+                    "key": "type_idx",
+                    "type": "key",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "type"
+                    ],
+                    "lengths": [
+                        0
+                    ],
+                    "orders": []
+                }
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 1974
+        },
+        {
+            "$id": "schools",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"users\")"
+            ],
+            "databaseId": "main",
+            "name": "schools",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "schoolName",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-12T15:54:08.026+00:00",
+                    "$updatedAt": "2026-07-12T15:54:08.531+00:00",
+                    "size": 100,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "graduationYear",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-12T15:54:15.130+00:00",
+                    "$updatedAt": "2026-07-12T15:54:15.563+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "description",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T15:54:21.574+00:00",
+                    "$updatedAt": "2026-07-12T15:54:22.296+00:00",
+                    "size": 500,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "creatorId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-12T15:54:29.075+00:00",
+                    "$updatedAt": "2026-07-12T15:54:29.483+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "roomId",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": true,
+                    "array": false,
+                    "$createdAt": "2026-07-12T15:54:35.515+00:00",
+                    "$updatedAt": "2026-07-12T15:54:36.217+00:00",
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "memberCount",
+                    "type": "integer",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T15:54:41.195+00:00",
+                    "$updatedAt": "2026-07-12T15:54:41.678+00:00",
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 1
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "status": "available",
+                    "error": "",
+                    "required": false,
+                    "array": false,
+                    "$createdAt": "2026-07-12T15:54:46.729+00:00",
+                    "$updatedAt": "2026-07-12T15:54:47.153+00:00",
+                    "size": 24,
+                    "default": "active",
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "$id": "138807_15_school_year_unique",
+                    "$createdAt": "2026-07-12T15:55:13.842+00:00",
+                    "$updatedAt": "2026-07-12T15:55:14.044+00:00",
+                    "key": "school_year_unique",
+                    "type": "unique",
+                    "status": "available",
+                    "error": "",
+                    "attributes": [
+                        "schoolName",
+                        "graduationYear"
+                    ],
+                    "lengths": [
+                        0,
+                        0
+                    ],
+                    "orders": []
+                }
+            ],
+            "bytesMax": 65535,
+            "bytesUsed": 4097
         }
     ],
     "buckets": [
