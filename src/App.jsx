@@ -121,6 +121,7 @@ function App() {
      const [feedRefreshKey, setFeedRefreshKey] = useState(0);
      const [feedStatus, setFeedStatus] = useState({ meetings: 'loading', market: 'loading' });
      const [unreadChatCount, setUnreadChatCount] = useState(0);
+     const [pendingHomeScroll, setPendingHomeScroll] = useState(null);
      const digestNews = useGangnamNews(2);
 
      // 로그인 상태 + 프로필 문서를 함께 불러와서, 기존 컴포넌트들이 쓰던
@@ -538,6 +539,27 @@ function App() {
           window.scrollTo(0, 0);
      };
 
+     const scrollToHomeSection = (sectionId) => {
+          if (activeTab !== 'home') {
+               setPendingHomeScroll(sectionId);
+               handleTabChange('home');
+               return;
+          }
+          requestAnimationFrame(() => {
+               document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+     };
+
+     useEffect(() => {
+          if (activeTab !== 'home' || !pendingHomeScroll) return undefined;
+          const sectionId = pendingHomeScroll;
+          const timer = window.setTimeout(() => {
+               document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+               setPendingHomeScroll(null);
+          }, 180);
+          return () => window.clearTimeout(timer);
+     }, [activeTab, pendingHomeScroll]);
+
      const homeMapMarkers = useMemo(() => buildMeetingMapMarkers(meetingItems, 6), [meetingItems]);
      const featuredMeeting = useMemo(
           () => meetingItems.find((item) => item.isHot) || meetingItems[0] || null,
@@ -868,6 +890,7 @@ function App() {
                                                   <Suspense fallback={<SectionSkeleton label="홈" />}>
                                                        <HomeMzFeed
                                                             onTabChange={handleTabChange}
+                                                            onScrollToHomeSection={scrollToHomeSection}
                                                             onCreateMeeting={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
                                                             digestNews={digestNews}
                                                             meetingItems={meetingItems}
@@ -878,9 +901,11 @@ function App() {
                                                   <Suspense fallback={<SectionSkeleton label="동창 찾기" />}>
                                                        <ILoveSchool user={user} />
                                                   </Suspense>
-                                                  <Suspense fallback={<SectionSkeleton label="밥친구" />}>
-                                                       <DiningCompanion onCreate={() => { setCreateModalCategory('lunch_networking'); setIsCreateModalOpen(true); }} />
-                                                  </Suspense>
+                                                  <div id="home-dining">
+                                                       <Suspense fallback={<SectionSkeleton label="밥친구" />}>
+                                                            <DiningCompanion onCreate={() => { setCreateModalCategory('lunch_networking'); setIsCreateModalOpen(true); }} />
+                                                       </Suspense>
+                                                  </div>
 
                                                   {feedStatus.meetings === 'error' && (
                                                        <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 sm:flex-row sm:items-center sm:justify-between">

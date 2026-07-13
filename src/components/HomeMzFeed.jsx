@@ -12,10 +12,10 @@ const SEASONAL_PICKS = [
 ];
 
 const MOOD_OPTIONS = [
-     { id: 'happy', emoji: '😊', label: '기분 좋을 때', desc: '분위기 좋은 카페·루프탑', tab: 'gangnam_pick', color: 'from-amber-50 to-orange-50 border-amber-200' },
-     { id: 'new', emoji: '😮', label: '새로운 거', desc: '팝업·신상 핫플 탐색', tab: 'gangnam_pick', color: 'from-sky-50 to-blue-50 border-sky-200' },
-     { id: 'solo', emoji: '😌', label: '혼자만의 시간', desc: '조용한 카페·산책 코스', tab: 'wine', color: 'from-violet-50 to-purple-50 border-violet-200' },
-     { id: 'social', emoji: '🤝', label: '사람 만나고 싶을 때', desc: '동네 친구·소규모 모임', tab: 'friend_find', color: 'from-rose-50 to-pink-50 border-rose-200' },
+     { id: 'happy', emoji: '😊', label: '기분 좋을 때', desc: '분위기 좋은 카페·루프탑', target: { type: 'tab', id: 'gangnam_pick' }, color: 'from-amber-50 to-orange-50 border-amber-200' },
+     { id: 'new', emoji: '😮', label: '새로운 거', desc: '팝업·신상 핫플 탐색', target: { type: 'tab', id: 'gangnam_pick' }, color: 'from-sky-50 to-blue-50 border-sky-200' },
+     { id: 'solo', emoji: '😌', label: '혼자만의 시간', desc: '조용한 카페·산책 코스', target: { type: 'scroll', id: 'home-dining' }, color: 'from-violet-50 to-purple-50 border-violet-200' },
+     { id: 'social', emoji: '🤝', label: '사람 만나고 싶을 때', desc: '동네 친구·소규모 모임', target: { type: 'tab', id: 'friend_find' }, color: 'from-rose-50 to-pink-50 border-rose-200' },
 ];
 
 const NEIGHBOR_FRIENDS = [
@@ -61,20 +61,41 @@ const LIVE_TICKER = [
      '혼카페 매칭 5건 신규',
 ];
 
+// 홈 퀵메뉴 — tab: 사이드바 탭 이동, scroll: 홈 내 섹션 스크롤
+const QUICK_NAV = [
+     { id: 'today', label: '오늘의 강남', sub: '제철코어', icon: Sparkles, target: { type: 'tab', id: 'gangnam_pick' }, tone: 'bg-amber-50 text-amber-700', line: 'bg-amber-400' },
+     { id: 'friend', label: '동네 친구', sub: '하이퍼로컬', icon: Users, target: { type: 'tab', id: 'friend_find' }, tone: 'bg-sky-50 text-sky-700', line: 'bg-sky-400' },
+     { id: 'solo', label: '혼밥·혼카페', sub: '실시간 매칭', icon: Coffee, target: { type: 'scroll', id: 'home-dining' }, tone: 'bg-rose-50 text-rose-700', line: 'bg-rose-400' },
+     { id: 'nano', label: '나노 클랜', sub: '취향 소그룹', icon: Heart, target: { type: 'tab', id: 'wine' }, tone: 'bg-violet-50 text-violet-700', line: 'bg-violet-400' },
+     { id: 'volunteer', label: '봉케팅', sub: '한정 봉사', icon: Leaf, target: { type: 'tab', id: 'pet' }, tone: 'bg-emerald-50 text-emerald-700', line: 'bg-emerald-400' },
+     { id: 'route', label: '1시간 루트', sub: '시경비 코스', icon: Route, target: { type: 'tab', id: 'gangnam_pick' }, tone: 'bg-indigo-50 text-indigo-700', line: 'bg-indigo-400' },
+     { id: 'live', label: '지금 뜨는 중', sub: '실시간', icon: Zap, target: { type: 'tab', id: 'town_story' }, tone: 'bg-orange-50 text-orange-700', line: 'bg-orange-400' },
+     { id: 'popup', label: '팝업·굿즈', sub: '한정 드롭', icon: Store, target: { type: 'tab', id: 'gangnam_pick' }, tone: 'bg-pink-50 text-pink-700', line: 'bg-pink-400' },
+];
+
 function SectionHeader({ label, title, actionLabel, onAction }) {
      return (
           <div className="mb-3 flex items-center justify-between gap-3">
                <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-brand-accent">{label}</p>
-                    <h3 className="mt-1 text-base font-black text-brand-ink">{title}</h3>
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-brand-accent">{label}</p>
+                    <h3 className="mt-1 text-lg font-black text-brand-ink">{title}</h3>
                </div>
                {actionLabel && onAction && (
-                    <button type="button" onClick={onAction} className="shrink-0 rounded-full bg-white px-3 py-1.5 text-[11px] font-black text-brand-accent shadow-sm">
+                    <button type="button" onClick={onAction} className="shrink-0 rounded-full bg-white px-3 py-1.5 text-xs font-black text-brand-accent shadow-sm">
                          {actionLabel}
                     </button>
                )}
           </div>
      );
+}
+
+function navigateTarget(target, onTabChange, onScrollToHomeSection) {
+     if (!target) return;
+     if (target.type === 'scroll') {
+          onScrollToHomeSection?.(target.id);
+          return;
+     }
+     onTabChange(target.id);
 }
 
 function BalanceGameCard({ game }) {
@@ -85,27 +106,27 @@ function BalanceGameCard({ game }) {
 
      return (
           <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-               <p className="mb-3 text-center text-xs font-black text-slate-500">MZ 밸런스 게임</p>
+               <p className="mb-3 text-center text-sm font-black text-slate-500">MZ 밸런스 게임</p>
                <div className="grid grid-cols-2 gap-2">
                     <button
                          type="button"
                          onClick={() => setPicked('left')}
                          className={`rounded-xl border-2 px-3 py-4 text-center transition-all ${picked === 'left' ? 'border-brand-gold bg-amber-50' : 'border-slate-100 hover:border-amber-200'}`}
                     >
-                         <p className="text-sm font-black text-brand-ink">{game.left}</p>
-                         {picked && <p className="mt-1 text-[10px] font-bold text-brand-accent">{leftPct}%</p>}
+                         <p className="text-base font-black text-brand-ink">{game.left}</p>
+                         {picked && <p className="mt-1 text-xs font-bold text-brand-accent">{leftPct}%</p>}
                     </button>
                     <button
                          type="button"
                          onClick={() => setPicked('right')}
                          className={`rounded-xl border-2 px-3 py-4 text-center transition-all ${picked === 'right' ? 'border-brand-gold bg-amber-50' : 'border-slate-100 hover:border-amber-200'}`}
                     >
-                         <p className="text-sm font-black text-brand-ink">{game.right}</p>
-                         {picked && <p className="mt-1 text-[10px] font-bold text-brand-accent">{rightPct}%</p>}
+                         <p className="text-base font-black text-brand-ink">{game.right}</p>
+                         {picked && <p className="mt-1 text-xs font-bold text-brand-accent">{rightPct}%</p>}
                     </button>
                </div>
                {picked && (
-                    <p className="mt-2 text-center text-[10px] font-semibold text-slate-400">
+                    <p className="mt-2 text-center text-xs font-semibold text-slate-400">
                          {picked === 'left' ? game.left : game.right} 픽! 강남 클랜 점수 +1
                     </p>
                )}
@@ -115,6 +136,7 @@ function BalanceGameCard({ game }) {
 
 export default function HomeMzFeed({
      onTabChange,
+     onScrollToHomeSection,
      onCreateMeeting,
      digestNews,
      meetingItems = [],
@@ -123,30 +145,28 @@ export default function HomeMzFeed({
 }) {
      const [selectedMood, setSelectedMood] = useState(null);
      const tickerItems = useMemo(() => [...LIVE_TICKER, ...LIVE_TICKER], []);
+     const go = (target) => navigateTarget(target, onTabChange, onScrollToHomeSection);
 
      return (
           <section className="overflow-hidden rounded-[24px] border border-brand-gold/15 bg-white shadow-[0_24px_80px_-42px_rgba(15,23,42,0.38)]">
                {/* Hero */}
-               <div className="relative overflow-hidden bg-brand px-5 py-6 text-white md:px-7 md:py-8">
+               <div className="relative overflow-hidden bg-brand px-5 py-5 text-white md:px-7 md:py-6">
                     <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-gold/20 blur-3xl" />
-                    <div className="absolute bottom-0 right-[30%] h-24 w-24 rounded-full bg-sky-400/10 blur-2xl" />
-                    <div className="relative flex flex-col justify-between gap-5 md:flex-row md:items-end">
-                         <div>
-                              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-black text-amber-200 backdrop-blur-md">
+                    <div className="absolute bottom-0 right-[20%] h-24 w-24 rounded-full bg-sky-400/10 blur-2xl" />
+                    <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                         <div className="min-w-0 flex-1">
+                              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-black text-amber-200 backdrop-blur-md">
                                    <Flame className="h-3.5 w-3.5" />
                                    LIVE · 지금 이 순간의 강남
                               </div>
-                              <h1 className="text-2xl font-black leading-tight tracking-[-0.03em] [word-break:keep-all] md:text-4xl">
-                                   오늘 강남에서<br className="hidden sm:block" /> 뭐 하고 놀까?
+                              <h1 className="text-xl font-black leading-tight tracking-[-0.02em] [word-break:keep-all] sm:text-2xl md:text-3xl">
+                                   오늘 강남에서 뭐 하고 놀까?
                               </h1>
-                              <p className="mt-3 text-sm font-semibold leading-6 text-slate-300">
-                                   제철코어 · 하이퍼로컬 · 동네 친구 — MZ가 열광하는 강남을 한곳에서.
-                              </p>
                          </div>
                          <button
                               type="button"
                               onClick={onCreateMeeting}
-                              className="flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-brand-gold px-5 text-sm font-black text-white shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-amber-500 active:translate-y-0"
+                              className="flex shrink-0 min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-brand-gold px-5 text-sm font-black text-white shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-amber-500 active:translate-y-0 sm:ml-4"
                          >
                               <Plus className="h-4 w-4" />
                               모임 개설하기
@@ -158,7 +178,7 @@ export default function HomeMzFeed({
                <div className="overflow-hidden border-b border-brand-gold/10 bg-gradient-to-r from-amber-50 via-white to-rose-50 py-2">
                     <div className="flex animate-marquee whitespace-nowrap">
                          {tickerItems.map((text, i) => (
-                              <span key={i} className="mx-6 inline-flex items-center gap-1.5 text-xs font-bold text-brand-ink">
+                              <span key={i} className="mx-6 inline-flex items-center gap-1.5 text-sm font-bold text-brand-ink">
                                    <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" />
                                    {text}
                               </span>
@@ -169,30 +189,21 @@ export default function HomeMzFeed({
                <div className="p-4 md:p-6 space-y-5">
                     {/* Quick nav — 1·2순위 핵심 메뉴 */}
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:gap-3">
-                         {[
-                              { id: 'today', label: '오늘의 강남', sub: '제철코어', icon: Sparkles, tab: 'gangnam_pick', tone: 'bg-amber-50 text-amber-700', line: 'bg-amber-400' },
-                              { id: 'friend', label: '동네 친구', sub: '하이퍼로컬', icon: Users, tab: 'friend_find', tone: 'bg-sky-50 text-sky-700', line: 'bg-sky-400' },
-                              { id: 'solo', label: '혼밥·혼카페', sub: '실시간 매칭', icon: Coffee, tab: 'wine', tone: 'bg-rose-50 text-rose-700', line: 'bg-rose-400' },
-                              { id: 'nano', label: '나노 클랜', sub: '취향 소그룹', icon: Heart, tab: 'hiking', tone: 'bg-violet-50 text-violet-700', line: 'bg-violet-400' },
-                              { id: 'volunteer', label: '봉케팅', sub: '한정 봉사', icon: Leaf, tab: 'pet', tone: 'bg-emerald-50 text-emerald-700', line: 'bg-emerald-400' },
-                              { id: 'route', label: '1시간 루트', sub: '시경비 코스', icon: Route, tab: 'gangnam_pick', tone: 'bg-indigo-50 text-indigo-700', line: 'bg-indigo-400' },
-                              { id: 'live', label: '지금 뜨는 중', sub: '실시간', icon: Zap, tab: 'news', tone: 'bg-orange-50 text-orange-700', line: 'bg-orange-400' },
-                              { id: 'popup', label: '팝업·굿즈', sub: '한정 드롭', icon: Store, tab: 'news', tone: 'bg-pink-50 text-pink-700', line: 'bg-pink-400' },
-                         ].map((item) => {
+                         {QUICK_NAV.map((item) => {
                               const Icon = item.icon;
                               return (
                                    <button
                                         key={item.id}
                                         type="button"
-                                        onClick={() => onTabChange(item.tab)}
-                                        className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-3 text-left shadow-[0_12px_35px_-24px_rgba(15,23,42,0.55)] transition-all hover:-translate-y-1 hover:border-brand-gold/20 md:p-3.5"
+                                        onClick={() => go(item.target)}
+                                        className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-3.5 text-left shadow-[0_12px_35px_-24px_rgba(15,23,42,0.55)] transition-all hover:-translate-y-1 hover:border-brand-gold/20 md:p-4"
                                    >
                                         <span className={`absolute inset-x-0 top-0 h-1 ${item.line}`} />
-                                        <div className={`mb-2 flex h-8 w-8 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${item.tone}`}>
-                                             <Icon className="h-4 w-4" />
+                                        <div className={`mb-2.5 flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${item.tone}`}>
+                                             <Icon className="h-5 w-5" />
                                         </div>
-                                        <h2 className="text-xs font-black text-brand-ink md:text-sm">{item.label}</h2>
-                                        <p className="mt-0.5 text-[10px] font-bold text-slate-400">{item.sub}</p>
+                                        <h2 className="text-sm font-black text-brand-ink md:text-base">{item.label}</h2>
+                                        <p className="mt-0.5 text-xs font-bold text-slate-400 md:text-sm">{item.sub}</p>
                                    </button>
                               );
                          })}
@@ -211,12 +222,12 @@ export default function HomeMzFeed({
                                    >
                                         <div className="relative aspect-[16/10] overflow-hidden">
                                              <img src={pick.image} alt="" className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
-                                             <span className="absolute left-2 top-2 rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-black text-white">{pick.badge}</span>
-                                             <span className="absolute right-2 top-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">{pick.tag}</span>
+                                             <span className="absolute left-2 top-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-black text-white">{pick.badge}</span>
+                                             <span className="absolute right-2 top-2 rounded-full bg-black/50 px-2 py-0.5 text-xs font-bold text-white backdrop-blur">{pick.tag}</span>
                                         </div>
                                         <div className="p-3">
-                                             <p className="line-clamp-1 text-sm font-black text-brand-ink">{pick.title}</p>
-                                             <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                             <p className="line-clamp-1 text-base font-black text-brand-ink">{pick.title}</p>
+                                             <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-slate-400">
                                                   <MapPin className="h-3 w-3" />{pick.spot}
                                              </p>
                                         </div>
@@ -233,12 +244,12 @@ export default function HomeMzFeed({
                                    <button
                                         key={mood.id}
                                         type="button"
-                                        onClick={() => { setSelectedMood(mood.id); onTabChange(mood.tab); }}
-                                        className={`rounded-2xl border bg-gradient-to-br p-3 text-left transition-all hover:-translate-y-0.5 ${mood.color} ${selectedMood === mood.id ? 'ring-2 ring-brand-gold' : ''}`}
+                                        onClick={() => { setSelectedMood(mood.id); go(mood.target); }}
+                                        className={`rounded-2xl border bg-gradient-to-br p-4 text-left transition-all hover:-translate-y-0.5 ${mood.color} ${selectedMood === mood.id ? 'ring-2 ring-brand-gold' : ''}`}
                                    >
-                                        <span className="text-2xl">{mood.emoji}</span>
-                                        <p className="mt-2 text-xs font-black text-brand-ink">{mood.label}</p>
-                                        <p className="mt-0.5 text-[10px] font-semibold text-slate-500">{mood.desc}</p>
+                                        <span className="text-3xl">{mood.emoji}</span>
+                                        <p className="mt-2 text-sm font-black text-brand-ink md:text-base">{mood.label}</p>
+                                        <p className="mt-1 text-xs font-semibold text-slate-500 md:text-sm">{mood.desc}</p>
                                    </button>
                               ))}
                          </div>
@@ -258,22 +269,22 @@ export default function HomeMzFeed({
                                         >
                                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-lg">👋</div>
                                              <div className="min-w-0 flex-1">
-                                                  <p className="truncate text-xs font-black text-brand-ink">{friend.title}</p>
-                                                  <p className="mt-0.5 text-[10px] font-semibold text-slate-400">{friend.user} · {friend.area} · {friend.time}</p>
+                                                  <p className="truncate text-sm font-black text-brand-ink">{friend.title}</p>
+                                                  <p className="mt-0.5 text-xs font-semibold text-slate-400 md:text-sm">{friend.user} · {friend.area} · {friend.time}</p>
                                                   <div className="mt-1 flex flex-wrap gap-1">
                                                        {friend.tags.map((t) => (
-                                                            <span key={t} className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-bold text-sky-600">{t}</span>
+                                                            <span key={t} className="rounded-full bg-sky-50 px-2 py-0.5 text-[11px] font-bold text-sky-600">{t}</span>
                                                        ))}
                                                   </div>
                                              </div>
-                                             <span className="shrink-0 rounded-full bg-sky-100 px-2 py-1 text-[10px] font-black text-sky-700">{friend.slots}</span>
+                                             <span className="shrink-0 rounded-full bg-sky-100 px-2.5 py-1 text-xs font-black text-sky-700">{friend.slots}</span>
                                         </button>
                                    ))}
                               </div>
                          </div>
 
                          <div className="rounded-[20px] border border-violet-100 bg-gradient-to-br from-violet-50/50 to-white p-4 md:p-5">
-                              <SectionHeader label="Nano Clan" title="나노 클랜 — 취향 소그룹" actionLabel="모임 보기" onAction={() => onTabChange('hiking')} />
+                              <SectionHeader label="Nano Clan" title="나노 클랜 — 취향 소그룹" actionLabel="모임 보기" onAction={() => onTabChange('wine')} />
                               <div className="space-y-2">
                                    {NANO_CLANS.map((clan) => (
                                         <button
@@ -286,11 +297,11 @@ export default function HomeMzFeed({
                                                   <Users className="h-5 w-5 text-violet-600" />
                                              </div>
                                              <div className="min-w-0 flex-1">
-                                                  <p className="truncate text-xs font-black text-brand-ink">{clan.name}</p>
-                                                  <p className="mt-0.5 text-[10px] font-semibold text-slate-400">#{clan.tag} · 소규모 운영</p>
+                                                  <p className="truncate text-sm font-black text-brand-ink">{clan.name}</p>
+                                                  <p className="mt-0.5 text-xs font-semibold text-slate-400 md:text-sm">#{clan.tag} · 소규모 운영</p>
                                              </div>
                                              <div className="shrink-0 text-right">
-                                                  <p className="text-xs font-black text-violet-700">{clan.members}/{clan.max}</p>
+                                                  <p className="text-sm font-black text-violet-700">{clan.members}/{clan.max}</p>
                                                   <div className="mt-1 h-1.5 w-12 overflow-hidden rounded-full bg-violet-100">
                                                        <div className="h-full rounded-full bg-violet-500" style={{ width: `${(clan.members / clan.max) * 100}%` }} />
                                                   </div>
@@ -314,15 +325,15 @@ export default function HomeMzFeed({
                                    >
                                         <div className="mb-2 flex items-center justify-between">
                                              <span className="text-2xl">{route.icon}</span>
-                                             <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-black text-indigo-700">
+                                             <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-black text-indigo-700">
                                                   <Clock className="h-3 w-3" />{route.time}
                                              </span>
                                         </div>
-                                        <p className="text-sm font-black text-brand-ink">{route.title}</p>
+                                        <p className="text-base font-black text-brand-ink">{route.title}</p>
                                         <ol className="mt-2 space-y-1">
                                              {route.steps.map((step, i) => (
-                                                  <li key={step} className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-                                                       <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[9px] font-black text-indigo-600">{i + 1}</span>
+                                                  <li key={step} className="flex items-center gap-1.5 text-sm font-semibold text-slate-500">
+                                                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-black text-indigo-600">{i + 1}</span>
                                                        {step}
                                                   </li>
                                              ))}
@@ -349,12 +360,12 @@ export default function HomeMzFeed({
                                              </div>
                                              <div className="min-w-0 flex-1">
                                                   <div className="flex items-center gap-2">
-                                                       <p className="truncate text-xs font-black text-brand-ink">{spot.title}</p>
-                                                       {spot.hot && <span className="shrink-0 rounded bg-rose-500 px-1.5 py-0.5 text-[9px] font-black text-white">마감임박</span>}
+                                                       <p className="truncate text-sm font-black text-brand-ink">{spot.title}</p>
+                                                       {spot.hot && <span className="shrink-0 rounded bg-rose-500 px-2 py-0.5 text-[11px] font-black text-white">마감임박</span>}
                                                   </div>
-                                                  <p className="mt-0.5 text-[10px] font-semibold text-slate-400">{spot.date} · {spot.location}</p>
+                                                  <p className="mt-0.5 text-xs font-semibold text-slate-400 md:text-sm">{spot.date} · {spot.location}</p>
                                              </div>
-                                             <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-black ${spot.slots <= 2 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                             <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-black ${spot.slots <= 2 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                                   {spot.slots}자리
                                              </span>
                                         </button>
@@ -363,23 +374,23 @@ export default function HomeMzFeed({
                          </div>
 
                          <div className="rounded-[20px] border border-pink-100 bg-gradient-to-br from-pink-50/50 to-white p-4 md:p-5">
-                              <SectionHeader label="Pop-up Drop" title="팝업·팝스토어 알림" actionLabel="소식" onAction={() => onTabChange('news')} />
+                              <SectionHeader label="Pop-up Drop" title="팝업·팝스토어 알림" actionLabel="핫플 보기" onAction={() => onTabChange('gangnam_pick')} />
                               <div className="space-y-2">
                                    {POPUP_ALERTS.map((popup) => (
                                         <button
                                              key={popup.id}
                                              type="button"
-                                             onClick={() => onTabChange('news')}
+                                             onClick={() => onTabChange('gangnam_pick')}
                                              className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm transition-all hover:shadow-md"
                                         >
                                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pink-100">
                                                   <Store className="h-5 w-5 text-pink-600" />
                                              </div>
                                              <div className="min-w-0 flex-1">
-                                                  <p className="truncate text-xs font-black text-brand-ink">{popup.title}</p>
-                                                  <p className="mt-0.5 text-[10px] font-semibold text-slate-400">{popup.brand} · {popup.area}</p>
+                                                  <p className="truncate text-sm font-black text-brand-ink">{popup.title}</p>
+                                                  <p className="mt-0.5 text-xs font-semibold text-slate-400 md:text-sm">{popup.brand} · {popup.area}</p>
                                              </div>
-                                             <span className="shrink-0 rounded-full bg-pink-100 px-2 py-1 text-[10px] font-black text-pink-700">{popup.until}</span>
+                                             <span className="shrink-0 rounded-full bg-pink-100 px-2.5 py-1 text-xs font-black text-pink-700">{popup.until}</span>
                                         </button>
                                    ))}
                               </div>
@@ -410,8 +421,8 @@ export default function HomeMzFeed({
                                                        rel="noreferrer"
                                                        className="rounded-2xl bg-white/90 p-3 shadow-sm transition-transform hover:-translate-y-0.5"
                                                   >
-                                                       <p className="text-[10px] font-black text-brand-accent">{item.source || '강남구청'}</p>
-                                                       <p className="mt-1 line-clamp-2 text-xs font-black leading-5 text-brand-ink">{item.title}</p>
+                                                       <p className="text-xs font-black text-brand-accent">{item.source || '강남구청'}</p>
+                                                       <p className="mt-1 line-clamp-2 text-sm font-black leading-5 text-brand-ink">{item.title}</p>
                                                   </a>
                                              )
                                         ))}
@@ -421,14 +432,14 @@ export default function HomeMzFeed({
                                                   onClick={() => onTabChange(featuredMeeting.originalType || 'wine')}
                                                   className="rounded-2xl bg-brand px-3 py-3 text-left text-white shadow-sm transition-transform hover:-translate-y-0.5 md:col-span-2"
                                              >
-                                                  <p className="text-[10px] font-bold text-amber-200">🔥 지금 핫한 모임</p>
-                                                  <p className="mt-1 line-clamp-2 text-sm font-black">{featuredMeeting.title}</p>
-                                                  <p className="mt-1 text-[11px] font-semibold text-white/80">{featuredMeeting.location}</p>
+                                                  <p className="text-xs font-bold text-amber-200">🔥 지금 핫한 모임</p>
+                                                  <p className="mt-1 line-clamp-2 text-base font-black">{featuredMeeting.title}</p>
+                                                  <p className="mt-1 text-sm font-semibold text-white/80">{featuredMeeting.location}</p>
                                              </button>
                                         )}
                                    </div>
                                    {digestNews?.fromCache && (
-                                        <p className="mt-3 text-[11px] font-semibold text-amber-700">실시간 소식 연결에 문제가 있어 캐시 목록을 함께 보여드리고 있어요.</p>
+                                        <p className="mt-3 text-sm font-semibold text-amber-700">실시간 소식 연결에 문제가 있어 캐시 목록을 함께 보여드리고 있어요.</p>
                                    )}
                               </div>
 
@@ -440,10 +451,10 @@ export default function HomeMzFeed({
                                              <button key={item.id} type="button" onClick={() => onTabChange(item.originalType || 'wine')} className="group flex w-full items-center gap-3 rounded-2xl bg-white p-2.5 text-left transition-all hover:shadow-md">
                                                   <img src={item.image} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
                                                   <div className="min-w-0">
-                                                       <p className="truncate text-xs font-black text-brand-ink">{item.title}</p>
-                                                       <p className="mt-1 truncate text-[11px] font-semibold text-slate-400">{item.location}</p>
+                                                       <p className="truncate text-sm font-black text-brand-ink">{item.title}</p>
+                                                       <p className="mt-1 truncate text-xs font-semibold text-slate-400 md:text-sm">{item.location}</p>
                                                   </div>
-                                                  <span className="ml-auto shrink-0 rounded-full bg-brand-light px-2 py-1 text-[10px] font-black text-brand-accent">{item.participants}/{item.maxParticipants}</span>
+                                                  <span className="ml-auto shrink-0 rounded-full bg-brand-light px-2.5 py-1 text-xs font-black text-brand-accent">{item.participants}/{item.maxParticipants}</span>
                                              </button>
                                         ))}
                                    </div>
@@ -452,8 +463,8 @@ export default function HomeMzFeed({
 
                          <div className="relative min-h-[280px] overflow-hidden rounded-[20px] bg-slate-100 p-2">
                               <div className="absolute left-4 top-4 z-10 rounded-xl bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
-                                   <p className="text-[10px] font-black text-brand-accent">NOW HERE</p>
-                                   <p className="mt-0.5 text-xs font-black text-brand-ink">강남역 중심</p>
+                                   <p className="text-xs font-black text-brand-accent">NOW HERE</p>
+                                   <p className="mt-0.5 text-sm font-black text-brand-ink">강남역 중심</p>
                               </div>
                               <KakaoMap
                                    latitude={37.4979}
