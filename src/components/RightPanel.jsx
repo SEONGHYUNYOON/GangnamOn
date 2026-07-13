@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Zap, Star, Heart, Cloud, Sparkles, ExternalLink, UserRound, MessageCircle, UserPlus } from 'lucide-react';
-import { callEconomy, databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role, SITE_HOST_ID } from '../lib/appwrite';
+import { databases, DATABASE_ID, COLLECTIONS, ID, Permission, Query, Role, SITE_HOST_ID } from '../lib/appwrite';
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
 import AuthWidget from './AuthWidget';
+import NotificationBell from './NotificationBell';
 import GangnamTraffic from './GangnamTraffic';
 import GangnamNews from './GangnamNews';
 
@@ -46,13 +47,14 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                return;
           }
           if (!profile?.$id || profile.$id === user.id) return;
-          const documentId = `${user.id}_${profile.$id}_friend`.replace(/[^a-zA-Z0-9._-]/g, '_');
           setFriendRequestingId(profile.$id);
           try {
+               // 문서 ID를 직접 조합하면 36자 제한을 넘겨 400 오류가 나므로 ID.unique() 사용.
+               // 중복 신청은 (ownerId, targetId, relationType) unique 인덱스가 409로 막아줍니다.
                await databases.createDocument({
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.userRelations,
-                    documentId,
+                    documentId: ID.unique(),
                     data: {
                          ownerId: user.id,
                          targetId: profile.$id,
@@ -80,8 +82,6 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
      };
 
      // --- Edit Profile State ---
-     const [isEditingName, setIsEditingName] = useState(false);
-     const [editName, setEditName] = useState('');
 
      // Romance Rank Mock
      const rankedUsers = [
@@ -298,63 +298,8 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
           return () => clearInterval(interval);
      }, []);
 
-     useEffect(() => {
-          if (user) {
-               // Prioritize nickname/display_name and REMOVE email ID fallback
-               const displayName = user.user_metadata?.nickname ||
-                    user.user_metadata?.display_name ||
-                    user.user_metadata?.username ||
-                    user.user_metadata?.full_name ||
-                    user.user_metadata?.name ||
-                    '닉네임을 설정해주세요';
-               setEditName(displayName);
-          }
-     }, [user]);
-
      const handleLogout = async () => {
           if (onLogout) await onLogout();
-     };
-
-     const handleUpdateName = async () => {
-          if (!editName.trim()) return;
-
-          // Check if name is actually changing
-          const currentName = user.user_metadata?.nickname ||
-               user.user_metadata?.display_name ||
-               user.user_metadata?.username ||
-               user.user_metadata?.full_name ||
-               user.user_metadata?.name;
-
-          if (editName === currentName) {
-               setIsEditingName(false);
-               return;
-          }
-
-          // Cost Logic (실제 차감/검증은 서버 economy Function에서 수행됩니다)
-          const CHANGE_COST = 1000;
-          if (beanCount < CHANGE_COST) {
-               alert(`닉네임 변경에는 ${CHANGE_COST.toLocaleString()} 온이 필요합니다!\n현재 보유: ${beanCount.toLocaleString()} 온`);
-               return;
-          }
-
-          const confirmed = window.confirm(`닉네임을 '${editName}'(으)로 변경하시겠습니까?\n비용: ${CHANGE_COST.toLocaleString()} 온이 차감됩니다.`);
-          if (!confirmed) return;
-
-          try {
-               const result = await callEconomy({ action: 'change_nickname', newName: editName });
-
-               if (!result.success) {
-                    alert(result.message || "이름 변경 실패");
-                    return;
-               }
-
-               if (setBeanCount) setBeanCount(result.beans);
-               if (onLoginSuccess) await onLoginSuccess(); // 부모(App)의 user 상태 새로고침
-               setIsEditingName(false);
-               alert(`닉네임 변경 완료! -${CHANGE_COST}온`);
-          } catch (error) {
-               alert("이름 변경 실패: " + error.message);
-          }
      };
 
      const getTrafficColor = (status) => {
@@ -487,7 +432,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                {/* 1. Login Widget OR My Mini-Homepage Widget */}
                {user ? (
                     <div
-                         onClick={onOpenMinihome}
+                         onClick={() => onOpenMinihome()}
                          className="bg-white rounded-card p-4 shadow-soft border border-surface-border mb-4 cursor-pointer hover:border-brand-gold/30 hover:shadow-soft-lg transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
                     >
                          <div className="flex justify-between items-center mb-3 relative z-10">
@@ -496,16 +441,21 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    <span className="bg-green-100 text-green-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ONLINE</span>
                               </div>
 
-                              {/* Logout Button (Small) */}
-                              <button
-                                   onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleLogout();
-                                   }}
-                                   className="text-xs text-gray-300 hover:text-red-500 underline z-20"
-                              >
-                                   로그아웃
-                              </button>
+                              <div className="z-20 flex items-center gap-1">
+                                   {/* 알림 (댓글/쪽지/방명록) */}
+                                   <NotificationBell user={user} />
+
+                                   {/* Logout Button (Small) */}
+                                   <button
+                                        onClick={(e) => {
+                                             e.stopPropagation();
+                                             handleLogout();
+                                        }}
+                                        className="text-xs text-gray-300 hover:text-red-500 underline"
+                                   >
+                                        로그아웃
+                                   </button>
+                              </div>
                          </div>
 
                          <div className="flex flex-col items-center relative z-10">
@@ -521,30 +471,9 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    </div>
                               </div>
                               <p className="text-[10px] text-gray-400 font-semibold">프로필 사진은 미니홈피에서 변경</p>
-                              {isEditingName ? (
-                                   <div className="flex items-center gap-2 mb-1" onClick={(e) => e.stopPropagation()}>
-                                        <input
-                                             type="text"
-                                             value={editName}
-                                             onChange={(e) => setEditName(e.target.value)}
-                                             className="w-28 text-center border-b-2 border-purple-300 focus:outline-none font-bold text-gray-900 text-base bg-transparent"
-                                             autoFocus
-                                        />
-                                        <button
-                                             onClick={handleUpdateName}
-                                             className="bg-purple-500 text-white p-1 rounded-full hover:bg-purple-600"
-                                        >
-                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                                        </button>
-                                   </div>
-                              ) : (
-                                   <div className="flex items-center gap-2 group/name cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsEditingName(true); }}>
-                                        <h4 className="font-bold text-gray-900 text-base group-hover:text-purple-600 transition-colors">
-                                             {user.user_metadata?.nickname || user.user_metadata?.display_name || user.user_metadata?.username || user.user_metadata?.full_name || user.user_metadata?.name || '닉네임을 설정해주세요'}
-                                        </h4>
-                                        <svg className="w-4 h-4 text-gray-300 opacity-0 group-hover/name:opacity-100 transition-opacity hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                   </div>
-                              )}
+                              <h4 className="font-bold text-gray-900 text-base group-hover:text-purple-600 transition-colors">
+                                   {user.user_metadata?.nickname || user.user_metadata?.display_name || user.user_metadata?.username || user.user_metadata?.full_name || user.user_metadata?.name || '닉네임을 설정해주세요'}
+                              </h4>
 
                               {/* 온 잔액 */}
                               <div

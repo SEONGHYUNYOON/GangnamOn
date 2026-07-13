@@ -4,7 +4,7 @@ import { uploadProfileAvatar, uploadPostImage, uploadPostVideo, isVideoUrl } fro
 import { getActivityRank } from '../lib/activityRank';
 import { resolveAvatarUrl } from '../lib/avatar';
 import { normalizeGangnamRegion } from '../lib/region';
-import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Pause, Play, Plus, Search, Send, Settings, ShoppingBag, Sparkles, Trash2, UserPlus, UserRound, X, Youtube } from 'lucide-react';
+import { BookOpen, Camera, ChevronRight, Heart, Home, ImagePlus, Link2, Loader2, Mail, Music2, Pause, Play, Plus, Search, Send, Settings, ShoppingBag, SkipForward, Sparkles, Trash2, UserPlus, UserRound, X, Youtube } from 'lucide-react';
 
 const getMinihomeStorageKey = (user) => `gangnam:on:minihome:${user?.id || user?.user_metadata?.username || 'guest'}`;
 const getMinihomeProfileKey = (user) => `gangnam:on:minihome-profile:${user?.id || user?.user_metadata?.username || 'guest'}`;
@@ -57,6 +57,25 @@ const getInitialBgmSettings = (user) => {
      }
 };
 
+// YouTube IFrame API 스크립트는 앱 전체에서 한 번만 로드한다
+let youtubeApiPromise = null;
+const loadYoutubeApi = () => {
+     if (window.YT?.Player) return Promise.resolve(window.YT);
+     if (!youtubeApiPromise) {
+          youtubeApiPromise = new Promise((resolve) => {
+               const previousCallback = window.onYouTubeIframeAPIReady;
+               window.onYouTubeIframeAPIReady = () => {
+                    previousCallback?.();
+                    resolve(window.YT);
+               };
+               const script = document.createElement('script');
+               script.src = 'https://www.youtube.com/iframe_api';
+               document.head.appendChild(script);
+          });
+     }
+     return youtubeApiPromise;
+};
+
 const sameBgm = (a, b) =>
      a.bgmVideoId === b.bgmVideoId &&
      JSON.stringify(a.bgmPlaylistIds || []) === JSON.stringify(b.bgmPlaylistIds || []);
@@ -77,6 +96,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const [totalCount, setTotalCount] = useState(0);
      const [avatarUploading, setAvatarUploading] = useState(false);
      const [surfProfiles, setSurfProfiles] = useState([]);
+     const [surfSearch, setSurfSearch] = useState('');
      const [friendIds, setFriendIds] = useState(new Set());
      const [shopLoading, setShopLoading] = useState('');
      const [homePosts, setHomePosts] = useState([]);
@@ -85,6 +105,9 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const [photoCaption, setPhotoCaption] = useState('');
      const [isPhotoComposerOpen, setIsPhotoComposerOpen] = useState(false);
      const photoInputRef = useRef(null);
+     const [bgmIndex, setBgmIndex] = useState(0);
+     const bgmPlayerRef = useRef(null);
+     const bgmMountRef = useRef(null);
 
      const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
      const displayName = profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '강남 이웃';
@@ -98,6 +121,59 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const rank = getActivityRank((profileData?.activityScore || 0) + totalCount + guestbookEntries.length * 6);
      const bgmIds = miniSettings.bgmPlaylistIds?.length ? miniSettings.bgmPlaylistIds : (miniSettings.bgmVideoId ? [miniSettings.bgmVideoId] : []);
      const bgmTitles = miniSettings.bgmPlaylistTitles?.length ? miniSettings.bgmPlaylistTitles : (miniSettings.bgmTitle ? [miniSettings.bgmTitle] : []);
+     const bgmKey = bgmIds.join(',');
+
+     // IFrame API로 플레이어를 직접 만들어야 다음 곡 넘기기·현재 곡 제목 표시·이어듣기가 가능하다
+     useEffect(() => {
+          if (!bgmKey || !bgmMountRef.current) return undefined;
+          const ids = bgmKey.split(',');
+          let cancelled = false;
+
+          loadYoutubeApi().then((YT) => {
+               if (cancelled || !bgmMountRef.current) return;
+               bgmMountRef.current.innerHTML = '';
+               const target = document.createElement('div');
+               bgmMountRef.current.appendChild(target);
+               bgmPlayerRef.current = new YT.Player(target, {
+                    height: '1',
+                    width: '1',
+                    playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
+                    events: {
+                         onReady: (event) => {
+                              event.target.loadPlaylist(ids);
+                              event.target.setLoop(true);
+                         },
+                         onStateChange: (event) => {
+                              const index = event.target.getPlaylistIndex?.();
+                              if (typeof index === 'number' && index >= 0) setBgmIndex(index);
+                              if (event.data === YT.PlayerState.PLAYING) setIsBgmPlaying(true);
+                              else if (event.data === YT.PlayerState.PAUSED) setIsBgmPlaying(false);
+                         },
+                    },
+               });
+          });
+
+          return () => {
+               cancelled = true;
+               try {
+                    bgmPlayerRef.current?.destroy();
+               } catch { /* 이미 해제된 플레이어 */ }
+               bgmPlayerRef.current = null;
+               setBgmIndex(0);
+          };
+     }, [bgmKey]);
+
+     const toggleBgm = () => {
+          const player = bgmPlayerRef.current;
+          if (!player?.getPlayerState) return;
+          if (isBgmPlaying) player.pauseVideo();
+          else player.playVideo();
+          setIsBgmPlaying((playing) => !playing);
+     };
+
+     const skipBgm = () => {
+          bgmPlayerRef.current?.nextVideo?.();
+     };
 
      const panes = useMemo(() => [
           { id: 'home', label: '홈', icon: Home },
@@ -264,10 +340,15 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      useEffect(() => {
           const fetchSurfProfiles = async () => {
                try {
+                    const term = surfSearch.trim();
+                    // 검색어가 있으면 닉네임(username) 앞부분 일치로 서버에서 검색
+                    const queries = term
+                         ? [Query.startsWith('username', term), Query.limit(24)]
+                         : [Query.limit(24)];
                     const res = await databases.listDocuments({
                          databaseId: DATABASE_ID,
                          collectionId: COLLECTIONS.profiles,
-                         queries: [Query.limit(24)],
+                         queries,
                     });
                     setSurfProfiles(res.documents.filter(profile => profile.$id !== user?.id));
                } catch (error) {
@@ -289,9 +370,14 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                }
           };
 
-          if (activePane === 'surf') fetchSurfProfiles();
+          let timer = null;
+          if (activePane === 'surf') {
+               // 입력 중 과도한 요청을 막기 위해 300ms 디바운스
+               timer = setTimeout(fetchSurfProfiles, surfSearch ? 300 : 0);
+          }
           fetchFriends();
-     }, [activePane, user?.id, currentUser?.id]);
+          return () => { if (timer) clearTimeout(timer); };
+     }, [activePane, user?.id, currentUser?.id, surfSearch]);
 
      useEffect(() => {
           const fetchGuestbook = async () => {
@@ -647,12 +733,13 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           }
           if (!profile?.$id || profile.$id === currentUser.id || friendIds.has(profile.$id)) return;
           if (!window.confirm('일촌을 신청하시겠습니까?')) return;
-          const documentId = `${currentUser.id}_${profile.$id}_friend`.replace(/[^a-zA-Z0-9._-]/g, '_');
           try {
+               // 문서 ID를 직접 조합하면 36자 제한을 넘겨 400 오류가 나므로 ID.unique() 사용.
+               // 중복 신청은 (ownerId, targetId, relationType) unique 인덱스가 409로 막아줍니다.
                await databases.createDocument({
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.userRelations,
-                    documentId,
+                    documentId: ID.unique(),
                     data: {
                          ownerId: currentUser.id,
                          targetId: profile.$id,
@@ -751,17 +838,22 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                               <Music2 className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
                               <div className="relative w-24 min-w-0 overflow-hidden sm:w-40">
                                    {bgmIds.length > 0 ? (
-                                        <div className="flex w-max animate-marquee whitespace-nowrap [animation-duration:12s]">
-                                             <span className="pr-10 text-[11px] font-black text-slate-600">♪ {bgmTitles[0] || 'BGM'}</span>
-                                             <span className="pr-10 text-[11px] font-black text-slate-600">♪ {bgmTitles[0] || 'BGM'}</span>
+                                        <div key={bgmIndex} className="flex w-max animate-marquee whitespace-nowrap [animation-duration:12s]">
+                                             <span className="pr-10 text-[11px] font-black text-slate-600">♪ {bgmTitles[bgmIndex] || bgmTitles[0] || 'BGM'}</span>
+                                             <span className="pr-10 text-[11px] font-black text-slate-600">♪ {bgmTitles[bgmIndex] || bgmTitles[0] || 'BGM'}</span>
                                         </div>
                                    ) : (
                                         <span className="text-[11px] font-black text-slate-400">BGM 없음</span>
                                    )}
                               </div>
                               {bgmIds.length > 0 && (
-                                   <button type="button" onClick={() => setIsBgmPlaying((playing) => !playing)} className="shrink-0 rounded-full p-1.5 text-slate-600 hover:bg-white" title={isBgmPlaying ? 'BGM 일시정지' : 'BGM 재생'}>
+                                   <button type="button" onClick={toggleBgm} className="shrink-0 rounded-full p-1.5 text-slate-600 hover:bg-white" title={isBgmPlaying ? 'BGM 일시정지' : 'BGM 재생'}>
                                         {isBgmPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                                   </button>
+                              )}
+                              {bgmIds.length > 1 && (
+                                   <button type="button" onClick={skipBgm} className="shrink-0 rounded-full p-1.5 text-slate-600 hover:bg-white" title="다음 곡">
+                                        <SkipForward className="h-3.5 w-3.5" />
                                    </button>
                               )}
                               {isOwner && (
@@ -769,14 +861,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                         <Plus className="h-3.5 w-3.5" />
                                    </button>
                               )}
-                              {isBgmPlaying && bgmIds.length > 0 && (
-                                   <iframe
-                                        title="Minihome background music"
-                                        className="pointer-events-none absolute -left-[9999px] h-px w-px opacity-0"
-                                        src={`https://www.youtube.com/embed/${bgmIds[0]}?autoplay=1&mute=0&loop=1&playlist=${bgmIds.join(',')}&rel=0&modestbranding=1&playsinline=1`}
-                                        allow="autoplay; encrypted-media"
-                                   />
-                              )}
+                              <div ref={bgmMountRef} aria-hidden="true" className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden opacity-0" />
                          </div>
                          <div className="flex shrink-0 items-center gap-2">
                               {!isOwner && currentUser?.id && (
@@ -1159,6 +1244,13 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                              <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
                                                   <h3 className="text-lg font-black text-sky-950">파도타기</h3>
                                                   <p className="mt-1 text-sm font-semibold text-sky-700">일촌과 관심사가 이어진 강남 미니홈피를 둘러보세요.</p>
+                                                  <input
+                                                       type="text"
+                                                       value={surfSearch}
+                                                       onChange={(e) => setSurfSearch(e.target.value)}
+                                                       placeholder="닉네임으로 검색"
+                                                       className="mt-3 w-full rounded-xl border border-sky-200 bg-white px-4 py-2.5 text-sm font-semibold text-sky-950 placeholder:text-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-300"
+                                                  />
                                              </div>
                                              {surfProfiles.map((profile) => (
                                                   <div key={profile.$id} className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left hover:bg-slate-50">
@@ -1176,7 +1268,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                                              ))}
                                              {surfProfiles.length === 0 && (
                                                   <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-sm font-semibold text-slate-400">
-                                                       둘러볼 미니홈피를 찾는 중입니다.
+                                                       {surfSearch.trim() ? `'${surfSearch.trim()}'(으)로 시작하는 닉네임을 찾지 못했어요.` : '둘러볼 미니홈피를 찾는 중입니다.'}
                                                   </div>
                                              )}
                                         </div>

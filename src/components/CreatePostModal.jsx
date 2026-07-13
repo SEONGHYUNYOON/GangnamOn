@@ -494,21 +494,6 @@ const CreatePostModal = ({ onClose, onShare, user, initialCategory = 'gathering'
                                                             setFormData((current) => ({ ...current, location: place.address }));
                                                        }}
                                                   />
-                                                  <div className="mt-3 grid grid-cols-2 gap-2">
-                                                       {gangnamPlacePresets.map((place) => (
-                                                            <button
-                                                                 key={place.label}
-                                                                 type="button"
-                                                                 onClick={() => {
-                                                                      setSelectedMapPlace(place);
-                                                                      setFormData({ ...formData, location: `${place.label} · ${place.address}` });
-                                                                 }}
-                                                                 className={`rounded-xl border px-3 py-2 text-left text-xs font-black ${selectedMapPlace.label === place.label ? 'border-purple-400 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-500'}`}
-                                                            >
-                                                                 {place.label}
-                                                            </button>
-                                                       ))}
-                                                  </div>
                                              </div>
                                         </div>
 

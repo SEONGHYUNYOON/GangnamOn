@@ -494,6 +494,33 @@ function App() {
           return () => unsubscribe();
      }, [isAdmin, user?.id]);
 
+     // 일촌 신청 실시간 알림 — 접속 중에 누군가 나를 대상으로 일촌 신청(user_relations 생성)을
+     // 하면 팝업(토스트)으로 바로 알려줍니다.
+     useEffect(() => {
+          if (!user?.id) return undefined;
+          const unsubscribe = client.subscribe(
+               [`databases.${DATABASE_ID}.collections.${COLLECTIONS.userRelations}.documents`],
+               async (response) => {
+                    const isCreate = response.events.some(event => event.endsWith('.create'));
+                    const payload = response.payload;
+                    if (!isCreate || !payload || payload.relationType !== 'friend' || payload.targetId !== user.id) return;
+                    let requesterName = '강남 이웃';
+                    try {
+                         const profile = await databases.getDocument({
+                              databaseId: DATABASE_ID,
+                              collectionId: COLLECTIONS.profiles,
+                              documentId: payload.ownerId,
+                         });
+                         requesterName = profile.username || profile.fullName || requesterName;
+                    } catch {
+                         // 프로필 조회 실패 시 기본 이름으로 표시
+                    }
+                    setToastMessage(`💛 ${requesterName}님이 일촌 신청을 보냈어요!`);
+               }
+          );
+          return () => unsubscribe();
+     }, [user?.id]);
+
      // Helper to update beans safely in DB and State
      const updateBeanCount = async (delta) => {
           setBeanCount(prev => {
@@ -1319,7 +1346,7 @@ function App() {
                     <div className="w-[320px] 2xl:w-[350px] h-screen sticky top-0 hidden 2xl:block overflow-y-auto overscroll-contain no-scrollbar shrink-0 pt-5">
                          {/* Pass bean stats and dark mode flag */}
                          <RightPanel
-                              onOpenMinihome={() => handleOpenMinihome()}
+                              onOpenMinihome={handleOpenMinihome}
                               onOpenRewardCenter={() => setIsRewardCenterOpen(true)}
                               onOpenAvatarCustomizer={() => setIsAvatarModalOpen(true)}
                               isDark={activeTab === 'romance'}

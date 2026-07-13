@@ -6,6 +6,12 @@ import { resolveAvatarUrl } from '../lib/avatar';
 
 const displayNameOf = (profile) => profile?.username || profile?.fullName || '강남 이웃';
 const relationId = (ownerId, targetId, type) => `${ownerId}_${targetId}_${type}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+// Appwrite 문서 ID는 36자 제한입니다. 두 유저 ID(각 20자)를 그대로 이어붙이면 44자가 되어
+// 방/참가자 문서 생성이 조용히 실패하므로, 앞 15자씩만 사용해 34자 결정적 방 ID를 만듭니다.
+const dmRoomId = (idA, idB) => {
+     const [a, b] = [String(idA), String(idB)].sort();
+     return `dm_${a.slice(0, 15)}_${b.slice(0, 15)}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+};
 const historyKey = (userId) => `gangnam:on:chat-search-history:${userId}`;
 const lastReadKey = (userId) => `gangnam:on:chat-last-read:${userId}`;
 
@@ -209,7 +215,7 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer, onUnreadCh
           setErrorText('');
           saveSearchHistory(displayNameOf(profile));
           try {
-               const roomId = [user.id, profile.$id].sort().join('_dm_').replace(/[^a-zA-Z0-9._-]/g, '_');
+               const roomId = dmRoomId(user.id, profile.$id);
                await databases.createDocument({
                     databaseId: DATABASE_ID,
                     collectionId: COLLECTIONS.chatRooms,
@@ -218,11 +224,13 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer, onUnreadCh
                     permissions: [Permission.read(Role.user(user.id)), Permission.read(Role.user(profile.$id))],
                }).catch(() => null);
 
+               // 참가자 문서는 ID를 직접 만들면 36자 제한을 넘으므로 ID.unique()를 쓰고,
+               // 중복 참가는 (roomId, userId) unique 인덱스가 409로 막아줍니다.
                await Promise.all([user.id, profile.$id].map(memberId =>
                     databases.createDocument({
                          databaseId: DATABASE_ID,
                          collectionId: COLLECTIONS.chatParticipants,
-                         documentId: `${roomId}_${memberId}`.replace(/[^a-zA-Z0-9._-]/g, '_'),
+                         documentId: ID.unique(),
                          data: { roomId, userId: memberId },
                          permissions: [Permission.read(Role.user(memberId)), Permission.read(Role.user(user.id)), Permission.read(Role.user(profile.$id))],
                     }).catch(() => null)
@@ -358,6 +366,8 @@ const ChatWidget = ({ user, initialPeer = null, onConsumeInitialPeer, onUnreadCh
                const payload = response.payload;
                const isCreate = response.events.some(event => event.endsWith('.create'));
                if (!isCreate || !payload?.roomId || payload.senderId === user.id) return;
+               // 내가 참여한 방(방 ID에 내 유저 ID 앞부분이 포함됨)의 메시지만 알림
+               if (!payload.roomId.includes(user.id.slice(0, 15))) return;
 
                const isActiveRoom = payload.roomId === activeRoom?.roomId;
 

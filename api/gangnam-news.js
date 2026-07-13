@@ -1,6 +1,6 @@
-// 강남구청 홈페이지에서 "강남이슈"뿐 아니라 "보도자료"와 "언론보도" 게시판까지
-// 함께 긁어와서 합쳐 보여줍니다. 세 게시판 모두 강남구청 홈페이지의 동일한 게시판
-// 스킨(테이블 목록 + 등록일)을 쓰고 있어서 같은 파서를 재사용할 수 있습니다.
+// 강남구청 홈페이지에서 "강남이슈"뿐 아니라 "보도자료", "언론보도", "공지사항",
+// "행사소식" 게시판까지 함께 긁어와서 합쳐 보여줍니다. 모두 강남구청 홈페이지의
+// 동일한 게시판 스킨(테이블 목록 + 등록일)을 쓰고 있어서 같은 파서를 재사용할 수 있습니다.
 const SOURCES = [
      {
           label: '강남이슈',
@@ -13,6 +13,14 @@ const SOURCES = [
      {
           label: '언론보도',
           url: 'https://www.gangnam.go.kr/board/external_article/list.do?mid=ID01_0314',
+     },
+     {
+          label: '공지사항',
+          url: 'https://www.gangnam.go.kr/board/B_000001/list.do?mid=ID05_040101',
+     },
+     {
+          label: '행사소식',
+          url: 'https://www.gangnam.go.kr/board/B_000045/list.do?mid=ID05_040103',
      },
 ];
 const RSS_URL = 'https://www.gangnam.go.kr/portal/bbs/rss.do?bbsId=B_000065';
@@ -133,7 +141,7 @@ export default async function handler(req, res) {
                .slice(0, 5));
 
           return res.status(200).json({
-               source: '강남구청 (강남이슈·보도자료·언론보도)',
+               source: '강남구청 (강남이슈·보도자료·언론보도·공지사항·행사소식)',
                sourceUrl: 'https://www.gangnam.go.kr/',
                sources: SOURCES.map((s) => s.label),
                failedSources: results
@@ -143,7 +151,7 @@ export default async function handler(req, res) {
           });
      }
 
-     // 세 게시판 모두 실패했을 때만 RSS로 폴백
+     // 게시판이 모두 실패했을 때만 RSS로 폴백
      try {
           const fallbackResponse = await fetch(RSS_URL, {
                headers: {

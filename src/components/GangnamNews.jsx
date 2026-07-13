@@ -361,7 +361,7 @@ export const GangnamLocalInfo = ({ type = 'life_info' }) => {
 };
 
 const GangnamNews = ({ compact = false }) => {
-     const { news, loading, error, fromCache, source, failedSources, reload } = useGangnamNews(compact ? 3 : 15);
+     const { news, loading, error, fromCache, source, failedSources, reload } = useGangnamNews(compact ? 3 : 25);
      const [showAllLocalInfo, setShowAllLocalInfo] = useState(false);
      const [sourceFilter, setSourceFilter] = useState('all');
 
@@ -403,7 +403,7 @@ const GangnamNews = ({ compact = false }) => {
      }
 
      const sourceTabs = ['all', ...Array.from(new Set(news.map((item) => item.source).filter(Boolean)))];
-     const visibleNews = sourceFilter === 'all' ? news.slice(0, 9) : news.filter((item) => item.source === sourceFilter).slice(0, 9);
+     const visibleNews = sourceFilter === 'all' ? news.slice(0, 15) : news.filter((item) => item.source === sourceFilter).slice(0, 15);
 
      return (
           <section className="rounded-card border border-surface-border bg-white p-5 shadow-soft md:p-7">
@@ -415,7 +415,7 @@ const GangnamNews = ({ compact = false }) => {
                          </div>
                          <h2 className="text-2xl font-black tracking-tight text-brand-ink md:text-3xl">강남구 소식</h2>
                          <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-                              강남구청 강남이슈, 보도자료, 언론보도 목록에서 기사 데이터를 직접 가져와 보여줍니다.
+                              강남구청 강남이슈, 보도자료, 언론보도, 공지사항, 행사소식 목록에서 기사 데이터를 직접 가져와 보여줍니다.
                          </p>
                     </div>
                     <a

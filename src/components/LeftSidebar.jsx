@@ -65,11 +65,19 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                subtitle: '찐 로컬들의 정보 공유',
                items: [
                     { id: 'qna', label: '무엇이든 물어보세요', icon: HelpCircle, subtext: 'Q&A' },
-                    { id: 'news', label: '강남구 소식', icon: Bell, subtext: '구청 뉴스/RSS' },
-                    { id: 'life_info', label: '생활기관 안내', icon: Building2, subtext: '구청/주민센터' },
-                    { id: 'parking_info', label: '주차·교통 생활', icon: ParkingCircle, subtext: '공영주차/교통민원' },
-                    { id: 'health_info', label: '보건·복지 안내', icon: Stethoscope, subtext: '보건소/복지센터' },
-                    { id: 'safety_info', label: '안전·민원 기관', icon: Siren, subtext: '경찰/소방/출입국' },
+                    {
+                         id: 'gu_news_group',
+                         label: '강남구 소식',
+                         icon: Bell,
+                         subtext: '구청 소식/생활 정보',
+                         children: [
+                              { id: 'news', label: '구청 뉴스·행사', icon: Bell, subtext: '강남이슈/보도자료/행사' },
+                              { id: 'life_info', label: '생활기관 안내', icon: Building2, subtext: '구청/주민센터' },
+                              { id: 'parking_info', label: '주차·교통 생활', icon: ParkingCircle, subtext: '공영주차/교통민원' },
+                              { id: 'health_info', label: '보건·복지 안내', icon: Stethoscope, subtext: '보건소/복지센터' },
+                              { id: 'safety_info', label: '안전·민원 기관', icon: Siren, subtext: '경찰/소방/출입국' },
+                         ],
+                    },
                     { id: 'housing_trade', label: '월세·전세 직거래', icon: Home, subtext: '부동산/룸메이트' },
                     { id: 'share', label: '당근보다 가까운 나눔', icon: Heart, subtext: '중고/나눔' },
                ]
@@ -174,7 +182,9 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                     {navGroups.map((group) => {
 
                          // 자동 펼침: 아직 수동으로 토글한 적 없다면, 현재 탭이 속한 그룹만 펼쳐진 상태로 시작
-                         const containsActiveTab = group.items.some(item => item.id === activeTab);
+                         const containsActiveTab = group.items.some(item =>
+                              item.id === activeTab || item.children?.some(child => child.id === activeTab)
+                         );
                          const isExpanded = expandedOverrides[group.id] ?? containsActiveTab;
 
                          // Standard Accordion Group Rendering
@@ -202,6 +212,61 @@ const LeftSidebar = ({ activeTab, setActiveTab, onLogoClick, isAdmin = false }) 
                                         <div className="space-y-1">
                                              {group.items.map((item) => {
                                                   const Icon = item.icon;
+
+                                                  // 하위 메뉴가 있는 항목: 클릭하면 펼침/접힘 토글되는 중간 메뉴로 렌더링
+                                                  if (item.children) {
+                                                       const containsActiveChild = item.children.some(child => child.id === activeTab);
+                                                       const isSubExpanded = expandedOverrides[item.id] ?? containsActiveChild;
+                                                       return (
+                                                            <div key={item.id} className="space-y-1">
+                                                                 <button
+                                                                      onClick={() => toggleSection(item.id, isSubExpanded)}
+                                                                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group text-left ${containsActiveChild ? 'bg-brand-light' : 'hover:bg-surface-muted'}`}
+                                                                 >
+                                                                      <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors shrink-0 ${containsActiveChild ? 'bg-brand-gold/15' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
+                                                                           <Icon className={`w-4 h-4 ${containsActiveChild ? 'text-brand-accent' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                                                                      </div>
+                                                                      <div className="min-w-0 flex-1">
+                                                                           <div className={`text-base font-semibold truncate ${containsActiveChild ? 'text-brand-accent' : 'text-gray-800'}`}>
+                                                                                {item.label}
+                                                                           </div>
+                                                                           <div className="text-xs font-medium truncate text-gray-500">{item.subtext}</div>
+                                                                      </div>
+                                                                      {isSubExpanded
+                                                                           ? <ChevronDown className="w-4 h-4 shrink-0 text-gray-400" />
+                                                                           : <ChevronRight className="w-4 h-4 shrink-0 text-gray-400" />}
+                                                                 </button>
+                                                                 {isSubExpanded && (
+                                                                      <div className="ml-4 space-y-1 border-l-2 border-gray-100 pl-2">
+                                                                           {item.children.map((child) => {
+                                                                                const ChildIcon = child.icon;
+                                                                                return (
+                                                                                     <button
+                                                                                          key={child.id}
+                                                                                          onClick={() => setActiveTab(child.id)}
+                                                                                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-150 group text-left ${activeTab === child.id
+                                                                                               ? 'bg-brand shadow-sm'
+                                                                                               : 'hover:bg-surface-muted'
+                                                                                               }`}
+                                                                                     >
+                                                                                          <div className={`flex items-center justify-center w-7 h-7 rounded-lg transition-colors shrink-0 ${activeTab === child.id ? 'bg-white/10' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
+                                                                                               <ChildIcon className={`w-3.5 h-3.5 ${activeTab === child.id ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                                                                                          </div>
+                                                                                          <div className="min-w-0">
+                                                                                               <div className={`text-sm font-semibold truncate ${activeTab === child.id ? 'text-white' : 'text-gray-700'}`}>
+                                                                                                    {child.label}
+                                                                                               </div>
+                                                                                               <div className={`text-[11px] font-medium truncate ${activeTab === child.id ? 'text-slate-300' : 'text-gray-500'}`}>{child.subtext}</div>
+                                                                                          </div>
+                                                                                     </button>
+                                                                                );
+                                                                           })}
+                                                                      </div>
+                                                                 )}
+                                                            </div>
+                                                       );
+                                                  }
+
                                                   return (
                                                        <button
                                                             key={item.id}
