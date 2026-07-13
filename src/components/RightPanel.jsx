@@ -441,7 +441,7 @@ const RightPanel = ({ onOpenMinihome, onOpenRewardCenter, onOpenAvatarCustomizer
                                    <span className="bg-green-100 text-green-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ONLINE</span>
                               </div>
 
-                              <div className="z-20 flex items-center gap-1">
+                              <div className="z-20 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                    {/* 알림 (댓글/쪽지/방명록) */}
                                    <NotificationBell user={user} />
 

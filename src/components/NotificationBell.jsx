@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, Heart, MessageCircle, BookOpen, X } from 'lucide-react';
 import { client, databases, DATABASE_ID, COLLECTIONS, Query } from '../lib/appwrite';
 
@@ -27,7 +28,11 @@ const NotificationBell = ({ user }) => {
      const [isOpen, setIsOpen] = useState(false);
      const [items, setItems] = useState([]);
      const [lastReadAt, setLastReadAt] = useState(null);
+     // 패널 위치(화면 고정 좌표). 프로필 카드가 overflow-hidden이라 카드 안에 absolute로 띄우면
+     // 잘리거나 겹쳐 보여서, portal + fixed로 body에 직접 띄웁니다.
+     const [panelPos, setPanelPos] = useState({ top: 0, right: 0 });
      const panelRef = useRef(null);
+     const buttonRef = useRef(null);
 
      // 마지막으로 알림을 확인한 시각 (localStorage에 보관)
      useEffect(() => {
@@ -114,11 +119,13 @@ const NotificationBell = ({ user }) => {
           return () => unsubscribe();
      }, [user?.id]);
 
-     // 패널 밖 클릭 시 닫기
+     // 패널 밖 클릭 시 닫기 (portal로 띄우므로 버튼과 패널 둘 다 확인)
      useEffect(() => {
           if (!isOpen) return undefined;
           const handleClick = (event) => {
-               if (panelRef.current && !panelRef.current.contains(event.target)) setIsOpen(false);
+               if (panelRef.current?.contains(event.target)) return;
+               if (buttonRef.current?.contains(event.target)) return;
+               setIsOpen(false);
           };
           document.addEventListener('mousedown', handleClick);
           return () => document.removeEventListener('mousedown', handleClick);
@@ -132,6 +139,10 @@ const NotificationBell = ({ user }) => {
      const handleToggle = (event) => {
           event.stopPropagation();
           const nextOpen = !isOpen;
+          if (nextOpen && buttonRef.current) {
+               const rect = buttonRef.current.getBoundingClientRect();
+               setPanelPos({ top: rect.bottom + 8, right: Math.max(12, window.innerWidth - rect.right) });
+          }
           setIsOpen(nextOpen);
           if (nextOpen && user?.id) {
                const nowIso = new Date().toISOString();
@@ -144,8 +155,9 @@ const NotificationBell = ({ user }) => {
      if (!user?.id) return null;
 
      return (
-          <div className="relative" ref={panelRef}>
+          <div className="relative">
                <button
+                    ref={buttonRef}
                     type="button"
                     onClick={handleToggle}
                     className="relative rounded-full p-1.5 text-gray-400 transition-colors hover:bg-brand-light hover:text-brand-accent"
@@ -159,10 +171,12 @@ const NotificationBell = ({ user }) => {
                     )}
                </button>
 
-               {isOpen && (
+               {isOpen && createPortal(
                     <div
+                         ref={panelRef}
                          onClick={(event) => event.stopPropagation()}
-                         className="absolute right-0 top-9 z-50 w-72 rounded-2xl border border-surface-border bg-white p-3 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
+                         style={{ position: 'fixed', top: panelPos.top, right: panelPos.right }}
+                         className="z-[90] w-72 rounded-2xl border border-surface-border bg-white p-3 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
                     >
                          <div className="mb-2 flex items-center justify-between px-1">
                               <h4 className="text-xs font-black uppercase tracking-wider text-brand-accent">알림</h4>
@@ -193,7 +207,8 @@ const NotificationBell = ({ user }) => {
                                    );
                               })}
                          </div>
-                    </div>
+                    </div>,
+                    document.body
                )}
           </div>
      );

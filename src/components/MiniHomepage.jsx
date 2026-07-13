@@ -108,6 +108,7 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
      const [bgmIndex, setBgmIndex] = useState(0);
      const bgmPlayerRef = useRef(null);
      const bgmMountRef = useRef(null);
+     const homePostsUserRef = useRef(null);
 
      const isOwner = Boolean(currentUser?.id && user?.id && currentUser.id === user.id);
      const displayName = profileData?.fullName || profileData?.username || user?.user_metadata?.username || user?.user_metadata?.name || '강남 이웃';
@@ -394,6 +395,8 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                }
           };
 
+          // 다른 사람 미니홈피로 이동했을 때 이전 주인의 방명록 수가 잠깐 보이지 않도록 초기화
+          setGuestbookEntries([]);
           fetchGuestbook();
           if (!user?.id) return undefined;
 
@@ -406,6 +409,10 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
           );
 
           return () => unsubscribe();
+     }, [user?.id]);
+
+     useEffect(() => {
+          setActivePane('home');
      }, [user?.id]);
 
      useEffect(() => {
@@ -431,8 +438,19 @@ const MiniHomepage = ({ onClose, user, onOpenAvatarCustomizer, currentUser, onOp
                }
           };
 
-          if (activePane === 'home') fetchHomePosts();
-     }, [user?.id, activePane]);
+          if (!user?.id) {
+               homePostsUserRef.current = null;
+               setHomePosts([]);
+               return;
+          }
+
+          // 파도타기 등 다른 탭에 있어도 사진첩 개수가 맞게, 주인이 바뀌면 즉시 다시 조회
+          if (homePostsUserRef.current !== user.id) {
+               homePostsUserRef.current = user.id;
+               setHomePosts([]);
+          }
+          fetchHomePosts();
+     }, [user?.id]);
 
      const handleSaveProfile = async () => {
           if (!isOwner) return;
