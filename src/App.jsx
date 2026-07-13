@@ -7,14 +7,12 @@ import RightPanel from './components/RightPanel'
 import ChatWidget from './components/ChatWidget'
 import Toast from './components/Toast'
 import WelcomeConfetti from './components/WelcomeConfetti'
-import KakaoMap from './components/KakaoMap'
 import GangnamNews, { GangnamLocalInfo, useGangnamNews } from './components/GangnamNews'
 import AdminNewSignupPopup from './components/AdminNewSignupPopup'
 import { SectionSkeleton, FeedError } from './components/FeedStates'
-import { getSortedQuickActionIds, trackHomeQuickAction } from './lib/homePreferences'
 import { buildMeetingMapMarkers } from './lib/meetingMapPins'
 import './index.css'
-import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, CalendarDays, MapPin, BookOpen, Newspaper, Utensils, Home, Users, Plus, MessageCircle, RefreshCw } from 'lucide-react'
+import { User, LogIn, Menu, X, Megaphone, Loader2, Lock, CalendarDays, Home, Users, Plus, MessageCircle, RefreshCw } from 'lucide-react'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy Load Heavy Components
@@ -41,6 +39,7 @@ const ResetPasswordModal = lazy(() => import('./components/ResetPasswordModal'))
 const MyMeetingSchedule = lazy(() => import('./components/MyMeetingSchedule'))
 const NoticeBoard = lazy(() => import('./components/NoticeBoard'))
 const GangnamMapFeed = lazy(() => import('./components/GangnamMapFeed'))
+const HomeMzFeed = lazy(() => import('./components/HomeMzFeed'))
 
 // 가상 모임 게시물 (홈 + 비즈니스 네트워크 탭에 노출)
 const VIRTUAL_MEETING_ITEMS = [
@@ -73,20 +72,6 @@ const VIRTUAL_MEETING_ITEMS = [
      { id: 'virtual-sports-2', category: '⚽ 스포츠', originalType: 'sports', isEvent: false, expiresAt: null, title: '강남 러닝 모임 — 매주 일요일 10km, 페이스 자유', host: '강남러너스', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '잠실 한강공원 집합', participants: 6, maxParticipants: 15, isHot: false, status: 'open', image: 'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=600&h=400&fit=crop' },
      { id: 'virtual-sports-3', category: '⚽ 스포츠', originalType: 'sports', isEvent: false, expiresAt: null, title: '배드민턴 셔틀 — 역삼 실내체육관, 초급/중급 팀 나눠서', host: 'FC강남', hostBadge: '강남 이웃', date: new Date().toLocaleDateString('ko-KR'), location: '역삼동 강남문화체육관', participants: 4, maxParticipants: 8, isHot: true, status: 'open', image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&h=400&fit=crop' },
 ];
-
-const QUICK_ACTION_STYLES = {
-     gangnam_pick: { icon: MapPin, tone: 'bg-sky-50 text-sky-700', line: 'bg-sky-400' },
-     school_find: { icon: BookOpen, tone: 'bg-amber-50 text-amber-700', line: 'bg-amber-400' },
-     wine: { icon: Utensils, tone: 'bg-rose-50 text-rose-700', line: 'bg-rose-400' },
-     news: { icon: Newspaper, tone: 'bg-emerald-50 text-emerald-700', line: 'bg-emerald-400' },
-};
-
-const QUICK_ACTION_COPY = {
-     gangnam_pick: { title: '핫플 가이드', desc: 'AI 강남 픽' },
-     school_find: { title: '동창 찾기', desc: '추억 속 친구' },
-     wine: { title: '밥친구', desc: '오늘의 약속' },
-     news: { title: '강남 트렌드', desc: '실시간 소식' },
-};
 
 function App() {
      const [activeTab, setActiveTab] = useState('home');
@@ -135,7 +120,6 @@ function App() {
      const [meetingItems, setMeetingItems] = useState([]);
      const [feedRefreshKey, setFeedRefreshKey] = useState(0);
      const [feedStatus, setFeedStatus] = useState({ meetings: 'loading', market: 'loading' });
-     const [quickActionOrder, setQuickActionOrder] = useState(() => getSortedQuickActionIds());
      const [unreadChatCount, setUnreadChatCount] = useState(0);
      const digestNews = useGangnamNews(2);
 
@@ -554,12 +538,6 @@ function App() {
           window.scrollTo(0, 0);
      };
 
-     const handleQuickAction = (actionId, tab) => {
-          trackHomeQuickAction(actionId);
-          setQuickActionOrder(getSortedQuickActionIds());
-          handleTabChange(tab);
-     };
-
      const homeMapMarkers = useMemo(() => buildMeetingMapMarkers(meetingItems, 6), [meetingItems]);
      const featuredMeeting = useMemo(
           () => meetingItems.find((item) => item.isHot) || meetingItems[0] || null,
@@ -884,178 +862,19 @@ function App() {
                                         {/* NEW: GANGNAM PICK (AI 추천 맛집/카페) — 독립 메뉴 */}
                                         {activeTab === 'gangnam_pick' && <GangnamPickBoard user={user} />}
 
-                                        {/* 1. HOME TAB */}
+                                        {/* 1. HOME TAB — MZ 트렌드 기반 홈 */}
                                         {activeTab === 'home' && (
                                              <>
-                                                  <section className="overflow-hidden rounded-[24px] border border-brand-gold/15 bg-white shadow-[0_24px_80px_-42px_rgba(15,23,42,0.38)]">
-                                                       <div className="relative overflow-hidden bg-brand px-5 py-6 text-white md:px-7 md:py-8">
-                                                            <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-gold/20 blur-3xl" />
-                                                            <div className="absolute bottom-0 right-[30%] h-24 w-24 rounded-full bg-sky-400/10 blur-2xl" />
-                                                            <div className="relative flex flex-col justify-between gap-5 md:flex-row md:items-end">
-                                                            <div>
-                                                                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-black text-amber-200 backdrop-blur-md">
-                                                                      <MapPin className="h-3.5 w-3.5" />
-                                                                      LIVE · 오늘의 강남온
-                                                                 </div>
-                                                                 <h1 className="text-2xl font-black leading-tight tracking-[-0.03em] [word-break:keep-all] md:text-4xl">
-                                                                      오늘 강남에서<br className="hidden sm:block" /> 무엇을 해볼까요?
-                                                                 </h1>
-                                                                 <p className="mt-3 text-sm font-semibold leading-6 text-slate-300">
-                                                                      모임부터 핫플, 동네 소식까지 지금 필요한 강남을 한곳에서 만나보세요.
-                                                                 </p>
-                                                            </div>
-                                                            <button
-                                                                 onClick={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
-                                                                 className="flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-brand-gold px-5 text-sm font-black text-white shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-amber-500 active:translate-y-0"
-                                                            >
-                                                                 <Plus className="h-4 w-4" />
-                                                                 모임 개설하기
-                                                            </button>
-                                                            </div>
-                                                       </div>
-
-                                                       <div className="p-4 md:p-6">
-                                                       <div className="grid gap-3 lg:grid-cols-[1fr_260px]">
-                                                            <div className="space-y-3">
-                                                                 <div className="-mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-4 md:-mt-10 md:gap-3">
-                                                                      {quickActionOrder.map((actionId) => {
-                                                                           const copy = QUICK_ACTION_COPY[actionId];
-                                                                           const style = QUICK_ACTION_STYLES[actionId];
-                                                                           if (!copy || !style) return null;
-                                                                           const Icon = style.icon;
-                                                                           return (
-                                                                                <button
-                                                                                     key={actionId}
-                                                                                     type="button"
-                                                                                     onClick={() => handleQuickAction(actionId, actionId)}
-                                                                                     className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-3.5 text-left shadow-[0_12px_35px_-24px_rgba(15,23,42,0.55)] transition-all hover:-translate-y-1 hover:border-brand-gold/20 md:p-4"
-                                                                                >
-                                                                                     <span className={`absolute inset-x-0 top-0 h-1 ${style.line}`} />
-                                                                                     <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${style.tone}`}>
-                                                                                          <Icon className="h-[18px] w-[18px]" />
-                                                                                     </div>
-                                                                                     <h2 className="text-sm font-black text-brand-ink">{copy.title}</h2>
-                                                                                     <p className="mt-1 text-[11px] font-bold text-slate-400">{copy.desc}</p>
-                                                                                </button>
-                                                                           );
-                                                                      })}
-                                                                 </div>
-
-                                                                 <div className="rounded-[20px] border border-brand-gold/15 bg-gradient-to-br from-white via-brand-light/40 to-white p-4 md:p-5">
-                                                                      <div className="mb-3 flex items-center justify-between gap-3">
-                                                                           <div>
-                                                                                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-brand-accent">Today in Gangnam</p>
-                                                                                <h3 className="mt-1 text-base font-black text-brand-ink">오늘의 강남 다이제스트</h3>
-                                                                           </div>
-                                                                           <button type="button" onClick={() => handleTabChange('news')} className="rounded-full bg-white px-3 py-1.5 text-[11px] font-black text-brand-accent shadow-sm">
-                                                                                소식 더보기
-                                                                           </button>
-                                                                      </div>
-                                                                      <div className="grid gap-2 md:grid-cols-2">
-                                                                           {(digestNews.loading ? [0, 1] : digestNews.news).map((item, index) => (
-                                                                                digestNews.loading ? (
-                                                                                     <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/80" />
-                                                                                ) : (
-                                                                                     <a
-                                                                                          key={`${item.title}-${item.date}`}
-                                                                                          href={item.link}
-                                                                                          target="_blank"
-                                                                                          rel="noreferrer"
-                                                                                          className="rounded-2xl bg-white/90 p-3 shadow-sm transition-transform hover:-translate-y-0.5"
-                                                                                     >
-                                                                                          <p className="text-[10px] font-black text-brand-accent">{item.source || '강남구청'}</p>
-                                                                                          <p className="mt-1 line-clamp-2 text-xs font-black leading-5 text-brand-ink">{item.title}</p>
-                                                                                     </a>
-                                                                                )
-                                                                           ))}
-                                                                           {featuredMeeting && (
-                                                                                <button
-                                                                                     type="button"
-                                                                                     onClick={() => handleTabChange(featuredMeeting.originalType || 'wine')}
-                                                                                     className="rounded-2xl bg-brand px-3 py-3 text-left text-white shadow-sm transition-transform hover:-translate-y-0.5 md:col-span-2"
-                                                                                >
-                                                                                     <p className="text-[10px] font-bold text-amber-200">🔥 지금 핫한 모임</p>
-                                                                                     <p className="mt-1 line-clamp-2 text-sm font-black">{featuredMeeting.title}</p>
-                                                                                     <p className="mt-1 text-[11px] font-semibold text-white/80">{featuredMeeting.location}</p>
-                                                                                </button>
-                                                                           )}
-                                                                      </div>
-                                                                      {digestNews.fromCache && (
-                                                                           <p className="mt-3 text-[11px] font-semibold text-amber-700">실시간 소식 연결에 문제가 있어 캐시 목록을 함께 보여드리고 있어요.</p>
-                                                                      )}
-                                                                 </div>
-
-                                                                 <div className="grid gap-3 md:grid-cols-2">
-                                                                      <div className="rounded-[20px] bg-slate-50 p-4 md:p-5">
-                                                                           <div className="mb-3 flex items-center justify-between">
-                                                                                <div>
-                                                                                     <p className="text-[10px] font-black uppercase tracking-[0.14em] text-brand-accent">Trending now</p>
-                                                                                     <h3 className="mt-1 text-base font-black text-brand-ink">오늘 뜨는 모임</h3>
-                                                                                </div>
-                                                                                <button onClick={() => handleTabChange('wine')} className="rounded-full bg-white px-3 py-1.5 text-[11px] font-black text-brand-accent shadow-sm">전체보기</button>
-                                                                           </div>
-                                                                           <div className="space-y-2.5">
-                                                                                {meetingItems.slice(0, 3).map((item) => (
-                                                                                     <button key={item.id} type="button" onClick={() => handleTabChange(item.originalType || 'wine')} className="group flex w-full items-center gap-3 rounded-2xl bg-white p-2.5 text-left transition-all hover:shadow-md">
-                                                                                          <img src={item.image} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
-                                                                                          <div className="min-w-0">
-                                                                                               <p className="truncate text-xs font-black text-brand-ink">{item.title}</p>
-                                                                                               <p className="mt-1 truncate text-[11px] font-semibold text-slate-400">{item.location}</p>
-                                                                                          </div>
-                                                                                          <span className="ml-auto shrink-0 rounded-full bg-brand-light px-2 py-1 text-[10px] font-black text-brand-accent">{item.participants}/{item.maxParticipants}</span>
-                                                                                     </button>
-                                                                                ))}
-                                                                           </div>
-                                                                      </div>
-
-                                                                      <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-[#f4e8ca] via-[#fbf7ee] to-white p-5">
-                                                                           <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full border-[18px] border-white/50" />
-                                                                           <p className="relative text-[10px] font-black uppercase tracking-[0.14em] text-brand-accent">Gangnam choice</p>
-                                                                           <h3 className="relative mb-4 mt-1 text-base font-black text-brand-ink">오늘 강남 추천</h3>
-                                                                           <div className="grid grid-cols-3 gap-2">
-                                                                                <button onClick={() => handleTabChange('gangnam_pick')} className="rounded-xl bg-white/80 p-3 text-center shadow-sm transition-transform hover:-translate-y-0.5">
-                                                                                     <p className="text-base font-black text-sky-900">핫플</p>
-                                                                                     <p className="text-[10px] font-bold text-sky-500">가이드</p>
-                                                                                </button>
-                                                                                <button onClick={() => handleTabChange('wine')} className="rounded-xl bg-white/80 p-3 text-center shadow-sm transition-transform hover:-translate-y-0.5">
-                                                                                     <p className="text-base font-black text-amber-900">맛집</p>
-                                                                                     <p className="text-[10px] font-bold text-amber-600">모임</p>
-                                                                                </button>
-                                                                                <button onClick={() => handleTabChange('share')} className="rounded-xl bg-white/80 p-3 text-center shadow-sm transition-transform hover:-translate-y-0.5">
-                                                                                     <p className="text-base font-black text-emerald-900">나눔</p>
-                                                                                     <p className="text-[10px] font-bold text-emerald-600">거래</p>
-                                                                                </button>
-                                                                           </div>
-                                                                           <div className="relative mt-3 rounded-xl bg-brand px-3 py-3 text-white">
-                                                                                <p className="text-[10px] font-bold text-amber-200">추천 동선</p>
-                                                                                <p className="mt-1 text-xs font-black">핫플 확인 → 밥친구 찾기 → 픽업</p>
-                                                                           </div>
-                                                                      </div>
-                                                                 </div>
-                                                            </div>
-
-                                                            <div className="relative min-h-[250px] overflow-hidden rounded-[20px] bg-slate-100 p-2">
-                                                                 <div className="absolute left-4 top-4 z-10 rounded-xl bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
-                                                                      <p className="text-[10px] font-black text-brand-accent">NOW HERE</p>
-                                                                      <p className="mt-0.5 text-xs font-black text-brand-ink">강남역 중심</p>
-                                                                 </div>
-                                                                 <KakaoMap
-                                                                      latitude={37.4979}
-                                                                      longitude={127.0276}
-                                                                      level={4}
-                                                                      label="강남역 중심"
-                                                                      address="서울 강남구 강남대로 지하396"
-                                                                      markers={homeMapMarkers}
-                                                                      onMarkerClick={(pin) => {
-                                                                           const target = meetingItems.find((item) => item.id === pin.id);
-                                                                           if (target) handleTabChange(target.originalType || 'wine');
-                                                                      }}
-                                                                      style={{ width: '100%', height: '100%', borderRadius: '14px' }}
-                                                                 />
-                                                            </div>
-                                                       </div>
-                                                       </div>
-                                                  </section>
+                                                  <Suspense fallback={<SectionSkeleton label="홈" />}>
+                                                       <HomeMzFeed
+                                                            onTabChange={handleTabChange}
+                                                            onCreateMeeting={() => { setCreateModalCategory('gathering'); setIsCreateModalOpen(true); }}
+                                                            digestNews={digestNews}
+                                                            meetingItems={meetingItems}
+                                                            featuredMeeting={featuredMeeting}
+                                                            homeMapMarkers={homeMapMarkers}
+                                                       />
+                                                  </Suspense>
                                                   <Suspense fallback={<SectionSkeleton label="동창 찾기" />}>
                                                        <ILoveSchool user={user} />
                                                   </Suspense>

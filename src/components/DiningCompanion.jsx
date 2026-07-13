@@ -113,9 +113,9 @@ const DiningCompanion = ({ onCreate }) => {
             <div className="flex flex-col md:flex-row md:items-center justify-between px-1 mb-4 gap-3">
                 <div>
                     <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                        혼밥 매칭
+                        혼밥·혼카페 매칭
                     </h2>
-                    <p className="text-xs text-gray-500 mt-1">취향에 맞는 밥친구를 찾아보세요!</p>
+                    <p className="text-xs text-gray-500 mt-1">오늘 같이 밥·카페 갈 동네 친구를 찾아보세요!</p>
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
