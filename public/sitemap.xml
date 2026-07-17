@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  강남온 사이트맵.
+  SPA라서 실제 경로는 하나(/)뿐이지만, 네이버·다음 서치어드바이저에 제출하려면
+  사이트맵 파일이 필요합니다. 추후 라우팅이 경로 기반으로 바뀌면 각 탭 URL을 추가하세요.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://gangnam-on.vercel.app/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

@@ -1,0 +1,26 @@
+# 강남온(강남ON) — 검색 로봇 수집 규칙
+
+# 네이버 검색 로봇
+User-agent: Yeti
+Allow: /
+
+# 다음(카카오) 검색 로봇
+User-agent: Daumoa
+Allow: /
+
+# 구글
+User-agent: Googlebot
+Allow: /
+
+# 빙
+User-agent: bingbot
+Allow: /
+
+# 그 외 모든 로봇
+User-agent: *
+Allow: /
+
+# API 응답은 검색 결과에 노출될 필요가 없습니다
+Disallow: /api/
+
+Sitemap: https://gangnam-on.vercel.app/sitemap.xml
