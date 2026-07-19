@@ -315,15 +315,16 @@ const GangnamBlockGame = ({ onClose, user }) => {
                          </div>
 
                          {/* NEXT BLOCK PANEL (Moved right next to the grid) */}
-                         <div className="bg-black/80 backdrop-blur-md rounded-2xl p-4 border-2 border-white/10 flex flex-col items-center shadow-[0_0_30px_rgba(34,211,238,0.15)] h-fit min-w-[120px]">
-                              <div className="text-xs font-black text-cyan-400 mb-4 tracking-[0.2em]">NEXT</div>
-                              <div className="w-24 h-24 flex items-center justify-center bg-gray-900/50 rounded-xl shadow-inner border border-white/5">
+                         {/* NEXT BLOCK PANEL (Moved right next to the grid) */}
+                         <div className="bg-black/80 backdrop-blur-md rounded-2xl p-6 border-2 border-white/10 flex flex-col items-center shadow-[0_0_30px_rgba(34,211,238,0.15)] h-fit min-w-[160px]">
+                              <div className="text-sm font-black text-cyan-400 mb-6 tracking-[0.3em]">NEXT</div>
+                              <div className="w-40 h-40 flex items-center justify-center bg-gray-900/50 rounded-xl shadow-inner border border-white/5">
                                    {nextPiece && (
                                         <div className="relative">
                                              {nextPiece.shape.map((row, y) => (
                                                   <div key={y} className="flex justify-center">
                                                        {row.map((cell, x) => (
-                                                            <div key={x} className={`w-5 h-5 ${cell ? nextPiece.color : 'bg-transparent'}`} />
+                                                            <div key={x} className={`w-8 h-8 ${cell ? nextPiece.color : 'bg-transparent'}`} />
                                                        ))}
                                                   </div>
                                              ))}
