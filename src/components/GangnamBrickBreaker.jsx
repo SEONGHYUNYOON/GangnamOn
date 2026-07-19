@@ -1,19 +1,26 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowLeft, RotateCw, Play, Trophy } from 'lucide-react';
+import { ArrowLeft, RotateCw, Play, Trophy, Heart } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
+import { soundManager } from '../lib/soundManager';
 
-const PADDLE_W = 100;
-const PADDLE_H = 14;
+const PADDLE_W = 120;
+const PADDLE_H = 16;
 const BALL_R = 10;
 const BRICK_COLS = 10;
 const BRICK_ROWS = 5;
-const BRICK_W = 64;
-const BRICK_H = 24;
+const BRICK_W = 80;
+const BRICK_H = 28;
 const CANVAS_W = BRICK_COLS * BRICK_W;
-const CANVAS_H = 420;
-const PADDLE_Y = CANVAS_H - 50;
-const BALL_SPEED = 6;
-const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
+const CANVAS_H = 600;
+const PADDLE_Y = CANVAS_H - 60;
+const BALL_SPEED = 4.5;
+const COLORS = [
+     { bg: '#ef4444', shadow: 'rgba(239, 68, 68, 0.8)' },
+     { bg: '#f97316', shadow: 'rgba(249, 115, 22, 0.8)' },
+     { bg: '#eab308', shadow: 'rgba(234, 179, 8, 0.8)' },
+     { bg: '#22c55e', shadow: 'rgba(34, 197, 94, 0.8)' },
+     { bg: '#3b82f6', shadow: 'rgba(59, 130, 246, 0.8)' }
+];
 
 const GangnamBrickBreaker = ({ onClose, user }) => {
      const [paddleX, setPaddleX] = useState((CANVAS_W - PADDLE_W) / 2);
@@ -24,10 +31,16 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
      const [gameStarted, setGameStarted] = useState(false);
      const [gameOver, setGameOver] = useState(false);
      const [rankList, setRankList] = useState(() => getRankTop10('brick', true));
+     const [shake, setShake] = useState(false);
      const canvasRef = useRef(null);
      const ballRef = useRef(ball);
      const savedRef = useRef(false);
      ballRef.current = ball;
+
+     const triggerShake = () => {
+          setShake(true);
+          setTimeout(() => setShake(false), 200);
+     };
 
      const initBricks = useCallback(() => {
           const arr = [];
@@ -40,6 +53,8 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
      }, []);
 
      const startGame = useCallback(() => {
+          soundManager.init();
+          soundManager.playCoin();
           savedRef.current = false;
           setPaddleX((CANVAS_W - PADDLE_W) / 2);
           setBall({ x: CANVAS_W / 2, y: PADDLE_Y - BALL_R - 5, dx: BALL_SPEED * 0.7, dy: -BALL_SPEED });
@@ -55,8 +70,9 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
           if (!gameStarted || !gameOver || savedRef.current) return;
           savedRef.current = true;
           const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
-          addScore('brick', name, score, true);
+          if (score > 0) addScore('brick', name, score, true);
           setRankList(getRankTop10('brick', true));
+          soundManager.playGameOver();
      }, [gameStarted, gameOver, score, user]);
 
      useEffect(() => {
@@ -66,34 +82,52 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
                     let { x, y, dx, dy } = prev;
                     x += dx;
                     y += dy;
-                    if (x <= BALL_R || x >= CANVAS_W - BALL_R) dx = -dx;
-                    if (y <= BALL_R) dy = -dy;
+                    if (x <= BALL_R || x >= CANVAS_W - BALL_R) {
+                         dx = -dx;
+                         soundManager.playMove(); // Wall hit sound
+                    }
+                    if (y <= BALL_R) {
+                         dy = -dy;
+                         soundManager.playMove();
+                    }
                     if (y >= PADDLE_Y - BALL_R && y <= PADDLE_Y + PADDLE_H &&
                          x >= paddleX - BALL_R && x <= paddleX + PADDLE_W + BALL_R) {
                          dy = -Math.abs(dy);
                          const hitPos = (x - paddleX) / PADDLE_W;
-                         dx = (hitPos - 0.5) * 4;
+                         dx = (hitPos - 0.5) * 8; // Adjust angle based on where it hit the paddle
+                         soundManager.playJump(); // Paddle hit sound
                     }
                     if (y > CANVAS_H + BALL_R) {
-                         setLives(l => (l <= 1 ? (setGameOver(true), 0) : l - 1));
+                         soundManager.playExplosion();
+                         setLives(l => {
+                              triggerShake();
+                              if (l <= 1) {
+                                   setGameOver(true);
+                                   return 0;
+                              }
+                              return l - 1;
+                         });
                          return { x: CANVAS_W / 2, y: PADDLE_Y - BALL_R - 5, dx: BALL_SPEED * 0.7, dy: -BALL_SPEED };
                     }
                     return { x, y, dx, dy };
                });
 
                setBricks(prev => {
+                    let hit = false;
                     const next = prev.map(b => {
                          if (!b.alive) return b;
                          const bx = b.x + b.w / 2;
                          const by = b.y + b.h / 2;
                          const ball = ballRef.current;
                          if (Math.abs(ball.x - bx) < b.w / 2 + BALL_R && Math.abs(ball.y - by) < b.h / 2 + BALL_R) {
+                              hit = true;
                               setScore(s => s + 10);
                               setBall(ball => ({ ...ball, dy: ball.y < by ? Math.abs(ball.dy) : -Math.abs(ball.dy) }));
                               return { ...b, alive: false };
                          }
                          return b;
                     });
+                    if (hit) soundManager.playHit();
                     const alive = next.filter(b => b.alive).length;
                     if (alive === 0) setGameOver(true);
                     return next;
@@ -102,7 +136,7 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
                requestAnimationFrame(loop);
           });
           return () => cancelAnimationFrame(id);
-     }, [gameStarted, gameOver, paddleX, score, user]);
+     }, [gameStarted, gameOver, paddleX]);
 
      useEffect(() => {
           if (!gameStarted || gameOver) return;
@@ -122,67 +156,146 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
           };
      }, [gameStarted, gameOver]);
 
-     return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-slate-900 to-black text-white max-w-6xl mx-auto">
-               <div className="w-full flex justify-between items-center mb-4">
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <h2 className="text-xl font-black tracking-wider">벽돌깨기</h2>
-                    <div className="flex items-center gap-4">
-                         <span className="bg-red-600/80 px-3 py-1 rounded-lg font-black text-sm">❤️ {lives}</span>
-                         <span className="bg-purple-600 px-3 py-1 rounded-lg font-black text-sm">{score}</span>
-                    </div>
-               </div>
+     useEffect(() => {
+          const ctx = canvasRef.current?.getContext('2d');
+          if (!ctx) return;
+          ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
-               <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">
-                    <div className="relative rounded-2xl overflow-hidden border-2 border-slate-600 shadow-2xl" style={{ width: CANVAS_W, height: CANVAS_H }}>
-                         <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} className="block bg-slate-900" style={{ width: CANVAS_W, height: CANVAS_H }} />
-                         {/* Draw with divs for simplicity */}
-                         <div className="absolute inset-0 pointer-events-none">
-                              {bricks.filter(b => b.alive).map((b, i) => (
-                                   <div key={i} className="absolute rounded border-2 border-white/20" style={{ left: b.x, top: b.y, width: b.w, height: b.h, backgroundColor: b.color }} />
-                              ))}
-                              <div className="absolute rounded-lg bg-purple-500 border-2 border-purple-400" style={{ left: paddleX, top: PADDLE_Y, width: PADDLE_W, height: PADDLE_H }} />
-                              <div className="absolute rounded-full bg-white border-2 border-gray-300" style={{ left: ball.x - BALL_R, top: ball.y - BALL_R, width: BALL_R * 2, height: BALL_R * 2 }} />
+          // Draw Bricks
+          bricks.filter(b => b.alive).forEach(b => {
+               ctx.shadowBlur = 15;
+               ctx.shadowColor = b.color.shadow;
+               ctx.fillStyle = b.color.bg;
+               ctx.beginPath();
+               ctx.roundRect(b.x, b.y, b.w, b.h, 4);
+               ctx.fill();
+               // Inner highlight for premium look
+               ctx.fillStyle = 'rgba(255,255,255,0.3)';
+               ctx.beginPath();
+               ctx.roundRect(b.x, b.y, b.w, b.h / 2, 4);
+               ctx.fill();
+          });
+
+          // Draw Paddle
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = 'rgba(168, 85, 247, 0.8)';
+          ctx.fillStyle = '#a855f7'; // Purple-500
+          ctx.beginPath();
+          ctx.roundRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, 8);
+          ctx.fill();
+
+          // Draw Ball
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.shadowBlur = 0; // Reset
+     }, [bricks, paddleX, ball]);
+
+     return (
+          <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* Ambient Glow */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-900/20 rounded-full blur-[100px] pointer-events-none" />
+
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-blue-500/30 shadow-[0_0_60px_rgba(59,130,246,0.2)] max-w-6xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
+                    
+                    {/* Left Panel: Info */}
+                    <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                         <div className="flex justify-between items-start lg:hidden mb-2">
+                              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 tracking-wider">NEON BREAKER</h2>
+                              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
                          </div>
 
-                         {!gameStarted && (
-                              <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
-                                   <div className="text-2xl font-black mb-3">벽돌깨기</div>
-                                   <div className="bg-slate-700/80 rounded-xl p-4 mb-5 text-left max-w-xs">
-                                        <div className="text-xs font-bold text-blue-300 mb-2">🎯 게임 방법</div>
-                                        <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside">
-                                             <li>마우스(터치)를 움직여 패들 조작</li>
-                                             <li>공을 튕겨서 위쪽 벽돌을 깨세요</li>
-                                             <li>벽돌 1개당 10점</li>
-                                             <li>공을 놓치면 생명 -1 (총 3개)</li>
-                                        </ul>
-                                   </div>
-                                   <button onClick={startGame} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center gap-2"><Play className="w-5 h-5" /> 시작하기</button>
-                              </div>
-                         )}
+                         <div className="hidden lg:flex justify-between items-center w-full">
+                              <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 via-cyan-300 to-teal-400 drop-shadow-sm">NEON<br/>BREAKER</h2>
+                              <button onClick={onClose} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
+                         </div>
 
-                         {gameStarted && gameOver && (
-                              <div className="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center">
-                                   <div className="text-3xl font-black mb-2">GAME OVER</div>
-                                   <div className="text-xl text-yellow-400 font-bold mb-6">Score: {score}</div>
-                                   <button onClick={startGame} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-full flex items-center gap-2"><RotateCw className="w-5 h-5" /> 다시 하기</button>
+                         <div className="flex flex-row lg:flex-col gap-4 w-full">
+                              <div className="flex-1 bg-black/40 p-5 rounded-2xl border border-blue-500/30 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]">
+                                   <div className="text-xs font-black text-cyan-400 tracking-[0.2em] mb-1">SCORE</div>
+                                   <div className="text-4xl font-black text-white font-mono bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300">
+                                        {score.toLocaleString()}
+                                   </div>
                               </div>
-                         )}
+                              <div className="flex-1 bg-black/40 p-5 rounded-2xl border border-blue-500/30 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]">
+                                   <div className="text-xs font-black text-red-400 tracking-[0.2em] mb-1">LIVES</div>
+                                   <div className="flex items-center gap-2 mt-2">
+                                        {Array.from({ length: 3 }).map((_, i) => (
+                                             <Heart key={i} className={`w-8 h-8 ${i < lives ? 'fill-red-500 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'fill-transparent text-gray-700'}`} />
+                                        ))}
+                                   </div>
+                              </div>
+                         </div>
+
+                         {/* Leaderboard */}
+                         <div className="bg-black/40 rounded-2xl p-5 border border-blue-500/20 w-full flex-1 hidden lg:block">
+                              <div className="flex items-center gap-3 mb-4">
+                                   <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                                        <Trophy className="w-4 h-4 text-yellow-400" />
+                                   </div>
+                                   <span className="text-sm font-black text-white tracking-widest">TOP 10</span>
+                              </div>
+                              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                   {rankList.map((e, i) => (
+                                        <div key={i} className="flex justify-between items-center p-2 rounded-xl bg-white/5 hover:bg-blue-500/10 transition-colors">
+                                             <div className="flex items-center gap-2">
+                                                  <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-600 text-black shadow-[0_0_10px_rgba(250,204,21,0.5)]' : i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' : i === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-700 text-white' : 'bg-white/10 text-cyan-200'}`}>{i + 1}</span>
+                                                  <span className="text-gray-200 font-bold text-sm truncate max-w-[80px]">{e.name}</span>
+                                             </div>
+                                             <span className="text-cyan-300 font-mono text-sm font-bold">{e.score}</span>
+                                        </div>
+                                   ))}
+                                   {rankList.length === 0 && <p className="text-blue-500/50 text-sm py-2 text-center">기록이 없습니다.</p>}
+                              </div>
+                         </div>
                     </div>
 
-                    <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-600 w-full lg:w-56 shrink-0">
-                         <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2"><Trophy className="w-4 h-4 text-yellow-400" /><span className="text-xs font-bold text-gray-400 tracking-wider">TOP 10</span></div>
-                         <div className="space-y-1.5 max-h-72 overflow-y-auto">
-                              {rankList.map((e, i) => (
-                                   <div key={i} className="flex justify-between items-center text-sm">
-                                        <div className="flex items-center gap-2">
-                                             <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${e.rank === 1 ? 'bg-yellow-500 text-black' : e.rank === 2 ? 'bg-gray-400 text-black' : e.rank === 3 ? 'bg-orange-600 text-white' : 'bg-slate-600 text-gray-300'}`}>{e.rank}</span>
-                                             <span className="text-gray-300 truncate max-w-[80px]">{e.name}</span>
+                    {/* Right Panel: Game Board */}
+                    <div className="w-full lg:w-2/3 flex justify-center relative">
+                         <div className="relative rounded-3xl overflow-hidden border-2 border-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.3)] bg-black/80" style={{ width: CANVAS_W, height: CANVAS_H }}>
+                              
+                              <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} className="block w-full h-full touch-none" />
+                              
+                              {/* Grid Background Pattern */}
+                              <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                                   style={{ backgroundImage: `linear-gradient(#60a5fa 1px, transparent 1px), linear-gradient(90deg, #60a5fa 1px, transparent 1px)`, backgroundSize: `32px 32px` }}>
+                              </div>
+
+                              {/* Overlays */}
+                              {!gameStarted && (
+                                   <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                                        <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-6 drop-shadow-lg tracking-widest">NEON BREAKER</div>
+                                        <div className="bg-gray-800/80 rounded-2xl p-5 mb-8 text-left max-w-sm border border-blue-500/20">
+                                             <div className="text-sm font-black text-blue-400 mb-3 tracking-wider">🎯 HOW TO PLAY</div>
+                                             <ul className="text-gray-300 text-sm space-y-2 list-none">
+                                                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full"/>마우스나 터치로 패들을 조작</li>
+                                                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-500 rounded-full"/>공을 튕겨내 모든 벽돌을 파괴</li>
+                                                  <li className="flex items-center gap-2 text-red-400"><div className="w-1.5 h-1.5 bg-red-500 rounded-full"/>공을 떨어뜨리면 생명 1 감소</li>
+                                             </ul>
                                         </div>
-                                        <span className="text-gray-400 font-mono text-xs">{e.score}</span>
+                                        <button onClick={startGame} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-black py-4 px-12 rounded-full shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-transform hover:scale-105 flex items-center gap-3 text-lg">
+                                             <Play className="w-6 h-6 fill-white" /> START
+                                        </button>
                                    </div>
-                              ))}
-                              {rankList.length === 0 && <p className="text-gray-500 text-xs">아직 기록이 없어요.</p>}
+                              )}
+
+                              {gameStarted && gameOver && (
+                                   <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                                        <div className="text-5xl font-black text-red-500 mb-4 drop-shadow-[0_0_20px_rgba(239,68,68,0.8)]">GAME OVER</div>
+                                        <div className="text-2xl text-white font-black mb-8 font-mono">Score: <span className="text-cyan-400">{score}</span></div>
+                                        <button onClick={startGame} className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 backdrop-blur-md">
+                                             <RotateCw className="w-5 h-5" /> PLAY AGAIN
+                                        </button>
+                                   </div>
+                              )}
                          </div>
                     </div>
                </div>

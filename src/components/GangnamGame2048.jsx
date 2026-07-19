@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, RotateCw, Trophy } from 'lucide-react';
+import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import GameHelpDropdown from './GameHelpDropdown';
+import { soundManager } from '../lib/soundManager';
 
 const SIZE = 4;
 
@@ -72,24 +72,41 @@ const canMove = (grid) => {
 
 const tileColor = (v) => {
      const map = {
-          2: 'bg-slate-600 text-white', 4: 'bg-slate-500 text-white',
-          8: 'bg-amber-600 text-white', 16: 'bg-amber-500 text-white',
-          32: 'bg-orange-500 text-white', 64: 'bg-orange-600 text-white',
-          128: 'bg-yellow-400 text-black', 256: 'bg-yellow-300 text-black',
-          512: 'bg-lime-400 text-black', 1024: 'bg-green-400 text-black',
-          2048: 'bg-purple-500 text-white',
+          2: 'bg-slate-700 text-slate-200 border-slate-600', 
+          4: 'bg-slate-600 text-white border-slate-500',
+          8: 'bg-amber-600 text-white border-amber-500 shadow-[0_0_10px_rgba(217,119,6,0.5)]', 
+          16: 'bg-orange-500 text-white border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.6)]',
+          32: 'bg-red-500 text-white border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.7)]', 
+          64: 'bg-rose-600 text-white border-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.8)]',
+          128: 'bg-yellow-400 text-black border-yellow-300 shadow-[0_0_25px_rgba(250,204,21,0.9)] text-3xl', 
+          256: 'bg-yellow-300 text-black border-yellow-200 shadow-[0_0_30px_rgba(253,224,71,1)] text-3xl',
+          512: 'bg-lime-400 text-black border-lime-300 shadow-[0_0_35px_rgba(163,230,53,1)] text-3xl', 
+          1024: 'bg-emerald-400 text-black border-emerald-300 shadow-[0_0_40px_rgba(52,211,153,1)] text-2xl',
+          2048: 'bg-purple-500 text-white border-purple-400 shadow-[0_0_50px_rgba(168,85,247,1)] text-2xl',
      };
-     return map[v] || 'bg-violet-600 text-white';
+     return map[v] || 'bg-fuchsia-600 text-white border-fuchsia-500 shadow-[0_0_50px_rgba(192,38,211,1)] text-2xl';
 };
 
 const GangnamGame2048 = ({ onClose, user }) => {
      const [grid, setGrid] = useState(initGrid);
      const [score, setScore] = useState(0);
      const [gameOver, setGameOver] = useState(false);
+     const [gameStarted, setGameStarted] = useState(false);
      const [rankList, setRankList] = useState(() => getRankTop10('game2048', true));
      const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
 
+     const start = () => {
+          soundManager.init();
+          soundManager.playCoin();
+          setGrid(initGrid());
+          setScore(0);
+          setGameOver(false);
+          setGameStarted(true);
+          setRankList(getRankTop10('game2048', true));
+     };
+
      const reset = useCallback(() => {
+          soundManager.playCoin();
           setGrid(initGrid());
           setScore(0);
           setGameOver(false);
@@ -97,23 +114,28 @@ const GangnamGame2048 = ({ onClose, user }) => {
      }, []);
 
      const handleMove = useCallback((dir) => {
-          if (gameOver) return;
+          if (gameOver || !gameStarted) return;
           setGrid(prev => {
                const { grid: moved, score: gained, moved: didMove } = moveGrid(prev, dir);
                if (!didMove) return prev;
+               
+               if (gained > 0) soundManager.playHit(); // Merged sound
+               else soundManager.playMove(); // Slide sound
+
                const withSpawn = spawnTile(moved);
                setScore(s => {
                     const nextScore = s + gained;
                     if (!canMove(withSpawn)) {
+                         soundManager.playGameOver();
                          setGameOver(true);
-                         addScore('game2048', name, nextScore, true);
+                         if (nextScore > 0) addScore('game2048', name, nextScore, true);
                          setRankList(getRankTop10('game2048', true));
                     }
                     return nextScore;
                });
                return withSpawn;
           });
-     }, [gameOver, name]);
+     }, [gameOver, gameStarted, name]);
 
      useEffect(() => {
           const onKey = (e) => {
@@ -126,9 +148,11 @@ const GangnamGame2048 = ({ onClose, user }) => {
 
      const touchRef = React.useRef({ x: 0, y: 0 });
      const onTouchStart = (e) => {
+          if(!gameStarted || gameOver) return;
           touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
      };
      const onTouchEnd = (e) => {
+          if(!gameStarted || gameOver) return;
           const dx = e.changedTouches[0].clientX - touchRef.current.x;
           const dy = e.changedTouches[0].clientY - touchRef.current.y;
           if (Math.abs(dx) < 30 && Math.abs(dy) < 30) return;
@@ -137,68 +161,123 @@ const GangnamGame2048 = ({ onClose, user }) => {
      };
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
-               <div className="w-full flex justify-between items-center mb-4">
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <div className="flex items-center gap-1.5">
-                         <h2 className="text-xl font-black tracking-wider">2048 강남온</h2>
-                         <GameHelpDropdown accent="violet">
-                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
-                                   <li><b className="text-white">방향키</b> 또는 <b className="text-white">스와이프</b>로 타일을 밀어요</li>
-                                   <li>같은 숫자가 부딪히면 <b className="text-amber-400">합쳐져요</b> (2+2→4, 4+4→8 …)</li>
-                                   <li>한 번 움직일 때마다 빈 칸에 <b className="text-white">2 또는 4</b>가 새로 생겨요</li>
-                                   <li>움직일 곳이 없으면 게임 오버 · 합친 점수가 랭킹에 기록돼요</li>
-                              </ul>
-                         </GameHelpDropdown>
-                    </div>
-                    <div className="w-10" />
-               </div>
+          <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* Ambient Glow */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-900/10 rounded-full blur-[150px] pointer-events-none" />
 
-               <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">
-                    <div className="flex-1 max-w-md w-full">
-                         <div className="flex gap-3 mb-4">
-                              <div className="flex-1 bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
-                                   <div className="text-xs text-gray-400">점수</div>
-                                   <div className="text-2xl font-black text-amber-400">{score}</div>
-                              </div>
-                              <button onClick={reset} className="bg-purple-600 hover:bg-purple-500 px-4 rounded-xl font-bold text-sm flex items-center gap-1"><RotateCw className="w-4 h-4" /> 새 게임</button>
+               <div className={`relative bg-gray-900/90 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-slate-700 shadow-[0_0_80px_rgba(250,204,21,0.1)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500`}>
+                    
+                    {/* Left Panel: Info */}
+                    <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                         <div className="flex justify-between items-start lg:hidden mb-2">
+                              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 tracking-wider">NEON 2048</h2>
+                              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
                          </div>
 
+                         <div className="hidden lg:flex justify-between items-center w-full">
+                              <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 drop-shadow-sm leading-tight">NEON<br/>2048</h2>
+                              <button onClick={onClose} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
+                         </div>
+
+                         <div className="w-full">
+                              <div className="bg-black/60 p-5 rounded-2xl border border-yellow-500/30 shadow-[inset_0_0_20px_rgba(250,204,21,0.1)] w-full text-center lg:text-left">
+                                   <div className="text-xs font-black text-yellow-400 tracking-[0.2em] mb-1">SCORE</div>
+                                   <div className="text-5xl font-black text-white font-mono bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-amber-300">
+                                        {score.toLocaleString()}
+                                   </div>
+                              </div>
+                         </div>
+
+                         {/* Leaderboard */}
+                         <div className="bg-black/40 rounded-2xl p-5 border border-slate-700 w-full flex-1 hidden lg:block shadow-inner">
+                              <div className="flex items-center gap-3 mb-4">
+                                   <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                                        <Trophy className="w-4 h-4 text-yellow-400" />
+                                   </div>
+                                   <span className="text-sm font-black text-white tracking-widest">TOP 10</span>
+                              </div>
+                              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                   {rankList.map((e, i) => (
+                                        <div key={i} className="flex justify-between items-center p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-transparent hover:border-slate-600">
+                                             <div className="flex items-center gap-2">
+                                                  <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-600 text-black shadow-[0_0_10px_rgba(250,204,21,0.5)]' : i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' : i === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-700 text-white' : 'bg-slate-700 border border-slate-600 text-gray-300'}`}>{i + 1}</span>
+                                                  <span className="text-gray-200 font-bold text-sm truncate max-w-[80px]">{e.name}</span>
+                                             </div>
+                                             <span className="text-yellow-400 font-mono text-sm font-bold">{e.score.toLocaleString()}</span>
+                                        </div>
+                                   ))}
+                                   {rankList.length === 0 && <p className="text-gray-500 text-sm py-2 text-center">기록이 없습니다.</p>}
+                              </div>
+                         </div>
+                    </div>
+
+                    {/* Right Panel: Game Board */}
+                    <div className="w-full lg:w-2/3 flex flex-col items-center justify-center relative min-h-[400px]">
+                         
                          <div
-                              className="bg-gray-800 p-3 rounded-2xl border border-gray-600 select-none"
+                              className="bg-[#0f172a] p-3 md:p-4 rounded-3xl border-4 border-[#1e293b] shadow-[0_0_40px_rgba(0,0,0,0.8)] touch-none select-none w-full max-w-md relative overflow-hidden"
                               onTouchStart={onTouchStart}
                               onTouchEnd={onTouchEnd}
                          >
-                              <div className="grid grid-cols-4 gap-2">
+                              {/* Inner Glow */}
+                              <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] pointer-events-none rounded-2xl" />
+
+                              <div className="grid grid-cols-4 gap-2 md:gap-3 relative z-10">
                                    {grid.flat().map((v, i) => (
-                                        <div key={i} className={`aspect-square rounded-lg flex items-center justify-center text-lg font-black ${v ? tileColor(v) : 'bg-gray-900/80'}`}>
+                                        <div key={i} className={`aspect-square rounded-xl md:rounded-2xl flex items-center justify-center text-2xl md:text-4xl font-black transition-all duration-150 border-2
+                                             ${v ? tileColor(v) : 'bg-slate-800 border-slate-700 shadow-inner text-transparent'}`}>
                                              {v || ''}
                                         </div>
                                    ))}
                               </div>
+
+                              {/* Overlays */}
+                              {!gameStarted && (
+                                   <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                                        <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-6 drop-shadow-lg tracking-widest">NEON 2048</div>
+                                        <div className="bg-gray-800/80 rounded-2xl p-5 mb-8 text-left max-w-sm border border-yellow-500/20">
+                                             <div className="text-sm font-black text-yellow-400 mb-3 tracking-wider">🎯 HOW TO PLAY</div>
+                                             <ul className="text-gray-300 text-sm space-y-2 list-none">
+                                                  <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-1.5 shrink-0"/>방향키나 스와이프로 타일을 미세요.</li>
+                                                  <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5 shrink-0"/>같은 숫자가 닿으면 하나로 합쳐집니다!</li>
+                                                  <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-1.5 shrink-0"/>2048 타일을 만드는 것이 목표입니다.</li>
+                                             </ul>
+                                        </div>
+                                        <button onClick={start} className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-400 hover:to-orange-500 text-black font-black py-4 px-12 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-transform hover:scale-105 flex items-center gap-3 text-lg">
+                                             <Play className="w-6 h-6 fill-black" /> START GAME
+                                        </button>
+                                   </div>
+                              )}
+
+                              {gameStarted && gameOver && (
+                                   <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center border-4 border-red-500/50 rounded-2xl">
+                                        <div className="text-5xl font-black text-red-500 mb-4 drop-shadow-[0_0_20px_rgba(239,68,68,0.8)]">NO MOVES!</div>
+                                        <div className="text-2xl text-white font-black mb-8 font-mono">Score: <span className="text-yellow-400">{score.toLocaleString()}</span></div>
+                                        <button onClick={reset} className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 backdrop-blur-md">
+                                             <RotateCw className="w-5 h-5" /> RESTART
+                                        </button>
+                                   </div>
+                              )}
                          </div>
 
-                         {gameOver && (
-                              <div className="mt-4 bg-red-900/40 border border-red-500/40 rounded-2xl p-4 text-center">
-                                   <p className="font-black text-red-300 mb-2">게임 오버!</p>
-                                   <p className="text-sm text-gray-300 mb-3">최종 점수: {score}</p>
-                                   <button onClick={reset} className="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-full font-bold">다시하기</button>
+                         {gameStarted && !gameOver && (
+                              <div className="mt-6 flex flex-col items-center">
+                                   <div className="flex gap-2 mb-2">
+                                        <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700 text-slate-400 shadow-inner">W</div>
+                                   </div>
+                                   <div className="flex gap-2">
+                                        <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700 text-slate-400 shadow-inner">A</div>
+                                        <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700 text-slate-400 shadow-inner">S</div>
+                                        <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700 text-slate-400 shadow-inner">D</div>
+                                   </div>
+                                   <p className="text-slate-500 text-xs mt-3 font-bold tracking-widest">USE ARROW KEYS OR SWIPE</p>
                               </div>
                          )}
-                         <p className="text-gray-500 text-xs mt-3 text-center">↑↓←→ 키 또는 화면 스와이프 · 2048 타일을 만들면 보너스!</p>
-                    </div>
 
-                    <div className="bg-gray-800/80 rounded-xl p-4 border border-gray-600 w-full lg:w-56 shrink-0">
-                         <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2"><Trophy className="w-4 h-4 text-yellow-400" /><span className="text-xs font-bold text-gray-400">TOP 10</span></div>
-                         <div className="space-y-1.5 max-h-72 overflow-y-auto">
-                              {rankList.map((e, i) => (
-                                   <div key={i} className="flex justify-between text-sm">
-                                        <span className="text-gray-300 truncate max-w-[100px]">{e.rank}. {e.name}</span>
-                                        <span className="text-gray-400 font-mono text-xs">{e.score}</span>
-                                   </div>
-                              ))}
-                              {rankList.length === 0 && <p className="text-gray-500 text-xs">아직 기록이 없어요.</p>}
-                         </div>
                     </div>
                </div>
           </div>

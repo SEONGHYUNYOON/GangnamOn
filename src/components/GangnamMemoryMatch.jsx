@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { ArrowLeft, RotateCw, Trophy, Play, CheckCircle } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import GameHelpDropdown from './GameHelpDropdown';
+import { soundManager } from '../lib/soundManager';
 
-const EMOJIS = ['🏙️', '🚕', '🥟', '🏢', '🌃', '🚇', '🎡', '🏙️'];
+const EMOJIS = ['🏙️', '🚕', '🥟', '🏢', '🌃', '🚇', '🎡', '🌉'];
 
 const calcScore = (attempts, seconds) => Math.max(100, 1000 - attempts * 25 - seconds * 3);
 
@@ -20,6 +20,12 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
      const [finalScore, setFinalScore] = useState(0);
      const [rankList, setRankList] = useState(() => getRankTop10('memory', true));
      const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
+     const [shake, setShake] = useState(false);
+
+     const triggerShake = () => {
+          setShake(true);
+          setTimeout(() => setShake(false), 200);
+     };
 
      const reset = useCallback(() => {
           const shuffled = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
@@ -33,6 +39,8 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
      }, []);
 
      const start = () => {
+          soundManager.init();
+          soundManager.playCoin();
           const shuffled = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
           setCards(shuffled.map((e, i) => ({ id: i, emoji: e, flipped: false, matched: false })));
           setFlipped([]);
@@ -49,6 +57,7 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
           const card = cards.find(c => c.id === id);
           if (!card || card.flipped || card.matched || flipped.length >= 2) return;
 
+          soundManager.playTick();
           const next = cards.map(c => c.id === id ? { ...c, flipped: true } : c);
           const nextFlipped = [...flipped, id];
           setCards(next);
@@ -59,9 +68,11 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
                const [a, b] = nextFlipped.map(i => next.find(c => c.id === i));
                if (a.emoji === b.emoji) {
                     setTimeout(() => {
+                         soundManager.playHit();
                          setCards(prev => {
                               const updated = prev.map(c => (c.id === a.id || c.id === b.id) ? { ...c, matched: true, flipped: true } : c);
                               if (updated.every(c => c.matched)) {
+                                   soundManager.playGameOver();
                                    const sec = Math.round((Date.now() - startTime) / 1000);
                                    const sc = calcScore(attempts + 1, sec);
                                    setFinalScore(sc);
@@ -75,6 +86,8 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
                     }, 400);
                } else {
                     setTimeout(() => {
+                         soundManager.playExplosion();
+                         triggerShake();
                          setCards(prev => prev.map(c => (c.id === a.id || c.id === b.id) ? { ...c, flipped: false } : c));
                          setFlipped([]);
                     }, 700);
@@ -82,68 +95,119 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
           }
      };
 
-     const elapsed = started && startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+     const elapsed = started && startTime && !done ? Math.round((Date.now() - startTime) / 1000) : 0;
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
-               <div className="w-full flex justify-between items-center mb-4">
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <div className="flex items-center gap-1.5">
-                         <h2 className="text-xl font-black tracking-wider">추억의 짝맞추기</h2>
-                         <GameHelpDropdown accent="pink">
-                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
-                                   <li>카드를 눌러 뒤집고 <b className="text-white">같은 이모지 2장</b>을 찾아요</li>
-                                   <li>8쌍(16장)을 모두 맞추면 클리어!</li>
-                                   <li>시간·시도 횟수가 적을수록 점수가 높아요</li>
-                              </ul>
-                         </GameHelpDropdown>
-                    </div>
-                    <div className="w-24 text-right text-xs text-gray-400">{started ? `${attempts}회 · ${elapsed}s` : ''}</div>
-               </div>
+          <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* Ambient Glow */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-fuchsia-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-               <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">
-                    <div className="flex-1 max-w-sm w-full">
-                         {!started ? (
-                              <div className="text-center py-12">
-                                   <button onClick={start} className="bg-purple-600 hover:bg-purple-500 px-8 py-3 rounded-full font-bold flex items-center gap-2 mx-auto"><Play className="w-5 h-5" /> 시작하기</button>
-                              </div>
-                         ) : (
-                              <>
-                                   <div className="grid grid-cols-4 gap-2">
-                                        {cards.map(c => (
-                                             <button
-                                                  key={c.id}
-                                                  onClick={() => handleFlip(c.id)}
-                                                  disabled={c.matched}
-                                                  className={`aspect-square rounded-xl text-2xl font-bold transition-all border-2
-                                                       ${c.matched ? 'bg-green-900/40 border-green-500/50 opacity-60' : ''}
-                                                       ${c.flipped || c.matched ? 'bg-gray-700 border-purple-500' : 'bg-gray-800 border-gray-600 hover:border-purple-400'}`}
-                                             >
-                                                  {(c.flipped || c.matched) ? c.emoji : '?'}
-                                             </button>
-                                        ))}
-                                   </div>
-                                   {done && (
-                                        <div className="mt-4 bg-green-900/30 border border-green-500/40 rounded-2xl p-4 text-center">
-                                             <p className="font-black text-green-300">완료! 점수 {finalScore}</p>
-                                             <button onClick={reset} className="mt-3 bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-full font-bold flex items-center gap-2 mx-auto"><RotateCw className="w-4 h-4" /> 다시하기</button>
-                                        </div>
-                                   )}
-                              </>
-                         )}
-                    </div>
-
-                    <div className="bg-gray-800/80 rounded-xl p-4 border border-gray-600 w-full lg:w-56 shrink-0">
-                         <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2"><Trophy className="w-4 h-4 text-yellow-400" /><span className="text-xs font-bold text-gray-400">TOP 10</span></div>
-                         <div className="space-y-1.5 max-h-72 overflow-y-auto">
-                              {rankList.map((e, i) => (
-                                   <div key={i} className="flex justify-between text-sm">
-                                        <span className="text-gray-300 truncate max-w-[100px]">{e.rank}. {e.name}</span>
-                                        <span className="text-gray-400 font-mono text-xs">{e.score}</span>
-                                   </div>
-                              ))}
-                              {rankList.length === 0 && <p className="text-gray-500 text-xs">아직 기록이 없어요.</p>}
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-fuchsia-500/30 shadow-[0_0_60px_rgba(217,70,239,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
+                    
+                    {/* Left Panel: Info */}
+                    <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                         <div className="flex justify-between items-start lg:hidden mb-2">
+                              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400 tracking-wider">NEON MATCH</h2>
+                              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
                          </div>
+
+                         <div className="hidden lg:flex justify-between items-center w-full">
+                              <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-fuchsia-400 via-pink-400 to-rose-400 drop-shadow-sm leading-tight">NEON<br/>MATCH</h2>
+                              <button onClick={onClose} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
+                         </div>
+
+                         <div className="flex flex-row lg:flex-col gap-4 w-full">
+                              <div className="flex-1 bg-black/40 p-5 rounded-2xl border border-fuchsia-500/30 shadow-[inset_0_0_15px_rgba(217,70,239,0.1)]">
+                                   <div className="text-xs font-black text-fuchsia-400 tracking-[0.2em] mb-1">ATTEMPTS</div>
+                                   <div className="text-4xl font-black text-white font-mono bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-300 to-pink-300">
+                                        {attempts}
+                                   </div>
+                              </div>
+                              <div className="flex-1 bg-black/40 p-5 rounded-2xl border border-fuchsia-500/30 shadow-[inset_0_0_15px_rgba(217,70,239,0.1)]">
+                                   <div className="text-xs font-black text-pink-400 tracking-[0.2em] mb-1">TIME</div>
+                                   <div className="text-4xl font-black font-mono text-pink-400">
+                                        {elapsed}s
+                                   </div>
+                              </div>
+                         </div>
+
+                         {/* Leaderboard */}
+                         <div className="bg-black/40 rounded-2xl p-5 border border-fuchsia-500/20 w-full flex-1 hidden lg:block">
+                              <div className="flex items-center gap-3 mb-4">
+                                   <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                                        <Trophy className="w-4 h-4 text-yellow-400" />
+                                   </div>
+                                   <span className="text-sm font-black text-white tracking-widest">TOP 10</span>
+                              </div>
+                              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                   {rankList.map((e, i) => (
+                                        <div key={i} className="flex justify-between items-center p-2 rounded-xl bg-white/5 hover:bg-fuchsia-500/10 transition-colors">
+                                             <div className="flex items-center gap-2">
+                                                  <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-600 text-black shadow-[0_0_10px_rgba(250,204,21,0.5)]' : i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' : i === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-700 text-white' : 'bg-white/10 text-fuchsia-200'}`}>{i + 1}</span>
+                                                  <span className="text-gray-200 font-bold text-sm truncate max-w-[80px]">{e.name}</span>
+                                             </div>
+                                             <span className="text-fuchsia-300 font-mono text-sm font-bold">{e.score}</span>
+                                        </div>
+                                   ))}
+                                   {rankList.length === 0 && <p className="text-fuchsia-500/50 text-sm py-2 text-center">기록이 없습니다.</p>}
+                              </div>
+                         </div>
+                    </div>
+
+                    {/* Right Panel: Game Board */}
+                    <div className="w-full lg:w-2/3 flex justify-center relative min-h-[400px]">
+                         
+                         {/* Grid Board */}
+                         <div className="grid grid-cols-4 gap-3 md:gap-4 w-full max-w-md bg-black/60 p-4 md:p-6 rounded-3xl border-2 border-fuchsia-500/30 shadow-[0_0_40px_rgba(217,70,239,0.15)]">
+                              {cards.map(c => (
+                                   <button
+                                        key={c.id}
+                                        onClick={() => handleFlip(c.id)}
+                                        disabled={!started || c.matched || done}
+                                        className={`relative aspect-square rounded-2xl md:rounded-3xl text-4xl md:text-5xl font-bold transition-all duration-300 border-2 shadow-lg perspective-1000
+                                             ${c.matched ? 'bg-fuchsia-900/50 border-fuchsia-500/50 scale-95 opacity-50 shadow-inner' : ''}
+                                             ${!c.matched && c.flipped ? 'bg-gradient-to-br from-fuchsia-600 to-pink-600 border-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.5)] scale-105 rotate-y-180' : ''}
+                                             ${!c.matched && !c.flipped ? 'bg-gray-800 border-gray-600 hover:border-fuchsia-400 hover:bg-gray-700 hover:-translate-y-1' : ''}`}
+                                   >
+                                        <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-200">
+                                             {(c.flipped || c.matched) ? c.emoji : '?'}
+                                        </div>
+                                   </button>
+                              ))}
+                         </div>
+
+                         {/* Overlays */}
+                         {!started && (
+                              <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center rounded-3xl">
+                                   <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-pink-400 mb-6 drop-shadow-lg tracking-widest">NEON MATCH</div>
+                                   <div className="bg-gray-800/80 rounded-2xl p-5 mb-8 text-left max-w-sm border border-fuchsia-500/20">
+                                        <div className="text-sm font-black text-fuchsia-400 mb-3 tracking-wider">🎯 HOW TO PLAY</div>
+                                        <ul className="text-gray-300 text-sm space-y-2 list-none">
+                                             <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-fuchsia-500 rounded-full"/>카드를 뒤집어 같은 그림 짝을 찾으세요</li>
+                                             <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-pink-500 rounded-full"/>시도 횟수와 클리어 시간이 짧을수록 고득점!</li>
+                                             <li className="flex items-center gap-2 text-rose-400"><div className="w-1.5 h-1.5 bg-rose-500 rounded-full"/>틀리면 카드가 다시 뒤집어집니다</li>
+                                        </ul>
+                                   </div>
+                                   <button onClick={start} className="bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-black py-4 px-12 rounded-full shadow-[0_0_30px_rgba(217,70,239,0.5)] transition-transform hover:scale-105 flex items-center gap-3 text-lg">
+                                        <Play className="w-6 h-6 fill-white" /> START
+                                   </button>
+                              </div>
+                         )}
+
+                         {started && done && (
+                              <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-3xl">
+                                   <div className="text-5xl font-black text-emerald-400 mb-4 drop-shadow-[0_0_20px_rgba(52,211,153,0.8)] flex items-center gap-3"><CheckCircle className="w-12 h-12" /> CLEARED!</div>
+                                   <div className="text-2xl text-white font-black mb-2 font-mono">Final Score: <span className="text-fuchsia-400">{finalScore}</span></div>
+                                   <div className="text-gray-400 mb-8 font-bold">{attempts} attempts in {elapsed}s</div>
+                                   <button onClick={reset} className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 backdrop-blur-md">
+                                        <RotateCw className="w-5 h-5" /> PLAY AGAIN
+                                   </button>
+                              </div>
+                         )}
                     </div>
                </div>
           </div>

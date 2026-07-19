@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import GameHelpDropdown from './GameHelpDropdown';
+import { soundManager } from '../lib/soundManager';
 
 const W = 360;
 const H = 520;
 const BIRD_R = 14;
-const PIPE_W = 52;
-const GAP = 130;
-const GRAVITY = 0.45;
-const FLAP = -7.5;
-const PIPE_SPEED = 3;
+const PIPE_W = 56;
+const GAP = 150;
+const GRAVITY = 0.4;
+const FLAP = -6;
+const PIPE_SPEED = 3.5;
 
 const GangnamFlapOn = ({ onClose, user }) => {
      const canvasRef = useRef(null);
@@ -19,8 +19,16 @@ const GangnamFlapOn = ({ onClose, user }) => {
      const [rankList, setRankList] = useState(() => getRankTop10('flapon', true));
      const stateRef = useRef({ birdY: H / 2, birdVy: 0, pipes: [], frame: 0, score: 0 });
      const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
+     const [shake, setShake] = useState(false);
+
+     const triggerShake = () => {
+          setShake(true);
+          setTimeout(() => setShake(false), 200);
+     };
 
      const reset = useCallback(() => {
+          soundManager.init();
+          soundManager.playCoin();
           stateRef.current = { birdY: H / 2, birdVy: 0, pipes: [], frame: 0, score: 0 };
           setScore(0);
           setPhase('playing');
@@ -30,14 +38,17 @@ const GangnamFlapOn = ({ onClose, user }) => {
      const flap = useCallback(() => {
           if (phase === 'idle') { reset(); return; }
           if (phase === 'over') return;
+          soundManager.playMove(); // Use move sound for flapping
           stateRef.current.birdVy = FLAP;
      }, [phase, reset]);
 
      const endGame = useCallback(() => {
+          soundManager.playExplosion();
+          triggerShake();
           setPhase('over');
           const s = stateRef.current.score;
           setScore(s);
-          addScore('flapon', name, s, true);
+          if (s > 0) addScore('flapon', name, s, true);
           setRankList(getRankTop10('flapon', true));
      }, [name]);
 
@@ -56,7 +67,7 @@ const GangnamFlapOn = ({ onClose, user }) => {
                s.birdY += s.birdVy;
                s.frame++;
 
-               if (s.frame % 90 === 0) {
+               if (s.frame % 80 === 0) {
                     const gapY = 80 + Math.random() * (H - GAP - 160);
                     s.pipes.push({ x: W + 20, gapY, passed: false });
                }
@@ -69,6 +80,7 @@ const GangnamFlapOn = ({ onClose, user }) => {
                          p.passed = true;
                          s.score++;
                          setScore(s.score);
+                         soundManager.playCoin(); // Point gained
                     }
                     const inX = bx + BIRD_R > p.x && bx - BIRD_R < p.x + PIPE_W;
                     if (inX && (s.birdY - BIRD_R < p.gapY || s.birdY + BIRD_R > p.gapY + GAP)) {
@@ -80,33 +92,59 @@ const GangnamFlapOn = ({ onClose, user }) => {
 
                const ctx = canvasRef.current?.getContext('2d');
                if (ctx) {
-                    ctx.fillStyle = '#0f172a';
+                    ctx.clearRect(0, 0, W, H);
+                    
+                    // Background
+                    ctx.fillStyle = '#0f172a'; // slate-900
                     ctx.fillRect(0, 0, W, H);
-                    // skyline
+                    
+                    // Cyberpunk Skyline
                     ctx.fillStyle = '#1e293b';
-                    for (let i = 0; i < 8; i++) ctx.fillRect(i * 50 - (s.frame % 50), H - 60 - (i % 3) * 20, 40, 60 + (i % 4) * 15);
-                    // pipes (buildings)
+                    for (let i = 0; i < 8; i++) {
+                         ctx.fillRect(i * 50 - (s.frame % 50), H - 80 - (i % 3) * 30, 40, 80 + (i % 4) * 20);
+                         // Building windows
+                         ctx.fillStyle = '#38bdf8'; // sky-400
+                         if (i % 2 === 0) ctx.fillRect(i * 50 - (s.frame % 50) + 10, H - 60 - (i % 3) * 30, 8, 12);
+                         ctx.fillStyle = '#1e293b';
+                    }
+
+                    // Pipes (Neon bars)
                     s.pipes.forEach(p => {
-                         const grad = ctx.createLinearGradient(p.x, 0, p.x + PIPE_W, 0);
-                         grad.addColorStop(0, '#f59e0b');
-                         grad.addColorStop(1, '#d97706');
-                         ctx.fillStyle = grad;
-                         ctx.fillRect(p.x, 0, PIPE_W, p.gapY);
-                         ctx.fillRect(p.x, p.gapY + GAP, PIPE_W, H - p.gapY - GAP);
-                         ctx.fillStyle = '#fbbf24';
-                         for (let wy = 10; wy < p.gapY; wy += 24) ctx.fillRect(p.x + 8, wy, PIPE_W - 16, 8);
+                         ctx.shadowBlur = 15;
+                         ctx.shadowColor = 'rgba(16, 185, 129, 0.8)'; // emerald-500 glow
+                         ctx.fillStyle = '#059669'; // emerald-600
+                         
+                         // Top pipe
+                         ctx.beginPath();
+                         ctx.roundRect(p.x, 0, PIPE_W, p.gapY, [0, 0, 8, 8]);
+                         ctx.fill();
+                         
+                         // Bottom pipe
+                         ctx.beginPath();
+                         ctx.roundRect(p.x, p.gapY + GAP, PIPE_W, H - p.gapY - GAP, [8, 8, 0, 0]);
+                         ctx.fill();
+
+                         // Inner neon tube
+                         ctx.shadowBlur = 0;
+                         ctx.fillStyle = '#34d399'; // emerald-400
+                         ctx.fillRect(p.x + PIPE_W/2 - 4, 0, 8, p.gapY - 10);
+                         ctx.fillRect(p.x + PIPE_W/2 - 4, p.gapY + GAP + 10, 8, H - p.gapY - GAP - 10);
                     });
-                    // coin bird
+
+                    // Bird (Glowing Orb)
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'rgba(245, 158, 11, 1)'; // amber-500 glow
+                    ctx.fillStyle = '#fbbf24'; // amber-400
                     ctx.beginPath();
                     ctx.arc(bx, s.birdY, BIRD_R, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fbbf24';
                     ctx.fill();
-                    ctx.strokeStyle = '#f59e0b';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                    ctx.fillStyle = '#92400e';
-                    ctx.font = 'bold 12px sans-serif';
-                    ctx.fillText('온', bx - 6, s.birdY + 4);
+                    
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(bx - 4, s.birdY - 4, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
                }
                id = requestAnimationFrame(loop);
           };
@@ -115,55 +153,99 @@ const GangnamFlapOn = ({ onClose, user }) => {
      }, [phase, endGame]);
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
-               <div className="w-full flex justify-between items-center mb-4">
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <div className="flex items-center gap-1.5">
-                         <h2 className="text-xl font-black tracking-wider">온 점프</h2>
-                         <GameHelpDropdown accent="amber">
-                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
-                                   <li>클릭 또는 <b className="text-white">스페이스바</b>로 골드 코인을 점프시켜요</li>
-                                   <li>강남 빌딩(장애물) 사이를 통과하세요</li>
-                                   <li>부딪히면 게임 오버 · 통과한 개수가 점수!</li>
-                              </ul>
-                         </GameHelpDropdown>
-                    </div>
-                    <div className="text-amber-400 font-black min-w-[2rem] text-right">{score}</div>
-               </div>
+          <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* Ambient Glow */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-               <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">
-                    <div className="flex-1 flex flex-col items-center">
-                         <canvas
-                              ref={canvasRef}
-                              width={W}
-                              height={H}
-                              onClick={flap}
-                              className="rounded-2xl border-2 border-amber-500/30 cursor-pointer max-w-full"
-                              style={{ width: '100%', maxWidth: W }}
-                         />
-                         {phase === 'idle' && (
-                              <button onClick={reset} className="mt-4 bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 px-8 rounded-full flex items-center gap-2"><Play className="w-5 h-5" /> 시작하기</button>
-                         )}
-                         {phase === 'over' && (
-                              <div className="mt-4 text-center">
-                                   <p className="text-xl font-black text-red-400 mb-2">게임 오버 · {score}점</p>
-                                   <button onClick={reset} className="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-full font-bold flex items-center gap-2 mx-auto"><RotateCw className="w-4 h-4" /> 다시하기</button>
-                              </div>
-                         )}
-                         <p className="text-gray-500 text-xs mt-2">클릭 또는 스페이스바로 점프</p>
-                    </div>
-
-                    <div className="bg-gray-800/80 rounded-xl p-4 border border-gray-600 w-full lg:w-56 shrink-0">
-                         <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2"><Trophy className="w-4 h-4 text-yellow-400" /><span className="text-xs font-bold text-gray-400">TOP 10</span></div>
-                         <div className="space-y-1.5 max-h-72 overflow-y-auto">
-                              {rankList.map((e, i) => (
-                                   <div key={i} className="flex justify-between text-sm">
-                                        <span className="text-gray-300 truncate max-w-[100px]">{e.rank}. {e.name}</span>
-                                        <span className="text-gray-400 font-mono text-xs">{e.score}</span>
-                                   </div>
-                              ))}
-                              {rankList.length === 0 && <p className="text-gray-500 text-xs">아직 기록이 없어요.</p>}
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-amber-500/30 shadow-[0_0_60px_rgba(245,158,11,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
+                    
+                    {/* Left Panel: Info */}
+                    <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                         <div className="flex justify-between items-start lg:hidden mb-2">
+                              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-400 tracking-wider">NEON JUMP</h2>
+                              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
                          </div>
+
+                         <div className="hidden lg:flex justify-between items-center w-full">
+                              <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-500 drop-shadow-sm leading-tight">NEON<br/>JUMP</h2>
+                              <button onClick={onClose} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
+                         </div>
+
+                         <div className="w-full">
+                              <div className="bg-black/40 p-5 rounded-2xl border border-amber-500/30 shadow-[inset_0_0_15px_rgba(245,158,11,0.1)] w-full text-center lg:text-left">
+                                   <div className="text-xs font-black text-amber-400 tracking-[0.2em] mb-1">SCORE</div>
+                                   <div className="text-5xl font-black text-white font-mono bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-300">
+                                        {score}
+                                   </div>
+                              </div>
+                         </div>
+
+                         {/* Leaderboard */}
+                         <div className="bg-black/40 rounded-2xl p-5 border border-amber-500/20 w-full flex-1 hidden lg:block">
+                              <div className="flex items-center gap-3 mb-4">
+                                   <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                                        <Trophy className="w-4 h-4 text-yellow-400" />
+                                   </div>
+                                   <span className="text-sm font-black text-white tracking-widest">TOP 10</span>
+                              </div>
+                              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                   {rankList.map((e, i) => (
+                                        <div key={i} className="flex justify-between items-center p-2 rounded-xl bg-white/5 hover:bg-amber-500/10 transition-colors">
+                                             <div className="flex items-center gap-2">
+                                                  <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-600 text-black shadow-[0_0_10px_rgba(250,204,21,0.5)]' : i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' : i === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-700 text-white' : 'bg-white/10 text-amber-200'}`}>{i + 1}</span>
+                                                  <span className="text-gray-200 font-bold text-sm truncate max-w-[80px]">{e.name}</span>
+                                             </div>
+                                             <span className="text-amber-300 font-mono text-sm font-bold">{e.score}</span>
+                                        </div>
+                                   ))}
+                                   {rankList.length === 0 && <p className="text-amber-500/50 text-sm py-2 text-center">기록이 없습니다.</p>}
+                              </div>
+                         </div>
+                    </div>
+
+                    {/* Right Panel: Game Board */}
+                    <div className="w-full lg:w-2/3 flex flex-col items-center justify-center relative">
+                         <div className="relative rounded-3xl overflow-hidden border-4 border-slate-700 shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-black" style={{ width: W, height: H, maxWidth: '100%' }}>
+                              <canvas
+                                   ref={canvasRef}
+                                   width={W}
+                                   height={H}
+                                   onClick={(e) => { e.preventDefault(); flap(); }}
+                                   className="block w-full h-full cursor-pointer touch-none"
+                              />
+
+                              {/* Overlays */}
+                              {phase === 'idle' && (
+                                   <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                                        <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-400 mb-6 drop-shadow-lg tracking-widest">NEON JUMP</div>
+                                        <div className="bg-gray-800/80 rounded-2xl p-5 mb-8 text-left max-w-xs border border-amber-500/20">
+                                             <div className="text-sm font-black text-amber-400 mb-3 tracking-wider">🎯 HOW TO PLAY</div>
+                                             <ul className="text-gray-300 text-sm space-y-2 list-none">
+                                                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-amber-500 rounded-full"/>화면을 탭하거나 스페이스바를 눌러 점프!</li>
+                                                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"/>네온 기둥 사이를 무사히 통과하세요</li>
+                                             </ul>
+                                        </div>
+                                        <button onClick={reset} className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-black py-4 px-12 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-transform hover:scale-105 flex items-center gap-3 text-lg">
+                                             <Play className="w-6 h-6 fill-black" /> START GAME
+                                        </button>
+                                   </div>
+                              )}
+
+                              {phase === 'over' && (
+                                   <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                                        <div className="text-5xl font-black text-red-500 mb-4 drop-shadow-[0_0_20px_rgba(239,68,68,0.8)]">CRASH!</div>
+                                        <div className="text-2xl text-white font-black mb-8 font-mono">Score: <span className="text-amber-400">{score}</span></div>
+                                        <button onClick={reset} className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 backdrop-blur-md">
+                                             <RotateCw className="w-5 h-5" /> PLAY AGAIN
+                                        </button>
+                                   </div>
+                              )}
+                         </div>
+                         <p className="text-gray-500 text-sm mt-4 font-bold">화면 탭 또는 스페이스바로 점프</p>
                     </div>
                </div>
           </div>

@@ -1,0 +1,472 @@
+{"kind":"deck","id":"pr/3s2djq","name":"Deck"}
+{"kind":"layout","layoutId":"5f3da7b1-152e-48bc-b7d5-0ba834a2c405","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"e507bc07-9f7c-47b5-95d8-f68607c0007a","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/ojlxtf","slide":1,"title":"ONtown","textShapes":14}
+{"kind":"shape","id":"sh/725wnal4","slide":1,"bbox":[0,0,1280,720]}
+{"kind":"textbox","id":"sh/83yxgv2p","slide":1,"text":"ONtown","textPreview":"ONtown","textChars":6,"textLines":1,"bbox":[78,108,620,82]}
+{"kind":"textbox","id":"sh/t47ep03a","slide":1,"text":"지역이 켜지고, 사람이 연결되는 전국 로컬 커뮤니티 네트워크","textPreview":"지역이 켜지고, 사람이 연결되는 전국 로컬 커뮤니티 네트워크","textChars":33,"textLines":1,"bbox":[82,204,720,48]}
+{"kind":"textbox","id":"sh/yxwfalkn","slide":1,"text":"강남ON에서 검증한 지역 커뮤니티 모델을 전국 ON 네트워크로 확장합니다.","textPreview":"강남ON에서 검증한 지역 커뮤니티 모델을 전국 ON 네트워크로 확장합니다.","textChars":41,"textLines":1,"bbox":[84,286,650,72]}
+{"kind":"shape","id":"sh/jy5wjqls","slide":1,"bbox":[82,398,104,38]}
+{"kind":"textbox","id":"sh/kzexcv2d","slide":1,"text":"강남ON","textPreview":"강남ON","textChars":4,"textLines":1,"bbox":[96,406,76,22]}
+{"kind":"shape","id":"sh/l0nel03y","slide":1,"bbox":[208,398,104,38]}
+{"kind":"textbox","id":"sh/a9cf6lkb","slide":1,"text":"송파ON","textPreview":"송파ON","textChars":4,"textLines":1,"bbox":[222,406,76,22]}
+{"kind":"shape","id":"sh/balwfqlw","slide":1,"bbox":[334,398,104,38]}
+{"kind":"textbox","id":"sh/neh4vaxw","slide":1,"text":"부산ON","textPreview":"부산ON","textChars":4,"textLines":1,"bbox":[348,406,76,22]}
+{"kind":"shape","id":"sh/mdon25wb","slide":1,"bbox":[460,398,104,38]}
+{"kind":"textbox","id":"sh/9gzmx0f2","slide":1,"text":"여수ON","textPreview":"여수ON","textChars":4,"textLines":1,"bbox":[474,406,76,22]}
+{"kind":"shape","id":"sh/8fq54veh","slide":1,"bbox":[586,398,104,38]}
+{"kind":"textbox","id":"sh/vih4zaxs","slide":1,"text":"강릉ON","textPreview":"강릉ON","textChars":4,"textLines":1,"bbox":[600,406,76,22]}
+{"kind":"shape","id":"sh/ah8n65wn","slide":1,"bbox":[712,398,104,38]}
+{"kind":"textbox","id":"sh/x4zm1kfy","slide":1,"text":"광주ON","textPreview":"광주ON","textChars":4,"textLines":1,"bbox":[726,406,76,22]}
+{"kind":"shape","id":"sh/w3q58fed","slide":1,"bbox":[850,84,330,490]}
+{"kind":"textbox","id":"sh/bmd4nqxo","slide":1,"text":"투자 유치 사업계획서","textPreview":"투자 유치 사업계획서","textChars":11,"textLines":1,"bbox":[890,142,250,32]}
+{"kind":"textbox","id":"sh/ql43ulw3","slide":1,"text":"지역별 ON은\n하나의 클랜이 되고,\nONtown은 그 클랜들이\n경쟁하고 교류하는\n대표 브랜드가 됩니다.","textPreview":"지역별 ON은 | 하나의 클랜이 되고, | ONtown은 그 클랜들이 | 경쟁하고 교류하는 | 대표 브랜드가 됩니다.","textChars":57,"textLines":5,"bbox":[895,236,245,210]}
+{"kind":"textbox","id":"sh/edwzidk3","slide":1,"text":"2026.07","textPreview":"2026.07","textChars":7,"textLines":1,"bbox":[1015,526,110,24]}
+{"kind":"textbox","id":"sh/fe5grilo","slide":1,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/0fehkn2t","slide":1,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/ojlxtf","slide":1,"text":""}
+{"kind":"slide","id":"sl/wqsmog","slide":2,"title":"EXECUTIVE SUMMARY","textShapes":16}
+{"kind":"shape","id":"sh/obe5cjql","slide":2,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/na543ep0","slide":2,"text":"EXECUTIVE SUMMARY","textPreview":"EXECUTIVE SUMMARY","textChars":17,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/m9wna98f","slide":2,"text":"ONtown은 지역 커뮤니티를 ‘검색’이 아니라 ‘소속’으로 바꿉니다","textPreview":"ONtown은 지역 커뮤니티를 ‘검색’이 아니라 ‘소속’으로 바꿉니다","textChars":38,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/x07m9o72","slide":2,"text":"각 지역의 ON은 생활 정보, 사람, 이벤트, 미니홈피를 묶어 지역 정체성을 만드는 로컬 네트워크입니다.","textPreview":"각 지역의 ON은 생활 정보, 사람, 이벤트, 미니홈피를 묶어 지역 정체성을 만드는 로컬 네트워크입니다.","textChars":58,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/wzy5gjqx","slide":2,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/byp47epc","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/axgne98r","slide":2,"bbox":[72,378,340,178]}
+{"kind":"shape","id":"sh/l476d87e","slide":2,"bbox":[94,398,94,38]}
+{"kind":"textbox","id":"sh/k3y5k3qt","slide":2,"text":"확장","textPreview":"확장","textChars":2,"textLines":1,"bbox":[108,406,66,22]}
+{"kind":"textbox","id":"sh/61sb65of","slide":2,"text":"01. 지역 ON 네트워크","textPreview":"01. 지역 ON 네트워크","textChars":14,"textLines":1,"bbox":[96,444,292,34]}
+{"kind":"textbox","id":"sh/r2lsfap0","slide":2,"text":"강남ON을 시작으로 송파ON, 부산ON, 여수ON 등 전국 지역 단위 서비스를 확장합니다.","textPreview":"강남ON을 시작으로 송파ON, 부산ON, 여수ON 등 전국 지역 단위 서비스를 확장합니다.","textChars":50,"textLines":1,"bbox":[96,484,292,86]}
+{"kind":"shape","id":"sh/s3ut8f6l","slide":2,"bbox":[470,378,340,178]}
+{"kind":"shape","id":"sh/t43ahk76","slide":2,"bbox":[492,398,94,38]}
+{"kind":"textbox","id":"sh/epcbapor","slide":2,"text":"소속","textPreview":"소속","textChars":2,"textLines":1,"bbox":[506,406,66,22]}
+{"kind":"textbox","id":"sh/fqlsjapc","slide":2,"text":"02. 클랜형 커뮤니티","textPreview":"02. 클랜형 커뮤니티","textChars":12,"textLines":1,"bbox":[494,444,292,34]}
+{"kind":"textbox","id":"sh/grutcf6h","slide":2,"text":"사용자는 출신/활동 지역 태그를 갖고 다른 지역에서도 정체성을 드러냅니다.","textPreview":"사용자는 출신/활동 지역 태그를 갖고 다른 지역에서도 정체성을 드러냅니다.","textChars":41,"textLines":1,"bbox":[494,484,292,86]}
+{"kind":"shape","id":"sh/1s3ulk72","slide":2,"bbox":[868,378,340,178]}
+{"kind":"shape","id":"sh/ut8rylo7","slide":2,"bbox":[890,398,94,38]}
+{"kind":"textbox","id":"sh/vuhs7qps","slide":2,"text":"성장","textPreview":"성장","textChars":2,"textLines":1,"bbox":[904,406,66,22]}
+{"kind":"textbox","id":"sh/zex8fm5k","slide":2,"text":"03. 이벤트 성장 엔진","textPreview":"03. 이벤트 성장 엔진","textChars":13,"textLines":1,"bbox":[892,444,292,34]}
+{"kind":"textbox","id":"sh/ydo76h4z","slide":2,"text":"지역 예선, 도 대회, 전국 대회로 테트리스·얼짱·모임 이벤트를 운영합니다.","textPreview":"지역 예선, 도 대회, 전국 대회로 테트리스·얼짱·모임 이벤트를 운영합니다.","textChars":42,"textLines":1,"bbox":[892,484,292,86]}
+{"kind":"textbox","id":"sh/l0fqhwnq","slide":2,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/kz6p8rm5","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/wqsmog","slide":2,"text":""}
+{"kind":"slide","id":"sl/i1jmjn","slide":3,"title":"PROBLEM","textShapes":13}
+{"kind":"shape","id":"sh/fah4ny58","slide":3,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/gbq5w3mt","slide":3,"text":"PROBLEM","textPreview":"PROBLEM","textChars":7,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/1cjmp8ne","slide":3,"text":"로컬 플랫폼은 많지만, 지역의 ‘사람’을 기억하게 만들지는 못합니다","textPreview":"로컬 플랫폼은 많지만, 지역의 ‘사람’을 기억하게 만들지는 못합니다","textChars":37,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/2dsnyd4z","slide":3,"text":"맛집·관광·커뮤니티·중고거래는 흩어져 있고, 사용자의 지역 정체성과 관계가 지속적으로 쌓이지 않습니다.","textPreview":"맛집·관광·커뮤니티·중고거래는 흩어져 있고, 사용자의 지역 정체성과 관계가 지속적으로 쌓이지 않습니다.","textChars":57,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/3e1ori54","slide":3,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/oza50nmp","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/p0j6tsna","slide":3,"bbox":[72,350,350,170]}
+{"kind":"textbox","id":"sh/q1sn2x4v","slide":3,"text":"정보는 있지만 맥락이 부족","textPreview":"정보는 있지만 맥락이 부족","textChars":14,"textLines":1,"bbox":[96,374,302,34]}
+{"kind":"textbox","id":"sh/b21ovi5g","slide":3,"text":"검색 결과는 많지만 현지인/외지인 관점, 방문 목적, 관계 맥락이 약합니다.","textPreview":"검색 결과는 많지만 현지인/외지인 관점, 방문 목적, 관계 맥락이 약합니다.","textChars":42,"textLines":1,"bbox":[96,418,302,78]}
+{"kind":"shape","id":"sh/7upojupk","slide":3,"bbox":[466,350,350,170]}
+{"kind":"textbox","id":"sh/mtgnqp8z","slide":3,"text":"커뮤니티는 일회성 게시판에 머묾","textPreview":"커뮤니티는 일회성 게시판에 머묾","textChars":17,"textLines":1,"bbox":[490,374,302,34]}
+{"kind":"textbox","id":"sh/9w76l47a","slide":3,"text":"게시글은 지나가지만 사용자의 정체성, 취향, 활동 이력은 축적되지 않습니다.","textPreview":"게시글은 지나가지만 사용자의 정체성, 취향, 활동 이력은 축적되지 않습니다.","textChars":42,"textLines":1,"bbox":[490,418,302,78]}
+{"kind":"shape","id":"sh/8vy5szqp","slide":3,"bbox":[860,350,350,170]}
+{"kind":"textbox","id":"sh/zqpofup8","slide":3,"text":"지역 간 연결 구조가 없음","textPreview":"지역 간 연결 구조가 없음","textChars":14,"textLines":1,"bbox":[884,374,302,34]}
+{"kind":"textbox","id":"sh/ypwnmp8n","slide":3,"text":"강남 사람이 여수에 댓글을 남겨도 그 방문 맥락과 지역성이 서비스 자산으로 남지 않습니다.","textPreview":"강남 사람이 여수에 댓글을 남겨도 그 방문 맥락과 지역성이 서비스 자산으로 남지 않습니다.","textChars":50,"textLines":1,"bbox":[884,418,302,78]}
+{"kind":"textbox","id":"sh/ls76hk7e","slide":3,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/kry5ozqt","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/i1jmjn","slide":3,"text":""}
+{"kind":"slide","id":"sl/qjbzbd","slide":4,"title":"SOLUTION 01","textShapes":22}
+{"kind":"shape","id":"sh/xsvahcfm","slide":4,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/ap4r6xwb","slide":4,"text":"SOLUTION 01","textPreview":"SOLUTION 01","textChars":11,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/vqdsf2xg","slide":4,"text":"전국의 지역 ON을 하나의 브랜드 아래 연결합니다","textPreview":"전국의 지역 ON을 하나의 브랜드 아래 연결합니다","textChars":27,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/4f6tcred","slide":4,"text":"각 지역 ON은 독립 커뮤니티처럼 운영되지만, 계정·태그·이벤트·재화를 공유하는 ONtown 네트워크로 묶입니다.","textPreview":"각 지역 ON은 독립 커뮤니티처럼 운영되지만, 계정·태그·이벤트·재화를 공유하는 ONtown 네트워크로 묶입니다.","textChars":63,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/5gfalwfy","slide":4,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/it4bahw7","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/juxsjmxs","slide":4,"bbox":[820,72,330,520]}
+{"kind":"textbox","id":"sh/0j290net","slide":4,"text":"ON","textPreview":"ON","textChars":2,"textLines":1,"bbox":[884,136,180,80]}
+{"kind":"textbox","id":"sh/lkba9sfe","slide":4,"text":"지역의 정보와 사람을\n하나의 정체성으로 묶는\n로컬 네트워크","textPreview":"지역의 정보와 사람을 | 하나의 정체성으로 묶는 | 로컬 네트워크","textChars":32,"textLines":3,"bbox":[865,268,240,150]}
+{"kind":"textbox","id":"sh/d4bapc3i","slide":4,"text":"GangNam → Songpa → Busan → Yeosu","textPreview":"GangNam → Songpa → Busan → Yeosu","textChars":32,"textLines":1,"bbox":[858,500,252,26]}
+{"kind":"shape","id":"sh/c329wrmx","slide":4,"bbox":[72,384,200,62]}
+{"kind":"textbox","id":"sh/bitsnmlc","slide":4,"text":"강남ON","textPreview":"강남ON","textChars":4,"textLines":1,"bbox":[96,408,152,34]}
+{"kind":"textbox","id":"sh/qhkruh4r","slide":4,"text":"1차 검증 거점","textPreview":"1차 검증 거점","textChars":8,"textLines":1,"bbox":[96,452,152,-30]}
+{"kind":"shape","id":"sh/l8vatw3e","slide":4,"bbox":[302,384,200,62]}
+{"kind":"textbox","id":"sh/07m90rm9","slide":4,"text":"송파ON","textPreview":"송파ON","textChars":4,"textLines":1,"bbox":[326,408,152,34]}
+{"kind":"textbox","id":"sh/z6dsrmlo","slide":4,"text":"확장 후보 지역","textPreview":"확장 후보 지역","textChars":8,"textLines":1,"bbox":[326,452,152,-30]}
+{"kind":"shape","id":"sh/y5kryh43","slide":4,"bbox":[532,384,200,62]}
+{"kind":"textbox","id":"sh/9cvaxw3q","slide":4,"text":"부산ON","textPreview":"부산ON","textChars":4,"textLines":1,"bbox":[556,408,152,34]}
+{"kind":"textbox","id":"sh/8bm94bm5","slide":4,"text":"확장 후보 지역","textPreview":"확장 후보 지역","textChars":8,"textLines":1,"bbox":[556,452,152,-30]}
+{"kind":"shape","id":"sh/sfut0fuh","slide":4,"bbox":[72,470,200,62]}
+{"kind":"textbox","id":"sh/tg3utkb2","slide":4,"text":"여수ON","textPreview":"여수ON","textChars":4,"textLines":1,"bbox":[96,494,152,34]}
+{"kind":"textbox","id":"sh/6dcby5cb","slide":4,"text":"확장 후보 지역","textPreview":"확장 후보 지역","textChars":8,"textLines":1,"bbox":[96,538,152,-30]}
+{"kind":"shape","id":"sh/7elcratw","slide":4,"bbox":[302,470,200,62]}
+{"kind":"textbox","id":"sh/gjet4fad","slide":4,"text":"강릉ON","textPreview":"강릉ON","textChars":4,"textLines":1,"bbox":[326,494,152,34]}
+{"kind":"textbox","id":"sh/hknuxkby","slide":4,"text":"확장 후보 지역","textPreview":"확장 후보 지역","textChars":8,"textLines":1,"bbox":[326,538,152,-30]}
+{"kind":"shape","id":"sh/uhwb2pc7","slide":4,"bbox":[532,470,200,62]}
+{"kind":"textbox","id":"sh/fi5cvuts","slide":4,"text":"광주ON","textPreview":"광주ON","textChars":4,"textLines":1,"bbox":[556,494,152,34]}
+{"kind":"textbox","id":"sh/wnatsvu9","slide":4,"text":"확장 후보 지역","textPreview":"확장 후보 지역","textChars":8,"textLines":1,"bbox":[556,538,152,-30]}
+{"kind":"textbox","id":"sh/xojul0bu","slide":4,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/zetoniho","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/qjbzbd","slide":4,"text":""}
+{"kind":"slide","id":"sl/bcxifq","slide":5,"title":"SOLUTION 02","textShapes":15}
+{"kind":"shape","id":"sh/hc72h0bm","slide":5,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/u9gj6lsv","slide":5,"text":"SOLUTION 02","textPreview":"SOLUTION 02","textChars":11,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/vapkfqtg","slide":5,"text":"지역 태그는 외지인의 행동까지 로컬 데이터로 바꿉니다","textPreview":"지역 태그는 외지인의 행동까지 로컬 데이터로 바꿉니다","textChars":29,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/4fi1cfax","slide":5,"text":"강남ON 가입자가 여수ON에 댓글을 달면 ‘강남’ 태그가 남아 지역 간 관심과 수요를 읽을 수 있습니다.","textPreview":"강남ON 가입자가 여수ON에 댓글을 달면 ‘강남’ 태그가 남아 지역 간 관심과 수요를 읽을 수 있습니다.","textChars":58,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/50r2l0bi","slide":5,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/idgja5s7","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/3e9kjats","slide":5,"bbox":[84,355,520,180]}
+{"kind":"textbox","id":"sh/kje10bat","slide":5,"text":"여수ON 맛집 글","textPreview":"여수ON 맛집 글","textChars":9,"textLines":1,"bbox":[114,382,180,28]}
+{"kind":"textbox","id":"sh/lkn29gbe","slide":5,"text":"[강남] 출장 왔다가 들렀는데 혼밥하기 좋네요.\n[부산] 가족 여행 코스로도 괜찮아 보여요.\n[광주] 주차 정보가 있으면 더 좋겠습니다.","textPreview":"[강남] 출장 왔다가 들렀는데 혼밥하기 좋네요. | [부산] 가족 여행 코스로도 괜찮아 보여요. | [광주] 주차 정보가 있으면 더 좋겠습니다.","textChars":76,"textLines":3,"bbox":[116,430,430,88]}
+{"kind":"shape","id":"sh/tkjep8zu","slide":5,"bbox":[660,350,250,160]}
+{"kind":"shape","id":"sh/sjadg3y9","slide":5,"bbox":[682,370,94,38]}
+{"kind":"textbox","id":"sh/ri1wnyho","slide":5,"text":"DATA","textPreview":"DATA","textChars":4,"textLines":1,"bbox":[696,378,66,22]}
+{"kind":"textbox","id":"sh/6hsvetg3","slide":5,"text":"지역 수요 파악","textPreview":"지역 수요 파악","textChars":8,"textLines":1,"bbox":[684,416,202,34]}
+{"kind":"textbox","id":"sh/1o3etszq","slide":5,"text":"외지인이 좋아하는 음식, 카페 분위기, 관광 포인트를 데이터화합니다.","textPreview":"외지인이 좋아하는 음식, 카페 분위기, 관광 포인트를 데이터화합니다.","textChars":38,"textLines":1,"bbox":[684,456,202,68]}
+{"kind":"shape","id":"sh/gnudkny5","slide":5,"bbox":[940,350,250,160]}
+{"kind":"shape","id":"sh/fmlwrihk","slide":5,"bbox":[962,370,94,38]}
+{"kind":"textbox","id":"sh/elcvidgf","slide":5,"text":"B2B","textPreview":"B2B","textChars":3,"textLines":1,"bbox":[976,378,66,22]}
+{"kind":"textbox","id":"sh/pcnexsz2","slide":5,"text":"상권 영업 자산","textPreview":"상권 영업 자산","textChars":8,"textLines":1,"bbox":[964,416,202,34]}
+{"kind":"textbox","id":"sh/obuxonyh","slide":5,"text":"어떤 지역 사용자가 방문 의향을 보이는지 지역 사업자에게 제공합니다.","textPreview":"어떤 지역 사용자가 방문 의향을 보이는지 지역 사업자에게 제공합니다.","textChars":38,"textLines":1,"bbox":[964,456,202,68]}
+{"kind":"textbox","id":"sh/87mpgvap","slide":5,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/98vq90ra","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/bcxifq","slide":5,"text":""}
+{"kind":"slide","id":"sl/nokzwu","slide":6,"title":"SOLUTION 03","textShapes":18}
+{"kind":"shape","id":"sh/wnqd0bqt","slide":6,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/vmhcr698","slide":6,"text":"SOLUTION 03","textPreview":"SOLUTION 03","textChars":11,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/alovy18n","slide":6,"text":"이벤트는 지역 ON을 클랜으로 만드는 성장 장치입니다","textPreview":"이벤트는 지역 ON을 클랜으로 만드는 성장 장치입니다","textChars":29,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/5czexgra","slide":6,"text":"지역 예선에서 도 대회, 전국 대회로 이어지는 구조는 참여 이유와 재방문 이유를 동시에 만듭니다.","textPreview":"지역 예선에서 도 대회, 전국 대회로 이어지는 구조는 참여 이유와 재방문 이유를 동시에 만듭니다.","textChars":54,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/krqd4bqp","slide":6,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/jqhwv694","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/ip8v218z","slide":6,"bbox":[80,385,230,118]}
+{"kind":"textbox","id":"sh/tgje1grm","slide":6,"text":"지역 예선","textPreview":"지역 예선","textChars":5,"textLines":1,"bbox":[100,414,190,30]}
+{"kind":"textbox","id":"sh/sfad8vq1","slide":6,"text":"강남 테트리스 1위","textPreview":"강남 테트리스 1위","textChars":10,"textLines":1,"bbox":[100,458,190,36]}
+{"kind":"textbox","id":"sh/mdgfmhk3","slide":6,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[325,420,30,30]}
+{"kind":"shape","id":"sh/7epgvml8","slide":6,"bbox":[372,385,230,118]}
+{"kind":"textbox","id":"sh/8fyxor2t","slide":6,"text":"도·광역 대회","textPreview":"도·광역 대회","textChars":7,"textLines":1,"bbox":[392,414,190,30]}
+{"kind":"textbox","id":"sh/9g7yxw3e","slide":6,"text":"서울 대표 선발","textPreview":"서울 대표 선발","textChars":8,"textLines":1,"bbox":[392,458,190,36]}
+{"kind":"textbox","id":"sh/uhgfq1kz","slide":6,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[617,420,30,30]}
+{"kind":"shape","id":"sh/vi9gz6lk","slide":6,"bbox":[664,385,230,118]}
+{"kind":"textbox","id":"sh/wjixsr25","slide":6,"text":"전국 결승","textPreview":"전국 결승","textChars":5,"textLines":1,"bbox":[684,414,190,30]}
+{"kind":"textbox","id":"sh/hkry1w3q","slide":6,"text":"전국 랭킹 공개","textPreview":"전국 랭킹 공개","textChars":8,"textLines":1,"bbox":[684,458,190,36]}
+{"kind":"textbox","id":"sh/alwfexkv","slide":6,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[909,420,30,30]}
+{"kind":"shape","id":"sh/bm5wn2lg","slide":6,"bbox":[956,385,230,118]}
+{"kind":"textbox","id":"sh/fq1cvy18","slide":6,"text":"브랜드/기획사 연계","textPreview":"브랜드/기획사 연계","textChars":10,"textLines":1,"bbox":[976,414,190,30]}
+{"kind":"textbox","id":"sh/epsvmt0n","slide":6,"text":"프로필 제공·스폰서십","textPreview":"프로필 제공·스폰서십","textChars":11,"textLines":1,"bbox":[976,458,190,36]}
+{"kind":"textbox","id":"sh/1s3ux8jy","slide":6,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/grudo3id","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/nokzwu","slide":6,"text":""}
+{"kind":"slide","id":"sl/qpmt7t","slide":7,"title":"PRODUCT","textShapes":19}
+{"kind":"shape","id":"sh/rqd0ju10","slide":7,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/sr6hszil","slide":7,"text":"PRODUCT","textPreview":"PRODUCT","textChars":7,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/dsfil4j6","slide":7,"text":"미니홈피는 사람을 기억하게 하고, 지역 정보는 행동으로 이어집니다","textPreview":"미니홈피는 사람을 기억하게 하고, 지역 정보는 행동으로 이어집니다","textChars":36,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/i14zmp0j","slide":7,"text":"ONtown의 제품 구조는 개인 공간, 로컬 콘텐츠, 거래/모임, 이벤트가 서로 트래픽을 주고받도록 설계합니다.","textPreview":"ONtown의 제품 구조는 개인 공간, 로컬 콘텐츠, 거래/모임, 이벤트가 서로 트래픽을 주고받도록 설계합니다.","textChars":62,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/32d0fu1o","slide":7,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/4nmhozi9","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/5ovih4ju","slide":7,"bbox":[70,350,260,170]}
+{"kind":"shape","id":"sh/2xojyt0n","slide":7,"bbox":[92,370,94,38]}
+{"kind":"textbox","id":"sh/nyx0re18","slide":7,"text":"IDENTITY","textPreview":"IDENTITY","textChars":8,"textLines":1,"bbox":[106,378,66,22]}
+{"kind":"textbox","id":"sh/32dsjip0","slide":7,"text":"미니홈피","textPreview":"미니홈피","textChars":4,"textLines":1,"bbox":[94,416,212,34]}
+{"kind":"textbox","id":"sh/214rqdof","slide":7,"text":"프로필, 오늘 상태, BGM, 일상 피드, 방명록, 파도타기, 일촌","textPreview":"프로필, 오늘 상태, BGM, 일상 피드, 방명록, 파도타기, 일촌","textChars":37,"textLines":1,"bbox":[94,456,212,78]}
+{"kind":"shape","id":"sh/poval876","slide":7,"bbox":[365,350,260,170]}
+{"kind":"shape","id":"sh/o3m9sn6l","slide":7,"bbox":[387,370,94,38]}
+{"kind":"textbox","id":"sh/bqxsnipc","slide":7,"text":"CONTENT","textPreview":"CONTENT","textChars":7,"textLines":1,"bbox":[401,378,66,22]}
+{"kind":"textbox","id":"sh/qporudor","slide":7,"text":"강남픽·생활정보","textPreview":"강남픽·생활정보","textChars":8,"textLines":1,"bbox":[389,416,212,34]}
+{"kind":"textbox","id":"sh/dsfaps72","slide":7,"text":"맛집, 카페, 문화, 공공기관, 교통, 지역 소식 큐레이션","textPreview":"맛집, 카페, 문화, 공공기관, 교통, 지역 소식 큐레이션","textChars":32,"textLines":1,"bbox":[389,456,212,78]}
+{"kind":"shape","id":"sh/cr69wn6h","slide":7,"bbox":[660,350,260,170]}
+{"kind":"shape","id":"sh/zuxsr2p8","slide":7,"bbox":[682,370,94,38]}
+{"kind":"textbox","id":"sh/ytoryxon","slide":7,"text":"ACTION","textPreview":"ACTION","textChars":6,"textLines":1,"bbox":[696,378,66,22]}
+{"kind":"textbox","id":"sh/upsvq18v","slide":7,"text":"모임·거래","textPreview":"모임·거래","textChars":5,"textLines":1,"bbox":[684,416,212,34]}
+{"kind":"textbox","id":"sh/vq1cj69g","slide":7,"text":"혼밥 매칭, 동네 모임, 중고거래, 월세·전세 직거래","textPreview":"혼밥 매칭, 동네 모임, 중고거래, 월세·전세 직거래","textChars":29,"textLines":1,"bbox":[684,456,212,78]}
+{"kind":"shape","id":"sh/wradsbq1","slide":7,"bbox":[955,350,260,170]}
+{"kind":"shape","id":"sh/hsjulwrm","slide":7,"bbox":[977,370,94,38]}
+{"kind":"textbox","id":"sh/ml8bmh8z","slide":7,"text":"GAME","textPreview":"GAME","textChars":4,"textLines":1,"bbox":[991,378,66,22]}
+{"kind":"textbox","id":"sh/nmhcfm9k","slide":7,"text":"이벤트·랭킹","textPreview":"이벤트·랭킹","textChars":6,"textLines":1,"bbox":[979,416,212,34]}
+{"kind":"textbox","id":"sh/8nqdorqp","slide":7,"text":"지역 대회, 활동 등급, ON 보상, 전국 랭킹","textPreview":"지역 대회, 활동 등급, ON 보상, 전국 랭킹","textChars":26,"textLines":1,"bbox":[979,456,212,78]}
+{"kind":"textbox","id":"sh/9ojuhwra","slide":7,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/6hcvyl83","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/qpmt7t","slide":7,"text":""}
+{"kind":"slide","id":"sl/mlqlay","slide":8,"title":"BUSINESS MODEL","textShapes":15}
+{"kind":"shape","id":"sh/4zitwj2x","slide":8,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/3y9s3elc","slide":8,"text":"BUSINESS MODEL","textPreview":"BUSINESS MODEL","textChars":14,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/2x0bu9kr","slide":8,"text":"수익은 지역 사업자, 사용자 꾸미기, 이벤트 스폰서십에서 동시에 발생합니다","textPreview":"수익은 지역 사업자, 사용자 꾸미기, 이벤트 스폰서십에서 동시에 발생합니다","textChars":41,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/hw7a143m","slide":8,"text":"초기에는 광고와 입점 상품, 1년차에는 이벤트·ON 재화·파트너 데이터로 매출원을 확장합니다.","textPreview":"초기에는 광고와 입점 상품, 1년차에는 이벤트·ON 재화·파트너 데이터로 매출원을 확장합니다.","textChars":52,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/gvytsj21","slide":8,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/vupszelg","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/utgbq9kv","slide":8,"bbox":[72,344,248,172]}
+{"kind":"textbox","id":"sh/1sbud83q","slide":8,"text":"지역 광고","textPreview":"지역 광고","textChars":5,"textLines":1,"bbox":[96,368,200,34]}
+{"kind":"textbox","id":"sh/0r2t4325","slide":8,"text":"동네 상권, 맛집, 카페, 병원, 학원 대상 위치 기반 노출 상품","textPreview":"동네 상권, 맛집, 카페, 병원, 학원 대상 위치 기반 노출 상품","textChars":36,"textLines":1,"bbox":[96,412,200,80]}
+{"kind":"shape","id":"sh/ax8rmt4j","slide":8,"bbox":[348,344,248,172]}
+{"kind":"textbox","id":"sh/bi1svyl4","slide":8,"text":"입점·쿠폰","textPreview":"입점·쿠폰","textChars":5,"textLines":1,"bbox":[372,368,200,34]}
+{"kind":"textbox","id":"sh/cja9ojmp","slide":8,"text":"예약, 쿠폰, 체험단, 제휴 상품 판매 수수료","textPreview":"예약, 쿠폰, 체험단, 제휴 상품 판매 수수료","textChars":25,"textLines":1,"bbox":[372,412,200,80]}
+{"kind":"shape","id":"sh/xkjaxo3u","slide":8,"bbox":[624,344,248,172]}
+{"kind":"textbox","id":"sh/2t8ri947","slide":8,"text":"ON 재화","textPreview":"ON 재화","textChars":5,"textLines":1,"bbox":[648,368,200,34]}
+{"kind":"textbox","id":"sh/nuhsrels","slide":8,"text":"미니홈피 꾸미기, 프로필 프레임, BGM 슬롯, 아바타 상점","textPreview":"미니홈피 꾸미기, 프로필 프레임, BGM 슬롯, 아바타 상점","textChars":33,"textLines":1,"bbox":[648,412,200,80]}
+{"kind":"shape","id":"sh/ovq9kjmd","slide":8,"bbox":[900,344,248,172]}
+{"kind":"textbox","id":"sh/pwzato3y","slide":8,"text":"이벤트 스폰서","textPreview":"이벤트 스폰서","textChars":7,"textLines":1,"bbox":[924,368,200,34]}
+{"kind":"textbox","id":"sh/mpcbud4r","slide":8,"text":"지역 대회·전국 대회 후원, 브랜드 챌린지, 랭킹 스폰서십","textPreview":"지역 대회·전국 대회 후원, 브랜드 챌린지, 랭킹 스폰서십","textChars":32,"textLines":1,"bbox":[924,412,200,80]}
+{"kind":"textbox","id":"sh/7qls3ilc","slide":8,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/3udova1o","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/mlqlay","slide":8,"text":""}
+{"kind":"slide","id":"sl/c57546","slide":9,"title":"MARKET","textShapes":27}
+{"kind":"shape","id":"sh/cjedo3ed","slide":9,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/bilcvyds","slide":9,"text":"MARKET","textPreview":"MARKET","textChars":6,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/qhcvmtwn","slide":9,"text":"ONtown은 지역 정보 서비스와 커뮤니티 사이의 빈 공간을 겨냥합니다","textPreview":"ONtown은 지역 정보 서비스와 커뮤니티 사이의 빈 공간을 겨냥합니다","textChars":39,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/pg3utov2","slide":9,"text":"기존 서비스가 정보 검색이나 거래에 강하다면, ONtown은 지역 정체성과 관계 축적을 중심에 둡니다.","textPreview":"기존 서비스가 정보 검색이나 거래에 강하다면, ONtown은 지역 정체성과 관계 축적을 중심에 둡니다.","textChars":57,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/ovutkjeh","slide":9,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/3ulcredw","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/2tcbitwb","slide":9,"bbox":[72,330,260,48]}
+{"kind":"textbox","id":"sh/9c7u5sv6","slide":9,"text":"구분","textPreview":"구분","textChars":2,"textLines":1,"bbox":[92,344,220,22]}
+{"kind":"shape","id":"sh/8rydwnel","slide":9,"bbox":[352,330,260,48]}
+{"kind":"textbox","id":"sh/qlwnyts3","slide":9,"text":"기존 지역 앱","textPreview":"기존 지역 앱","textChars":7,"textLines":1,"bbox":[372,344,220,22]}
+{"kind":"shape","id":"sh/rm547y9o","slide":9,"bbox":[632,330,260,48]}
+{"kind":"textbox","id":"sh/sne503at","slide":9,"text":"SNS/카페","textPreview":"SNS/카페","textChars":6,"textLines":1,"bbox":[652,344,220,22]}
+{"kind":"shape","id":"sh/donm98re","slide":9,"bbox":[912,330,260,48]}
+{"kind":"textbox","id":"sh/ixwnutsr","slide":9,"text":"ONtown","textPreview":"ONtown","textChars":6,"textLines":1,"bbox":[932,344,220,22]}
+{"kind":"shape","id":"sh/3y543etc","slide":9,"bbox":[72,386,260,46]}
+{"kind":"textbox","id":"sh/4ze5wjax","slide":9,"text":"핵심 가치","textPreview":"핵심 가치","textChars":5,"textLines":1,"bbox":[90,399,224,20]}
+{"kind":"shape","id":"sh/50nm5ori","slide":9,"bbox":[352,386,260,46]}
+{"kind":"textbox","id":"sh/2tgn6dsb","slide":9,"text":"정보/거래","textPreview":"정보/거래","textChars":5,"textLines":1,"bbox":[370,399,224,20]}
+{"kind":"shape","id":"sh/nupofi9w","slide":9,"bbox":[632,386,260,46]}
+{"kind":"textbox","id":"sh/jy1k7a98","slide":9,"text":"콘텐츠 확산","textPreview":"콘텐츠 확산","textChars":6,"textLines":1,"bbox":[650,399,224,20]}
+{"kind":"shape","id":"sh/yx8jy58n","slide":9,"bbox":[912,386,260,46]}
+{"kind":"textbox","id":"sh/l0j29kry","slide":9,"text":"지역 소속·관계","textPreview":"지역 소속·관계","textChars":8,"textLines":1,"bbox":[930,399,224,20]}
+{"kind":"shape","id":"sh/kza10fqt","slide":9,"bbox":[72,440,260,46]}
+{"kind":"textbox","id":"sh/721kbup4","slide":9,"text":"사용자 정체성","textPreview":"사용자 정체성","textChars":7,"textLines":1,"bbox":[90,453,224,20]}
+{"kind":"shape","id":"sh/61sj2p8j","slide":9,"bbox":[352,440,260,46]}
+{"kind":"textbox","id":"sh/t4j2dk7a","slide":9,"text":"약함","textPreview":"약함","textChars":2,"textLines":1,"bbox":[370,453,224,20]}
+{"kind":"shape","id":"sh/83a14fqp","slide":9,"bbox":[632,440,260,46]}
+{"kind":"textbox","id":"sh/v6lkfupg","slide":9,"text":"개인 중심","textPreview":"개인 중심","textChars":5,"textLines":1,"bbox":[650,453,224,20]}
+{"kind":"shape","id":"sh/u5cj6p8v","slide":9,"bbox":[912,440,260,46]}
+{"kind":"textbox","id":"sh/svu1wz6t","slide":9,"text":"지역 태그·클랜","textPreview":"지역 태그·클랜","textChars":8,"textLines":1,"bbox":[930,453,224,20]}
+{"kind":"shape","id":"sh/dwni54ne","slide":9,"bbox":[72,494,260,46]}
+{"kind":"textbox","id":"sh/qtcjupo3","slide":9,"text":"확장 방식","textPreview":"확장 방식","textChars":5,"textLines":1,"bbox":[90,507,224,20]}
+{"kind":"shape","id":"sh/rul03u58","slide":9,"bbox":[352,494,260,46]}
+{"kind":"textbox","id":"sh/47u1sz6x","slide":9,"text":"도시별 분산","textPreview":"도시별 분산","textChars":6,"textLines":1,"bbox":[370,507,224,20]}
+{"kind":"shape","id":"sh/583i1kni","slide":9,"bbox":[632,494,260,46]}
+{"kind":"textbox","id":"sh/i5cjqpor","slide":9,"text":"관심사별 분산","textPreview":"관심사별 분산","textChars":7,"textLines":1,"bbox":[650,507,224,20]}
+{"kind":"shape","id":"sh/36l0zu5c","slide":9,"bbox":[912,494,260,46]}
+{"kind":"textbox","id":"sh/g3a1of6l","slide":9,"text":"지역 ON 네트워크","textPreview":"지역 ON 네트워크","textChars":10,"textLines":1,"bbox":[930,507,224,20]}
+{"kind":"shape","id":"sh/h4jixkn6","slide":9,"bbox":[72,548,260,46]}
+{"kind":"textbox","id":"sh/lwf69czm","slide":9,"text":"수익 구조","textPreview":"수익 구조","textChars":5,"textLines":1,"bbox":[90,561,224,20]}
+{"kind":"shape","id":"sh/kv6pgrih","slide":9,"bbox":[352,548,260,46]}
+{"kind":"textbox","id":"sh/zuxo7mhw","slide":9,"text":"광고/수수료","textPreview":"광고/수수료","textChars":6,"textLines":1,"bbox":[370,561,224,20]}
+{"kind":"shape","id":"sh/yto7eh0b","slide":9,"bbox":[632,548,260,46]}
+{"kind":"textbox","id":"sh/90zqdwzy","slide":9,"text":"광고","textPreview":"광고","textChars":2,"textLines":1,"bbox":[650,561,224,20]}
+{"kind":"shape","id":"sh/8z6pkrid","slide":9,"bbox":[912,548,260,46]}
+{"kind":"textbox","id":"sh/7yxobmhs","slide":9,"text":"광고+재화+이벤트","textPreview":"광고+재화+이벤트","textChars":9,"textLines":1,"bbox":[930,561,224,20]}
+{"kind":"textbox","id":"sh/mxo7ih07","slide":9,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/p4v61szu","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/c57546","slide":9,"text":""}
+{"kind":"slide","id":"sl/ih4lfr","slide":10,"title":"ROADMAP","textShapes":19}
+{"kind":"shape","id":"sh/p8f6ho76","slide":10,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/25o7mt8f","slide":10,"text":"ROADMAP","textPreview":"ROADMAP","textChars":7,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/36xofyp0","slide":10,"text":"1년 안에 강남 검증, 서울 확장, 전국 이벤트 구조까지 만듭니다","textPreview":"1년 안에 강남 검증, 서울 확장, 전국 이벤트 구조까지 만듭니다","textChars":36,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/cbqps3qx","slide":10,"text":"수익 시점은 12개월차 월 손익분기점 기준으로 설계했습니다.","textPreview":"수익 시점은 12개월차 월 손익분기점 기준으로 설계했습니다.","textChars":33,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/dczql872","slide":10,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/q987qt8r","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/bahojypc","slide":10,"bbox":[82,358,240,178]}
+{"kind":"shape","id":"sh/sfmpgjqd","slide":10,"bbox":[104,378,62,38]}
+{"kind":"textbox","id":"sh/tgv6947y","slide":10,"text":"Q1","textPreview":"Q1","textChars":2,"textLines":1,"bbox":[118,386,34,22]}
+{"kind":"textbox","id":"sh/hsrmxwbq","slide":10,"text":"강남ON 안정화","textPreview":"강남ON 안정화","textChars":8,"textLines":1,"bbox":[106,424,192,34]}
+{"kind":"textbox","id":"sh/gri54ru5","slide":10,"text":"미니홈피·소식·교통·모임 핵심 기능 완성","textPreview":"미니홈피·소식·교통·모임 핵심 기능 완성","textChars":22,"textLines":1,"bbox":[106,464,192,86]}
+{"kind":"shape","id":"sh/vq94vmtk","slide":10,"bbox":[374,358,240,178]}
+{"kind":"shape","id":"sh/upg32hcz","slide":10,"bbox":[396,378,62,38]}
+{"kind":"textbox","id":"sh/pgrm1gbm","slide":10,"text":"Q2","textPreview":"Q2","textChars":2,"textLines":1,"bbox":[410,386,34,22]}
+{"kind":"textbox","id":"sh/4fi58buh","slide":10,"text":"서울 3개 ON 확장","textPreview":"서울 3개 ON 확장","textChars":11,"textLines":1,"bbox":[398,424,192,34]}
+{"kind":"textbox","id":"sh/3e94z6tw","slide":10,"text":"송파ON·마포ON·성수ON 테스트와 지역 사업자 영업","textPreview":"송파ON·마포ON·성수ON 테스트와 지역 사업자 영업","textChars":29,"textLines":1,"bbox":[398,464,192,86]}
+{"kind":"shape","id":"sh/2t0n61cb","slide":10,"bbox":[666,358,240,178]}
+{"kind":"shape","id":"sh/dkbm5gby","slide":10,"bbox":[688,378,62,38]}
+{"kind":"textbox","id":"sh/cj25cbud","slide":10,"text":"Q3","textPreview":"Q3","textChars":2,"textLines":1,"bbox":[702,386,34,22]}
+{"kind":"textbox","id":"sh/cnap8f2p","slide":10,"text":"전국 후보 도시 오픈","textPreview":"전국 후보 도시 오픈","textChars":11,"textLines":1,"bbox":[690,424,192,34]}
+{"kind":"textbox","id":"sh/xoj61kja","slide":10,"text":"부산·여수·강릉 등 여행/출장 수요 지역 확장","textPreview":"부산·여수·강릉 등 여행/출장 수요 지역 확장","textChars":25,"textLines":1,"bbox":[690,464,192,86]}
+{"kind":"shape","id":"sh/al876pkj","slide":10,"bbox":[958,358,240,178]}
+{"kind":"shape","id":"sh/bm1ozu14","slide":10,"bbox":[980,378,62,38]}
+{"kind":"textbox","id":"sh/krapcz2l","slide":10,"text":"Q4","textPreview":"Q4","textChars":2,"textLines":1,"bbox":[994,386,34,22]}
+{"kind":"textbox","id":"sh/lsj654j6","slide":10,"text":"전국 이벤트 론칭","textPreview":"전국 이벤트 론칭","textChars":9,"textLines":1,"bbox":[982,424,192,34]}
+{"kind":"textbox","id":"sh/yps7apkf","slide":10,"text":"테트리스·얼짱·지역 랭킹 대회와 스폰서십 판매","textPreview":"테트리스·얼짱·지역 랭킹 대회와 스폰서십 판매","textChars":25,"textLines":1,"bbox":[982,464,192,86]}
+{"kind":"textbox","id":"sh/zq1o3u10","slide":10,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/0vq50v2h","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/ih4lfr","slide":10,"text":""}
+{"kind":"slide","id":"sl/drmjhu","slide":11,"title":"USE OF FUNDS","textShapes":24}
+{"kind":"shape","id":"sh/krehgzut","slide":11,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/j65gned8","slide":11,"text":"USE OF FUNDS","textPreview":"USE OF FUNDS","textChars":12,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/y5wze9cn","slide":11,"text":"필요 자금은 1년 운영 기준 약 1,299,250,000 원입니다","textPreview":"필요 자금은 1년 운영 기준 약 1,299,250,000 원입니다","textChars":36,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/tw7ytova","slide":11,"text":"강남 독립 사무실 임대, 8명 내외 팀, 서비스 운영·마케팅·이벤트 비용을 포함했습니다.","textPreview":"강남 독립 사무실 임대, 8명 내외 팀, 서비스 운영·마케팅·이벤트 비용을 포함했습니다.","textChars":49,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/8vyhkjup","slide":11,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/7u5gred4","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/6twzi9cj","slide":11,"bbox":[82,360,760,31]}
+{"kind":"textbox","id":"sh/p03yhkv6","slide":11,"text":"인건비 및 4대보험/부대비","textPreview":"인건비 및 4대보험/부대비","textChars":14,"textLines":1,"bbox":[106,367,390,18]}
+{"kind":"textbox","id":"sh/ozux8ful","slide":11,"text":"638,250,000 원","textPreview":"638,250,000 원","textChars":13,"textLines":1,"bbox":[632,367,180,18]}
+{"kind":"shape","id":"sh/q5kbu1c7","slide":11,"bbox":[82,398,760,31]}
+{"kind":"textbox","id":"sh/r6tcn6tc","slide":11,"text":"강남 독립 사무실 보증금·임대료","textPreview":"강남 독립 사무실 보증금·임대료","textChars":17,"textLines":1,"bbox":[106,405,390,18]}
+{"kind":"textbox","id":"sh/c72twbux","slide":11,"text":"152,000,000 원","textPreview":"152,000,000 원","textChars":13,"textLines":1,"bbox":[632,405,180,18]}
+{"kind":"shape","id":"sh/dsbupgbi","slide":11,"bbox":[82,436,760,31]}
+{"kind":"textbox","id":"sh/etkbylc3","slide":11,"text":"인프라·API·AI 분석 비용","textPreview":"인프라·API·AI 분석 비용","textChars":16,"textLines":1,"bbox":[106,443,390,18]}
+{"kind":"textbox","id":"sh/zudcr6to","slide":11,"text":"84,000,000 원","textPreview":"84,000,000 원","textChars":12,"textLines":1,"bbox":[632,443,180,18]}
+{"kind":"shape","id":"sh/0vmt0bu9","slide":11,"bbox":[82,474,760,31]}
+{"kind":"textbox","id":"sh/lwvutgbu","slide":11,"text":"마케팅·콘텐츠 확보","textPreview":"마케팅·콘텐츠 확보","textChars":10,"textLines":1,"bbox":[106,481,390,18]}
+{"kind":"textbox","id":"sh/mx4v2lcz","slide":11,"text":"160,000,000 원","textPreview":"160,000,000 원","textChars":13,"textLines":1,"bbox":[632,481,180,18]}
+{"kind":"shape","id":"sh/nydcvqtk","slide":11,"bbox":[82,512,760,31]}
+{"kind":"textbox","id":"sh/j2xsjq9s","slide":11,"text":"지역/전국 이벤트 운영","textPreview":"지역/전국 이벤트 운영","textChars":12,"textLines":1,"bbox":[106,519,390,18]}
+{"kind":"textbox","id":"sh/i14bql87","slide":11,"text":"120,000,000 원","textPreview":"120,000,000 원","textChars":13,"textLines":1,"bbox":[632,519,180,18]}
+{"kind":"shape","id":"sh/54fal0ry","slide":11,"bbox":[82,550,760,31]}
+{"kind":"textbox","id":"sh/k36tsvqd","slide":11,"text":"법무·회계·관리비","textPreview":"법무·회계·관리비","textChars":9,"textLines":1,"bbox":[106,557,390,18]}
+{"kind":"textbox","id":"sh/vydsfq9w","slide":11,"text":"35,000,000 원","textPreview":"35,000,000 원","textChars":12,"textLines":1,"bbox":[632,557,180,18]}
+{"kind":"shape","id":"sh/ax4bml8b","slide":11,"bbox":[82,588,760,31]}
+{"kind":"textbox","id":"sh/x0vahgrm","slide":11,"text":"예비비","textPreview":"예비비","textChars":3,"textLines":1,"bbox":[106,595,390,18]}
+{"kind":"textbox","id":"sh/wzmtobq1","slide":11,"text":"110,000,000 원","textPreview":"110,000,000 원","textChars":13,"textLines":1,"bbox":[632,595,180,18]}
+{"kind":"shape","id":"sh/nudsb69k","slide":11,"bbox":[880,346,300,190]}
+{"kind":"textbox","id":"sh/m9kbi1sz","slide":11,"text":"총 투자 필요액","textPreview":"총 투자 필요액","textChars":8,"textLines":1,"bbox":[915,384,230,28]}
+{"kind":"textbox","id":"sh/cfips76x","slide":11,"text":"1,299,250,000 원","textPreview":"1,299,250,000 원","textChars":15,"textLines":1,"bbox":[910,440,240,36]}
+{"kind":"textbox","id":"sh/d0rqlc7i","slide":11,"text":"1년 내 월 손익분기점 도달을 목표로 산정","textPreview":"1년 내 월 손익분기점 도달을 목표로 산정","textChars":23,"textLines":1,"bbox":[920,492,220,38]}
+{"kind":"textbox","id":"sh/qd07qxor","slide":11,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/re98j2pc","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/drmjhu","slide":11,"text":""}
+{"kind":"slide","id":"sl/ypocnj","slide":12,"title":"TEAM & OFFICE","textShapes":16}
+{"kind":"shape","id":"sh/ju5srylk","slide":12,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/kvetk3m5","slide":12,"text":"TEAM & OFFICE","textPreview":"TEAM & OFFICE","textChars":13,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/lwnat83q","slide":12,"text":"초기 팀은 제품·기술·성장·운영을 동시에 움직일 수 있어야 합니다","textPreview":"초기 팀은 제품·기술·성장·운영을 동시에 움직일 수 있어야 합니다","textChars":36,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/6xwbmd4b","slide":12,"text":"사무실은 강남 독립 사무실 기준으로 산정해 투자자 관점에서 현실적인 고정비를 반영했습니다.","textPreview":"사무실은 강남 독립 사무실 기준으로 산정해 투자자 관점에서 현실적인 고정비를 반영했습니다.","textChars":50,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/7y5svilw","slide":12,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/8jetonm1","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/tknaxs3m","slide":12,"bbox":[72,350,350,210]}
+{"kind":"shape","id":"sh/ulgbqd47","slide":12,"bbox":[94,370,94,38]}
+{"kind":"textbox","id":"sh/vmpszils","slide":12,"text":"PEOPLE","textPreview":"PEOPLE","textChars":6,"textLines":1,"bbox":[108,378,66,22]}
+{"kind":"textbox","id":"sh/rm50vyh0","slide":12,"text":"인력 구성","textPreview":"인력 구성","textChars":5,"textLines":1,"bbox":[96,416,302,34]}
+{"kind":"textbox","id":"sh/qlwzmtgf","slide":12,"text":"CEO/Product 60,000,000 원\nCTO/Tech Lead 90,000,000 원\n개발 3명 200,000,000 원\n디자인·마케팅·운영·BD 205,000,000 원\n부대비 83,250,000 원","textPreview":"CEO/Product 60,000,000 원 | CTO/Tech Lead 90,000,000 원 | 개발 3명 200,000,000 원 | 디자인·마케팅·운영·BD 205,000,000 원 | 부대비 83,250,000 원","textChars":116,"textLines":5,"bbox":[96,456,302,118]}
+{"kind":"shape","id":"sh/donix8f6","slide":12,"bbox":[465,350,350,210]}
+{"kind":"shape","id":"sh/sneho3yl","slide":12,"bbox":[487,370,94,38]}
+{"kind":"textbox","id":"sh/3ilgreh4","slide":12,"text":"OFFICE","textPreview":"OFFICE","textChars":6,"textLines":1,"bbox":[501,378,66,22]}
+{"kind":"textbox","id":"sh/ihczitgj","slide":12,"text":"강남 독립 사무실","textPreview":"강남 독립 사무실","textChars":9,"textLines":1,"bbox":[489,416,302,34]}
+{"kind":"textbox","id":"sh/5k3itozu","slide":12,"text":"보증금 50,000,000 원\n월 임대료·관리비 8,500,000 원 × 12개월\n연간 합계 152,000,000 원\n소호/공유오피스 기준 제외","textPreview":"보증금 50,000,000 원 | 월 임대료·관리비 8,500,000 원 × 12개월 | 연간 합계 152,000,000 원 | 소호/공유오피스 기준 제외","textChars":80,"textLines":4,"bbox":[489,456,302,118]}
+{"kind":"shape","id":"sh/4juhkjy9","slide":12,"bbox":[858,350,350,210]}
+{"kind":"shape","id":"sh/nep03ix8","slide":12,"bbox":[880,370,94,38]}
+{"kind":"textbox","id":"sh/2dgzudgn","slide":12,"text":"DISCIPLINE","textPreview":"DISCIPLINE","textChars":10,"textLines":1,"bbox":[894,378,66,22]}
+{"kind":"textbox","id":"sh/y903mh0v","slide":12,"text":"운영 원칙","textPreview":"운영 원칙","textChars":5,"textLines":1,"bbox":[882,416,302,34]}
+{"kind":"textbox","id":"sh/za9kvmhg","slide":12,"text":"핵심 기능은 내부 개발\n지역 콘텐츠는 운영자가 검수\n이벤트와 상점은 매출 검증 중심\n12개월차 월 BEP 목표","textPreview":"핵심 기능은 내부 개발 | 지역 콘텐츠는 운영자가 검수 | 이벤트와 상점은 매출 검증 중심 | 12개월차 월 BEP 목표","textChars":61,"textLines":4,"bbox":[882,456,302,118]}
+{"kind":"textbox","id":"sh/kbilori1","slide":12,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/lcb2xwzm","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/ypocnj","slide":12,"text":""}
+{"kind":"slide","id":"sl/1bwl9u","slide":13,"title":"REVENUE PLAN","textShapes":23}
+{"kind":"shape","id":"sh/o3exw76l","slide":13,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/32lwn2p0","slide":13,"text":"REVENUE PLAN","textPreview":"REVENUE PLAN","textChars":12,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/21cfuhof","slide":13,"text":"12개월차 월 매출 145,000,000 원으로 손익분기점을 넘깁니다","textPreview":"12개월차 월 매출 145,000,000 원으로 손익분기점을 넘깁니다","textChars":38,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/103elc7u","slide":13,"text":"광고와 입점 매출로 시작해 ON 재화와 이벤트 스폰서십을 더하는 구조입니다.","textPreview":"광고와 입점 매출로 시작해 ON 재화와 이벤트 스폰서십을 더하는 구조입니다.","textChars":42,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/gzuxs769","slide":13,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/fylwj2po","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/uxcvqxo3","slide":13,"bbox":[78,350,775,220]}
+{"kind":"shape","id":"sh/tw3ehs7y","slide":13,"bbox":[115,515,10,10]}
+{"kind":"shape","id":"sh/svudon6d","slide":13,"bbox":[115,421,10,10]}
+{"kind":"textbox","id":"sh/6p4b6dwz","slide":13,"text":"M1","textPreview":"M1","textChars":2,"textLines":1,"bbox":[104,536,32,16]}
+{"kind":"shape","id":"sh/rqdcfixk","slide":13,"bbox":[175.91,515,10,10]}
+{"kind":"shape","id":"sh/srmt8ne5","slide":13,"bbox":[175.91,417,10,10]}
+{"kind":"textbox","id":"sh/tsfuhsfq","slide":13,"text":"M2","textPreview":"M2","textChars":2,"textLines":1,"bbox":[164.91,536,32,16]}
+{"kind":"shape","id":"sh/il4b2dw3","slide":13,"bbox":[236.82,507,10,10]}
+{"kind":"shape","id":"sh/jmdsbixo","slide":13,"bbox":[236.82,410,10,10]}
+{"kind":"textbox","id":"sh/4nmt4net","slide":13,"text":"M3","textPreview":"M3","textChars":2,"textLines":1,"bbox":[225.82,536,32,16]}
+{"kind":"shape","id":"sh/5ovudsfe","slide":13,"bbox":[297.73,497,10,10]}
+{"kind":"shape","id":"sh/uxkbytwr","slide":13,"bbox":[297.73,407,10,10]}
+{"kind":"textbox","id":"sh/vyts7yxc","slide":13,"text":"M4","textPreview":"M4","textChars":2,"textLines":1,"bbox":[286.73,536,32,16]}
+{"kind":"shape","id":"sh/z298zud4","slide":13,"bbox":[358.64,480,10,10]}
+{"kind":"shape","id":"sh/y10r6pcj","slide":13,"bbox":[358.64,403,10,10]}
+{"kind":"textbox","id":"sh/l4rq14va","slide":13,"text":"M5","textPreview":"M5","textChars":2,"textLines":1,"bbox":[347.64,536,32,16]}
+{"kind":"shape","id":"sh/k3i98zup","slide":13,"bbox":[419.55,460,10,10]}
+{"kind":"shape","id":"sh/7q983edg","slide":13,"bbox":[419.55,399,10,10]}
+{"kind":"textbox","id":"sh/m50ra9cv","slide":13,"text":"M6","textPreview":"M6","textChars":2,"textLines":1,"bbox":[408.55,536,32,16]}
+{"kind":"shape","id":"sh/9sbq5ov6","slide":13,"bbox":[480.45,440,10,10]}
+{"kind":"shape","id":"sh/8ri9cjul","slide":13,"bbox":[480.45,396,10,10]}
+{"kind":"textbox","id":"sh/nap8radw","slide":13,"text":"M7","textPreview":"M7","textChars":2,"textLines":1,"bbox":[469.45,536,32,16]}
+{"kind":"shape","id":"sh/29g7y5cb","slide":13,"bbox":[541.36,420,10,10]}
+{"kind":"shape","id":"sh/s3axcr6x","slide":13,"bbox":[541.36,393,10,10]}
+{"kind":"textbox","id":"sh/t43elw7i","slide":13,"text":"M8","textPreview":"M8","textChars":2,"textLines":1,"bbox":[530.36,536,32,16]}
+{"kind":"shape","id":"sh/61sfaho7","slide":13,"bbox":[602.27,400,10,10]}
+{"kind":"shape","id":"sh/721wjmpc","slide":13,"bbox":[602.27,391,10,10]}
+{"kind":"textbox","id":"sh/kzad8761","slide":13,"text":"M9","textPreview":"M9","textChars":2,"textLines":1,"bbox":[591.27,536,32,16]}
+{"kind":"shape","id":"sh/50jehc7m","slide":13,"bbox":[663.18,387,10,10]}
+{"kind":"shape","id":"sh/ixsv6hov","slide":13,"bbox":[663.18,389,10,10]}
+{"kind":"textbox","id":"sh/jy1wf2pg","slide":13,"text":"M10","textPreview":"M10","textChars":3,"textLines":1,"bbox":[652.18,536,32,16]}
+{"kind":"shape","id":"sh/ovuxkb65","slide":13,"bbox":[724.09,370,10,10]}
+{"kind":"shape","id":"sh/pwnetg7q","slide":13,"bbox":[724.09,383,10,10]}
+{"kind":"textbox","id":"sh/l0ful8n2","slide":13,"text":"M11","textPreview":"M11","textChars":3,"textLines":1,"bbox":[713.09,536,32,16]}
+{"kind":"shape","id":"sh/0f6tc3mh","slide":13,"bbox":[785,355,10,10]}
+{"kind":"shape","id":"sh/zexcjy5c","slide":13,"bbox":[785,377,10,10]}
+{"kind":"textbox","id":"sh/yd4bat4r","slide":13,"text":"M12","textPreview":"M12","textChars":3,"textLines":1,"bbox":[774,536,32,16]}
+{"kind":"textbox","id":"sh/94fup8ne","slide":13,"text":"매출","textPreview":"매출","textChars":2,"textLines":1,"bbox":[770,362,50,20]}
+{"kind":"textbox","id":"sh/836tg3mt","slide":13,"text":"비용","textPreview":"비용","textChars":2,"textLines":1,"bbox":[770,386,50,20]}
+{"kind":"shape","id":"sh/n2xcny58","slide":13,"bbox":[900,360,270,190]}
+{"kind":"textbox","id":"sh/m1obed4n","slide":13,"text":"12개월차 매출 구성","textPreview":"12개월차 매출 구성","textChars":11,"textLines":1,"bbox":[924,384,222,34]}
+{"kind":"textbox","id":"sh/x8zutsna","slide":13,"text":"지역 광고 52,000,000 원\n상점/쿠폰 32,000,000 원\nON 재화 26,000,000 원\n이벤트 스폰서 25,000,000 원\n데이터/파트너 10,000,000 원","textPreview":"지역 광고 52,000,000 원 | 상점/쿠폰 32,000,000 원 | ON 재화 26,000,000 원 | 이벤트 스폰서 25,000,000 원 | 데이터/파트너 10,000,000 원","textChars":98,"textLines":5,"bbox":[924,428,222,98]}
+{"kind":"textbox","id":"sh/w7qtknmp","slide":13,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/ed0repk7","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/1bwl9u","slide":13,"text":""}
+{"kind":"slide","id":"sl/d4wrac","slide":14,"title":"KPI","textShapes":19}
+{"kind":"shape","id":"sh/lsvudcfe","slide":14,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/yp4bixw3","slide":14,"text":"KPI","textPreview":"KPI","textChars":3,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/zqdcb2x8","slide":14,"text":"투자금은 사용자 밀도, 지역 확장, 유료 전환을 만드는 데 투입됩니다","textPreview":"투자금은 사용자 밀도, 지역 확장, 유료 전환을 만드는 데 투입됩니다","textChars":38,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/8v6to7e5","slide":14,"text":"1년차 KPI는 무리한 전국 동시 확장이 아니라 강남 검증 후 반복 가능한 지역 확장 공식 확보입니다.","textPreview":"1년차 KPI는 무리한 전국 동시 확장이 아니라 강남 검증 후 반복 가능한 지역 확장 공식 확보입니다.","textChars":57,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/9wfuhcfq","slide":14,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/mt4bmxwz","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/7uxcf2xk","slide":14,"bbox":[80,340,320,104]}
+{"kind":"textbox","id":"sh/oz2tcnel","slide":14,"text":"가입자","textPreview":"가입자","textChars":3,"textLines":1,"bbox":[104,364,272,34]}
+{"kind":"textbox","id":"sh/p0ba5sf6","slide":14,"text":"120,000 명\n서울 핵심 지역 중심","textPreview":"120,000 명 | 서울 핵심 지역 중심","textChars":21,"textLines":2,"bbox":[104,408,272,12]}
+{"kind":"shape","id":"sh/xsrypov2","slide":14,"bbox":[452,340,320,104]}
+{"kind":"textbox","id":"sh/crixgjuh","slide":14,"text":"월간 활성 사용자","textPreview":"월간 활성 사용자","textChars":9,"textLines":1,"bbox":[476,364,272,34]}
+{"kind":"textbox","id":"sh/bq9wnedc","slide":14,"text":"45,000 명\n미니홈피·모임·강남픽 재방문","textPreview":"45,000 명 | 미니홈피·모임·강남픽 재방문","textChars":24,"textLines":2,"bbox":[476,408,272,12]}
+{"kind":"shape","id":"sh/ap0fe9cr","slide":14,"bbox":[824,340,320,104]}
+{"kind":"textbox","id":"sh/lwbytove","slide":14,"text":"지역 ON","textPreview":"지역 ON","textChars":5,"textLines":1,"bbox":[848,364,272,34]}
+{"kind":"textbox","id":"sh/kv2xkjut","slide":14,"text":"8 개\n서울 4개 + 전국 후보 4개","textPreview":"8 개 | 서울 4개 + 전국 후보 4개","textChars":20,"textLines":2,"bbox":[848,408,272,12]}
+{"kind":"shape","id":"sh/zutgryd8","slide":14,"bbox":[80,472,320,104]}
+{"kind":"textbox","id":"sh/yt0fitcn","slide":14,"text":"제휴 사업자","textPreview":"제휴 사업자","textChars":6,"textLines":1,"bbox":[104,496,272,34]}
+{"kind":"textbox","id":"sh/9kbyx8va","slide":14,"text":"450 곳\n광고·쿠폰·이벤트 파트너","textPreview":"450 곳 | 광고·쿠폰·이벤트 파트너","textChars":19,"textLines":2,"bbox":[104,540,272,12]}
+{"kind":"shape","id":"sh/8j2xo3up","slide":14,"bbox":[452,472,320,104]}
+{"kind":"textbox","id":"sh/s3ah0721","slide":14,"text":"월 매출","textPreview":"월 매출","textChars":4,"textLines":1,"bbox":[476,496,272,34]}
+{"kind":"textbox","id":"sh/tojitcjm","slide":14,"text":"145,000,000 원\n12개월차 BEP 기준","textPreview":"145,000,000 원 | 12개월차 BEP 기준","textChars":26,"textLines":2,"bbox":[476,540,272,12]}
+{"kind":"shape","id":"sh/61szyhkv","slide":14,"bbox":[824,472,320,104]}
+{"kind":"textbox","id":"sh/7210r2lg","slide":14,"text":"전국 이벤트","textPreview":"전국 이벤트","textChars":6,"textLines":1,"bbox":[848,496,272,34]}
+{"kind":"textbox","id":"sh/gruh4r2x","slide":14,"text":"3 회\n테트리스·얼짱·지역 랭킹","textPreview":"3 회 | 테트리스·얼짱·지역 랭킹","textChars":17,"textLines":2,"bbox":[848,540,272,12]}
+{"kind":"textbox","id":"sh/hs3ixwji","slide":14,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/upsz2hk7","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/d4wrac","slide":14,"text":""}
+{"kind":"slide","id":"sl/9nrfod","slide":15,"title":"INVESTMENT ASK","textShapes":16}
+{"kind":"shape","id":"sh/u9oza1gr","slide":15,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/hczy5gf2","slide":15,"text":"INVESTMENT ASK","textPreview":"INVESTMENT ASK","textChars":14,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/gb6hcbyx","slide":15,"text":"이번 투자 라운드는 강남 검증 모델을 전국 확장 공식으로 바꾸는 자금입니다","textPreview":"이번 투자 라운드는 강남 검증 모델을 전국 확장 공식으로 바꾸는 자금입니다","textChars":41,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/3ehg7qx8","slide":15,"text":"제품 완성, 콘텐츠 확보, 지역 영업, 이벤트 운영을 동시에 실행해 12개월차 수익 시점에 도달합니다.","textPreview":"제품 완성, 콘텐츠 확보, 지역 영업, 이벤트 운영을 동시에 실행해 12개월차 수익 시점에 도달합니다.","textChars":57,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/id8zelgn","slide":15,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/5gzi9gfe","slide":15,"text":"15","textPreview":"15","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/4fqhgbet","slide":15,"bbox":[78,380,520,170]}
+{"kind":"textbox","id":"sh/jidgvmx4","slide":15,"text":"투자 요청 금액","textPreview":"투자 요청 금액","textChars":8,"textLines":1,"bbox":[116,415,220,28]}
+{"kind":"textbox","id":"sh/yh4z2hgj","slide":15,"text":"1,299,250,000 원","textPreview":"1,299,250,000 원","textChars":15,"textLines":1,"bbox":[116,464,350,42]}
+{"kind":"textbox","id":"sh/sve9kzad","slide":15,"text":"강남 독립 사무실 기준 1년 운영 자금","textPreview":"강남 독립 사무실 기준 1년 운영 자금","textChars":21,"textLines":1,"bbox":[116,518,340,24]}
+{"kind":"shape","id":"sh/dwnqt4by","slide":15,"bbox":[650,380,250,180]}
+{"kind":"shape","id":"sh/qtcripsn","slide":15,"bbox":[672,400,94,38]}
+{"kind":"textbox","id":"sh/ru58ruts","slide":15,"text":"REPORT","textPreview":"REPORT","textChars":6,"textLines":1,"bbox":[686,408,66,22]}
+{"kind":"textbox","id":"sh/0ze9ozap","slide":15,"text":"성장 근거","textPreview":"성장 근거","textChars":5,"textLines":1,"bbox":[674,446,202,34]}
+{"kind":"textbox","id":"sh/10nax4ba","slide":15,"text":"강남ON 실서비스 기반의 사용자 행동, 지역 태그 데이터, 사업자 반응, 이벤트 참여 지표를 월 단위로 보고합니다.","textPreview":"강남ON 실서비스 기반의 사용자 행동, 지역 태그 데이터, 사업자 반응, 이벤트 참여 지표를 월 단위로 보고합니다.","textChars":64,"textLines":1,"bbox":[674,486,202,88]}
+{"kind":"shape","id":"sh/exwrm9sj","slide":15,"bbox":[930,380,250,180]}
+{"kind":"shape","id":"sh/fy5svet4","slide":15,"bbox":[952,400,94,38]}
+{"kind":"textbox","id":"sh/w3u9cfa5","slide":15,"text":"NEXT","textPreview":"NEXT","textChars":4,"textLines":1,"bbox":[966,408,66,22]}
+{"kind":"textbox","id":"sh/h43qlkbq","slide":15,"text":"다음 라운드 조건","textPreview":"다음 라운드 조건","textChars":9,"textLines":1,"bbox":[954,446,202,34]}
+{"kind":"textbox","id":"sh/x0v6pg3u","slide":15,"text":"서울 핵심 지역 확장, 월 BEP, 제휴 사업자 450곳, 전국 이벤트 3회 달성 후 Series A 논의","textPreview":"서울 핵심 지역 확장, 월 BEP, 제휴 사업자 450곳, 전국 이벤트 3회 달성 후 Series A 논의","textChars":59,"textLines":1,"bbox":[954,486,202,88]}
+{"kind":"textbox","id":"sh/wzmpgbm9","slide":15,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/byton6lo","slide":15,"text":"15","textPreview":"15","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/9nrfod","slide":15,"text":""}
+{"kind":"slide","id":"sl/gng9bx","slide":16,"title":"APPENDIX","textShapes":16}
+{"kind":"shape","id":"sh/ril8zm9w","slide":16,"bbox":[72,62,310,38]}
+{"kind":"textbox","id":"sh/sju9srqh","slide":16,"text":"APPENDIX","textPreview":"APPENDIX","textChars":8,"textLines":1,"bbox":[86,70,282,22]}
+{"kind":"textbox","id":"sh/tk3q1cr2","slide":16,"text":"이번 덱은 원본의 좋은 메시지를 살리고 투자자용 숫자와 실행 계획을 보강했습니다","textPreview":"이번 덱은 원본의 좋은 메시지를 살리고 투자자용 숫자와 실행 계획을 보강했습니다","textChars":44,"textLines":1,"bbox":[72,130,760,150]}
+{"kind":"textbox","id":"sh/idsrmx8z","slide":16,"text":"원본의 강점인 짧은 메시지, 지역=클랜 관점, 지역 태그 예시, 이벤트 성장 엔진을 유지하면서 예산과 수익 시점을 현실적으로 재정리했습니다.","textPreview":"원본의 강점인 짧은 메시지, 지역=클랜 관점, 지역 태그 예시, 이벤트 성장 엔진을 유지하면서 예산과 수익 시점을 현실적으로 재정리했습니다.","textChars":78,"textLines":1,"bbox":[74,286,650,72]}
+{"kind":"textbox","id":"sh/je18v29k","slide":16,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/4fa9o7q5","slide":16,"text":"16","textPreview":"16","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"shape","id":"sh/5gjqxcrq","slide":16,"bbox":[78,350,350,160]}
+{"kind":"shape","id":"sh/29wry18j","slide":16,"bbox":[100,370,94,38]}
+{"kind":"textbox","id":"sh/3a5s7694","slide":16,"text":"SOURCE","textPreview":"SOURCE","textChars":6,"textLines":1,"bbox":[114,378,66,22]}
+{"kind":"textbox","id":"sh/nqpcfm54","slide":16,"text":"차용한 장점","textPreview":"차용한 장점","textChars":6,"textLines":1,"bbox":[102,416,302,34]}
+{"kind":"textbox","id":"sh/mpgbmh4j","slide":16,"text":"지역을 클랜으로 보는 세계관\n지역 태그가 만드는 외지인 데이터\n전국 대회로 이어지는 이벤트 구조","textPreview":"지역을 클랜으로 보는 세계관 | 지역 태그가 만드는 외지인 데이터 | 전국 대회로 이어지는 이벤트 구조","textChars":53,"textLines":3,"bbox":[102,456,302,68]}
+{"kind":"shape","id":"sh/9sruhwnu","slide":16,"bbox":[465,350,350,160]}
+{"kind":"shape","id":"sh/oritorm9","slide":16,"bbox":[487,370,94,38]}
+{"kind":"textbox","id":"sh/bu9cjm50","slide":16,"text":"FIX","textPreview":"FIX","textChars":3,"textLines":1,"bbox":[501,378,66,22]}
+{"kind":"textbox","id":"sh/at0bq14f","slide":16,"text":"수정한 부분","textPreview":"수정한 부분","textChars":6,"textLines":1,"bbox":[489,416,302,34]}
+{"kind":"textbox","id":"sh/xwrulw36","slide":16,"text":"예산을 실제 원 단위 금액으로 표기\n소호 사무실 제외\n강남 독립 사무실 기준 비용 반영","textPreview":"예산을 실제 원 단위 금액으로 표기 | 소호 사무실 제외 | 강남 독립 사무실 기준 비용 반영","textChars":48,"textLines":3,"bbox":[489,456,302,68]}
+{"kind":"shape","id":"sh/wvitsrml","slide":16,"bbox":[852,350,350,160]}
+{"kind":"shape","id":"sh/jitcn6lw","slide":16,"bbox":[874,370,94,38]}
+{"kind":"textbox","id":"sh/yh0vu14r","slide":16,"text":"QA","textPreview":"QA","textChars":2,"textLines":1,"bbox":[888,378,66,22]}
+{"kind":"textbox","id":"sh/ud4fm5oz","slide":16,"text":"검토 기준","textPreview":"검토 기준","textChars":5,"textLines":1,"bbox":[876,416,302,34]}
+{"kind":"textbox","id":"sh/vedwfa54","slide":16,"text":"슬라이드별 여백과 겹침 점검\n금액 표기 통일\n투자자가 읽는 흐름 중심으로 재배치","textPreview":"슬라이드별 여백과 겹침 점검 | 금액 표기 통일 | 투자자가 읽는 흐름 중심으로 재배치","textChars":44,"textLines":3,"bbox":[876,456,302,68]}
+{"kind":"textbox","id":"sh/gfmxof6p","slide":16,"text":"ONtown Investor Deck","textPreview":"ONtown Investor Deck","textChars":20,"textLines":1,"bbox":[70,674,260,18]}
+{"kind":"textbox","id":"sh/hgvehkna","slide":16,"text":"16","textPreview":"16","textChars":2,"textLines":1,"bbox":[1160,670,50,22]}
+{"kind":"notes","id":"nt/gng9bx","slide":16,"text":""}

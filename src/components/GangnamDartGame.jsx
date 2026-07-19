@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
+import { ArrowLeft, RotateCw, Trophy, Play, Target } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import GameHelpDropdown from './GameHelpDropdown';
+import { soundManager } from '../lib/soundManager';
 
 const ROUNDS = 10;
-const BOARD_R = 120;
+const BOARD_R = 140;
 
 const scoreAt = (dx, dy, r) => {
      const dist = Math.sqrt(dx * dx + dy * dy);
@@ -26,15 +26,16 @@ const GangnamDartGame = ({ onClose, user }) => {
      const [rankList, setRankList] = useState(() => getRankTop10('dart', true));
      const animRef = useRef(null);
      const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
+     const [shake, setShake] = useState(false);
 
      const animateTarget = useCallback(() => {
           let t = 0;
           const loop = () => {
-               t += 0.03;
+               t += 0.04; // Speed up slightly for difficulty
                setTarget({
-                    x: Math.sin(t * 1.3) * 30,
-                    y: Math.cos(t * 0.9) * 25,
-                    scale: 0.85 + Math.sin(t * 2) * 0.15,
+                    x: Math.sin(t * 1.5) * 40,
+                    y: Math.cos(t * 1.1) * 35,
+                    scale: 0.8 + Math.sin(t * 2) * 0.2,
                });
                animRef.current = requestAnimationFrame(loop);
           };
@@ -42,11 +43,14 @@ const GangnamDartGame = ({ onClose, user }) => {
      }, []);
 
      const start = () => {
+          soundManager.init();
+          soundManager.playCoin();
           setPhase('playing');
           setRound(0);
           setTotal(0);
           setLastHit(null);
           animateTarget();
+          setRankList(getRankTop10('dart', true));
      };
 
      useEffect(() => () => cancelAnimationFrame(animRef.current), []);
@@ -59,85 +63,172 @@ const GangnamDartGame = ({ onClose, user }) => {
           const r = (BOARD_R * target.scale);
           const dx = e.clientX - cx - target.x;
           const dy = e.clientY - cy - target.y;
+          
           const pts = scoreAt(dx, dy, r);
           setLastHit(pts);
+          
+          if (pts === 100) {
+               soundManager.playCoin(); // Bullseye!
+               setShake(true);
+               setTimeout(() => setShake(false), 200);
+          } else if (pts > 0) {
+               soundManager.playHit();
+          } else {
+               soundManager.playExplosion(); // Missed
+          }
+
           const newTotal = total + pts;
           setTotal(newTotal);
           const nextRound = round + 1;
           setRound(nextRound);
+          
           if (nextRound >= ROUNDS) {
                cancelAnimationFrame(animRef.current);
+               soundManager.playGameOver();
                setPhase('done');
-               addScore('dart', name, newTotal, true);
+               if (newTotal > 0) addScore('dart', name, newTotal, true);
                setRankList(getRankTop10('dart', true));
           }
      };
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-6xl mx-auto">
-               <div className="w-full flex justify-between items-center mb-4">
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
-                    <div className="flex items-center gap-1.5">
-                         <h2 className="text-xl font-black tracking-wider">골드 다트</h2>
-                         <GameHelpDropdown accent="orange">
-                              <ul className="text-gray-300 text-xs space-y-1 list-disc list-inside leading-relaxed">
-                                   <li>움직이는 <b className="text-amber-400">골드 과녁</b>을 클릭하세요</li>
-                                   <li>중앙(빨간 점)에 가까울수록 <b className="text-white">최대 100점</b></li>
-                                   <li>총 10라운드 합산 점수가 랭킹에 기록돼요</li>
-                              </ul>
-                         </GameHelpDropdown>
-                    </div>
-                    <div className="text-amber-400 font-black min-w-[3rem] text-right">{phase === 'playing' || phase === 'done' ? `${total}점` : ''}</div>
-               </div>
+          <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* Ambient Glow */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-               <div className="flex gap-6 w-full flex-col lg:flex-row items-start justify-center">
-                    <div className="flex-1 flex flex-col items-center">
-                         {phase === 'idle' && (
-                              <button onClick={start} className="my-16 bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 px-8 rounded-full flex items-center gap-2 mx-auto"><Play className="w-5 h-5" /> 시작하기</button>
-                         )}
-                         {(phase === 'playing' || phase === 'done') && (
-                              <>
-                                   <p className="text-sm text-gray-400 mb-3">라운드 {Math.min(round + 1, ROUNDS)} / {ROUNDS} {lastHit !== null && <span className="text-amber-400 ml-2">+{lastHit}점</span>}</p>
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-orange-500/30 shadow-[0_0_60px_rgba(249,115,22,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
+                    
+                    {/* Left Panel: Info */}
+                    <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                         <div className="flex justify-between items-start lg:hidden mb-2">
+                              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 tracking-wider">NEON DART</h2>
+                              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
+                         </div>
+
+                         <div className="hidden lg:flex justify-between items-center w-full">
+                              <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-orange-400 via-amber-400 to-yellow-500 drop-shadow-sm leading-tight">NEON<br/>DART</h2>
+                              <button onClick={onClose} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
+                                   <ArrowLeft className="w-6 h-6" />
+                              </button>
+                         </div>
+
+                         <div className="flex flex-row lg:flex-col gap-4 w-full">
+                              <div className="flex-1 bg-black/40 p-5 rounded-2xl border border-orange-500/30 shadow-[inset_0_0_15px_rgba(249,115,22,0.1)]">
+                                   <div className="text-xs font-black text-orange-400 tracking-[0.2em] mb-1">SCORE</div>
+                                   <div className="text-4xl font-black text-white font-mono bg-clip-text text-transparent bg-gradient-to-r from-orange-300 to-amber-300">
+                                        {total}
+                                   </div>
+                              </div>
+                              <div className="flex-1 bg-black/40 p-5 rounded-2xl border border-orange-500/30 shadow-[inset_0_0_15px_rgba(249,115,22,0.1)]">
+                                   <div className="text-xs font-black text-yellow-400 tracking-[0.2em] mb-1">ROUND</div>
+                                   <div className="text-4xl font-black font-mono text-yellow-400">
+                                        {Math.min(round + 1, ROUNDS)} <span className="text-xl text-yellow-900">/ {ROUNDS}</span>
+                                   </div>
+                              </div>
+                         </div>
+
+                         {/* Leaderboard */}
+                         <div className="bg-black/40 rounded-2xl p-5 border border-orange-500/20 w-full flex-1 hidden lg:block">
+                              <div className="flex items-center gap-3 mb-4">
+                                   <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                                        <Trophy className="w-4 h-4 text-yellow-400" />
+                                   </div>
+                                   <span className="text-sm font-black text-white tracking-widest">TOP 10</span>
+                              </div>
+                              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                   {rankList.map((e, i) => (
+                                        <div key={i} className="flex justify-between items-center p-2 rounded-xl bg-white/5 hover:bg-orange-500/10 transition-colors">
+                                             <div className="flex items-center gap-2">
+                                                  <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-600 text-black shadow-[0_0_10px_rgba(250,204,21,0.5)]' : i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' : i === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-700 text-white' : 'bg-white/10 text-orange-200'}`}>{i + 1}</span>
+                                                  <span className="text-gray-200 font-bold text-sm truncate max-w-[80px]">{e.name}</span>
+                                             </div>
+                                             <span className="text-orange-300 font-mono text-sm font-bold">{e.score}</span>
+                                        </div>
+                                   ))}
+                                   {rankList.length === 0 && <p className="text-orange-500/50 text-sm py-2 text-center">기록이 없습니다.</p>}
+                              </div>
+                         </div>
+                    </div>
+
+                    {/* Right Panel: Game Board */}
+                    <div className="w-full lg:w-2/3 flex justify-center relative min-h-[400px]">
+                         
+                         <div className="w-full h-full bg-black/60 rounded-3xl border-2 border-orange-500/30 flex items-center justify-center relative overflow-hidden shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]">
+                              
+                              {/* Background Grid Lines */}
+                              <div className="absolute inset-0 opacity-[0.05] pointer-events-none"
+                                   style={{ backgroundImage: `linear-gradient(#f97316 1px, transparent 1px), linear-gradient(90deg, #f97316 1px, transparent 1px)`, backgroundSize: `40px 40px` }}>
+                              </div>
+
+                              {phase === 'idle' && (
+                                   <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                                        <div className="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center mb-6 border border-orange-400/30 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                                             <Target className="w-10 h-10 text-orange-400" />
+                                        </div>
+                                        <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 mb-6 drop-shadow-lg tracking-widest">NEON DART</div>
+                                        <div className="bg-gray-800/80 rounded-2xl p-5 mb-8 text-left max-w-sm border border-orange-500/20">
+                                             <div className="text-sm font-black text-orange-400 mb-3 tracking-wider">🎯 HOW TO PLAY</div>
+                                             <ul className="text-gray-300 text-sm space-y-2 list-none">
+                                                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-orange-500 rounded-full"/>움직이는 다트판을 클릭(터치)하세요</li>
+                                                  <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-amber-500 rounded-full"/>중앙에 가까울수록 높은 점수 획득!</li>
+                                                  <li className="flex items-center gap-2 text-yellow-400"><div className="w-1.5 h-1.5 bg-yellow-500 rounded-full"/>총 10번의 기회가 주어집니다.</li>
+                                             </ul>
+                                        </div>
+                                        <button onClick={start} className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black py-4 px-12 rounded-full shadow-[0_0_30px_rgba(249,115,22,0.5)] transition-transform hover:scale-105 flex items-center gap-3 text-lg">
+                                             <Play className="w-6 h-6 fill-white" /> START
+                                        </button>
+                                   </div>
+                              )}
+
+                              {(phase === 'playing' || phase === 'done') && (
                                    <div
                                         onClick={handleBoardClick}
-                                        className="relative cursor-crosshair"
-                                        style={{ width: BOARD_R * 2 + 60, height: BOARD_R * 2 + 60 }}
+                                        className="relative cursor-crosshair w-full h-full flex items-center justify-center"
                                    >
                                         <div
-                                             className="absolute rounded-full border-4 border-amber-500/50 flex items-center justify-center transition-transform duration-75"
+                                             className="absolute rounded-full border-4 border-amber-500/50 flex items-center justify-center transition-transform duration-75 shadow-[0_0_40px_rgba(245,158,11,0.4)]"
                                              style={{
                                                   width: BOARD_R * 2 * target.scale,
                                                   height: BOARD_R * 2 * target.scale,
-                                                  left: '50%',
-                                                  top: '50%',
-                                                  transform: `translate(calc(-50% + ${target.x}px), calc(-50% + ${target.y}px))`,
-                                                  background: 'radial-gradient(circle, #fef3c7 0%, #f59e0b 40%, #b45309 70%, #78350f 100%)',
+                                                  transform: `translate(${target.x}px, ${target.y}px)`,
+                                                  background: 'radial-gradient(circle, #0f172a 0%, #1e293b 40%, #0f172a 70%, #020617 100%)',
                                              }}
                                         >
-                                             <div className="w-1/2 h-1/2 rounded-full bg-red-600 border-2 border-white" />
+                                             {/* Target Rings */}
+                                             <div className="absolute w-[80%] h-[80%] rounded-full border-2 border-orange-500/40" />
+                                             <div className="absolute w-[60%] h-[60%] rounded-full border-2 border-orange-500/60" />
+                                             <div className="absolute w-[40%] h-[40%] rounded-full border-2 border-orange-500/80" />
+                                             
+                                             {/* Bullseye */}
+                                             <div className="w-[15%] h-[15%] rounded-full bg-red-600 border-2 border-white shadow-[0_0_15px_rgba(239,68,68,1)] flex items-center justify-center">
+                                                  <div className="w-1 h-1 bg-white rounded-full opacity-50"/>
+                                             </div>
                                         </div>
-                                   </div>
-                              </>
-                         )}
-                         {phase === 'done' && (
-                              <div className="mt-6 text-center">
-                                   <p className="text-xl font-black text-amber-300 mb-2">최종 {total}점!</p>
-                                   <button onClick={() => { setPhase('idle'); }} className="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-full font-bold flex items-center gap-2 mx-auto"><RotateCw className="w-4 h-4" /> 다시하기</button>
-                              </div>
-                         )}
-                    </div>
 
-                    <div className="bg-gray-800/80 rounded-xl p-4 border border-gray-600 w-full lg:w-56 shrink-0">
-                         <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2"><Trophy className="w-4 h-4 text-yellow-400" /><span className="text-xs font-bold text-gray-400">TOP 10</span></div>
-                         <div className="space-y-1.5 max-h-72 overflow-y-auto">
-                              {rankList.map((e, i) => (
-                                   <div key={i} className="flex justify-between text-sm">
-                                        <span className="text-gray-300 truncate max-w-[100px]">{e.rank}. {e.name}</span>
-                                        <span className="text-gray-400 font-mono text-xs">{e.score}</span>
+                                        {/* Last Hit Indicator floating */}
+                                        {lastHit !== null && phase === 'playing' && (
+                                             <div className="absolute top-10 right-10 animate-in slide-in-from-bottom-4 fade-in duration-300">
+                                                  <div className={`text-4xl font-black ${lastHit === 100 ? 'text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)] scale-110' : 'text-amber-400 drop-shadow-md'}`}>
+                                                       +{lastHit}
+                                                  </div>
+                                             </div>
+                                        )}
                                    </div>
-                              ))}
-                              {rankList.length === 0 && <p className="text-gray-500 text-xs">아직 기록이 없어요.</p>}
+                              )}
+
+                              {phase === 'done' && (
+                                   <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                                        <div className="text-5xl font-black text-amber-500 mb-4 drop-shadow-[0_0_20px_rgba(245,158,11,0.8)]">FINISHED!</div>
+                                        <div className="text-2xl text-white font-black mb-8 font-mono">Final Score: <span className="text-orange-400">{total}</span></div>
+                                        <button onClick={() => { setPhase('idle'); }} className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 backdrop-blur-md">
+                                             <RotateCw className="w-5 h-5" /> PLAY AGAIN
+                                        </button>
+                                   </div>
+                              )}
                          </div>
+
                     </div>
                </div>
           </div>

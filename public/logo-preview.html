@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>강남ON 로고 미리보기</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'SUIT', 'Pretendard', system-ui, sans-serif; background: #eef0f4; color: #111827; padding: 36px 20px 60px; }
+    h1 { font-size: 26px; font-weight: 800; }
+    .sub { margin-top: 6px; color: #64748b; font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 28px; max-width: 1180px; }
+    .card { border-radius: 18px; overflow: hidden; border: 1px solid #e2e8f0; background: #fff; box-shadow: 0 16px 44px -30px rgba(15,23,42,.22); }
+    .label { padding: 12px 16px; font-size: 13px; font-weight: 700; border-bottom: 1px solid #eef2f7; background: #fafbfc; }
+    .panel { min-height: 130px; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+    .panel.dark { background: #0c1220; }
+    .panel.sidebar { background: #fff; border: 1px solid #e6e8ec; border-radius: 14px; margin: 14px; }
+    .icons { display: flex; gap: 20px; align-items: center; }
+    .icons svg { width: 88px; height: 88px; border-radius: 20px; }
+    .logo-h { width: min(100%, 260px); height: auto; }
+    .sheet { margin-top: 32px; max-width: 1180px; border-radius: 18px; overflow: hidden; border: 1px solid #e2e8f0; background: #fff; }
+    .sheet img { width: 100%; display: block; }
+    .foot { margin-top: 20px; font-size: 13px; color: #64748b; }
+    code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>강남ON 로고 미리보기</h1>
+  <p class="sub">6가지 버전 · 바로 확인 후 피드백 주세요</p>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="sheet">
+    <img src="./brand-preview-sheet.png" alt="브랜드 시트" />
+  </div>
+  <p class="foot">파일: <code>public/brand/*.svg</code> · 컴포넌트: <code>GangnamOnLogo.jsx</code></p>
+
+  <script>
+    const C = { navy:'#111827', gold:'#C89B3C', goldD:'#D4A853', ink:'#F1F5F9', sub:'#64748B', subD:'#94A3B8', neon:'#5B8DEF' };
+
+    function symbolInner(bg, fg) {
+      return `<rect width="48" height="48" rx="14" fill="${bg}"/><path d="M24 14.5v8.2" fill="none" stroke="${fg}" stroke-width="3.4" stroke-linecap="round"/><path d="M16.2 18.2a11.2 11.2 0 1 1 15.6 0" fill="none" stroke="${fg}" stroke-width="3.4" stroke-linecap="round"/><circle cx="24" cy="31.5" r="2.6" fill="${fg}" opacity=".92"/>`;
+    }
+
+    function horizontal({ gangnam, on, sub, symBg, symFg, neon=false }) {
+      const neonDef = neon ? `<defs><filter id="n" x="-30%" y="-50%" width="160%" height="200%"><feDropShadow dx="0" dy="0" stdDeviation="1.4" flood-color="${C.neon}" flood-opacity="0.38"/><feDropShadow dx="0" dy="0" stdDeviation="2.8" flood-color="${C.neon}" flood-opacity="0.16"/></filter></defs>` : '';
+      const nf = neon ? ' filter="url(#n)"' : '';
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 64" class="logo-h">${neonDef}<g transform="translate(4 8)">${symbolInner(symBg, symFg)}</g><text x="58" y="38" font-family="SUIT,Pretendard,system-ui" font-size="32" font-weight="800" letter-spacing="-0.03em"><tspan fill="${gangnam}"${nf}>강남</tspan><tspan dx="1" fill="${on}" font-style="italic" font-weight="700">on</tspan></text><text x="58" y="56" font-family="SUIT,Pretendard,system-ui" font-size="11.5" font-weight="600" letter-spacing="0.1em" fill="${sub}">GangNam On</text></svg>`;
+    }
+
+    function icon(bg, fg, strokeW=36) {
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="${bg}"/><path d="M256 154v87" fill="none" stroke="${fg}" stroke-width="${strokeW}" stroke-linecap="round"/><path d="M172 194a128 128 0 1 1 179 0" fill="none" stroke="${fg}" stroke-width="${strokeW}" stroke-linecap="round"/><circle cx="256" cy="336" r="28" fill="${fg}"/></svg>`;
+    }
+
+    const items = [
+      { t:'1. 가로형 · 흰 배경', cls:'panel', html: horizontal({ gangnam:C.navy, on:C.gold, sub:C.sub, symBg:C.navy, symFg:C.gold }) },
+      { t:'2. 가로형 · 어두운 배경', cls:'panel dark', html: horizontal({ gangnam:C.ink, on:C.goldD, sub:C.subD, symBg:C.ink, symFg:C.navy }) },
+      { t:'3. 가로형 · 네온 (은은)', cls:'panel', html: horizontal({ gangnam:C.navy, on:C.gold, sub:C.sub, symBg:C.navy, symFg:C.gold, neon:true }) },
+      { t:'4. 가로형 · 미니멀', cls:'panel', html: horizontal({ gangnam:C.navy, on:C.gold, sub:C.sub, symBg:C.navy, symFg:C.gold }) },
+      { t:'5. 앱 아이콘', cls:'panel', html:`<div class="icons">${icon(C.navy,C.gold)}${icon('#0c1220',C.goldD)}</div>` },
+      { t:'6. 사이드바 적용 예시', cls:'panel sidebar', html: horizontal({ gangnam:C.navy, on:C.gold, sub:C.sub, symBg:C.navy, symFg:C.gold }) },
+    ];
+
+    document.getElementById('grid').innerHTML = items.map(i =>
+      `<div class="card"><div class="label">${i.t}</div><div class="${i.cls}">${i.html}</div></div>`
+    ).join('');
+  </script>
+</body>
+</html>
