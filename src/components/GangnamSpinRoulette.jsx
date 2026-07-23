@@ -77,7 +77,7 @@ const GangnamSpinRoulette = ({ onClose, user, beanCount = 0, updateBeanCount }) 
      };
 
      return (
-          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-lg mx-auto">
+          <div className="min-h-full py-6 px-4 flex flex-col items-center bg-gradient-to-b from-gray-900 to-black text-white max-w-2xl mx-auto">
                <div className="w-full flex justify-between items-center mb-6">
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><ArrowLeft className="w-6 h-6 text-gray-300" /></button>
                     <div className="flex items-center gap-1.5">

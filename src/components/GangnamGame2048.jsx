@@ -171,7 +171,7 @@ const GangnamGame2048 = ({ onClose, user }) => {
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-900/10 rounded-full blur-[150px] pointer-events-none" />
 
-               <div className={`relative bg-gray-900/90 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-slate-700 shadow-[0_0_80px_rgba(250,204,21,0.1)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500`}>
+               <div className={`relative bg-gray-900/90 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-slate-700 shadow-[0_0_80px_rgba(250,204,21,0.1)] max-w-6xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500`}>
                     
                     {/* Left Panel: Info */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">

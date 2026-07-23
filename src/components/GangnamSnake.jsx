@@ -135,7 +135,7 @@ const GangnamSnake = ({ onClose, user }) => {
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-900/20 rounded-full blur-[100px] pointer-events-none" />
 
-               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-emerald-500/30 shadow-[0_0_60px_rgba(16,185,129,0.2)] max-w-6xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-emerald-500/30 shadow-[0_0_60px_rgba(16,185,129,0.2)] max-w-7xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
                     
                     {/* Header / Mobile Title */}
                     <div className="w-full flex justify-between items-center lg:hidden mb-4">

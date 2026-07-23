@@ -240,7 +240,7 @@ const GangnamBlockGame = ({ onClose, user }) => {
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/20 rounded-full blur-[120px] pointer-events-none" />
                
                {/* Container */}
-               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-white/10 shadow-[0_0_80px_rgba(168,85,247,0.3)] max-w-6xl w-full flex flex-col md:flex-row gap-10 items-center md:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-white/10 shadow-[0_0_80px_rgba(168,85,247,0.3)] max-w-7xl w-full flex flex-col md:flex-row gap-10 items-center md:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
 
                     {/* Left Panel: Score & Controls */}
                     <div className="flex-1 w-full md:w-auto flex flex-col gap-6 md:pr-4">

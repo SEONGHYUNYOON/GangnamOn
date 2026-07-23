@@ -323,7 +323,7 @@ const GangnamTarot = ({ onClose, user }) => {
                <div className="absolute bottom-0 right-0 w-64 h-64 bg-pink-300 rounded-full blur-[100px] opacity-30 translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
                {/* Content Area */}
-               <div className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-lg mx-auto p-6 flex flex-col items-center justify-center relative z-10 scrollbar-hide">
+               <div className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-3xl mx-auto p-6 flex flex-col items-center justify-center relative z-10 scrollbar-hide">
 
                     {/* STEP 1: TOPIC SELECTION */}
                     {step === 'topic' && (
@@ -394,7 +394,7 @@ const GangnamTarot = ({ onClose, user }) => {
 
                                         // Y offset for arc effect (cards on edges are lower)
                                         const yOffset = Math.abs(rotate) * 0.8; // Reduced to flatten bottom curve
-                                        const xOffset = rotate * 2.0;
+                                        const xOffset = rotate * 4.0;
 
                                         const isSelected = flippedIndex === i;
                                         const isHovered = hoveredIndex === i;

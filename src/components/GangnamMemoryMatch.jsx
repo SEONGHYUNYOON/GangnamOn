@@ -117,7 +117,7 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-fuchsia-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-fuchsia-500/30 shadow-[0_0_60px_rgba(217,70,239,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'mm-shake' : ''}`}>
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-fuchsia-500/30 shadow-[0_0_60px_rgba(217,70,239,0.2)] max-w-6xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'mm-shake' : ''}`}>
 
                     {/* Left Panel: Info */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">

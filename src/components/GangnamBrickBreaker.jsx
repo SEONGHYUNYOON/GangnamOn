@@ -13,7 +13,7 @@ const BRICK_H = 28;
 const CANVAS_W = BRICK_COLS * BRICK_W;
 const CANVAS_H = 600;
 const PADDLE_Y = CANVAS_H - 60;
-const BALL_SPEED = 4.5;
+const BALL_SPEED = 2.8;
 const COLORS = [
      { bg: '#ef4444', light: '#fca5a5', dark: '#991b1b', shadow: 'rgba(239, 68, 68, 0.8)' },
      { bg: '#f97316', light: '#fdba74', dark: '#9a3412', shadow: 'rgba(249, 115, 22, 0.8)' },
@@ -117,7 +117,7 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
                          x >= paddleX - BALL_R && x <= paddleX + PADDLE_W + BALL_R) {
                          dy = -Math.abs(dy);
                          const hitPos = (x - paddleX) / PADDLE_W;
-                         dx = (hitPos - 0.5) * 8; // Adjust angle based on where it hit the paddle
+                         dx = (hitPos - 0.5) * 5; // Adjust angle based on where it hit the paddle
                          playBounce(); // Paddle hit sound
                     }
                     if (y > CANVAS_H + BALL_R) {
@@ -288,7 +288,7 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-900/20 rounded-full blur-[100px] pointer-events-none" />
 
-               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-blue-500/30 shadow-[0_0_60px_rgba(59,130,246,0.2)] max-w-6xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-blue-500/30 shadow-[0_0_60px_rgba(59,130,246,0.2)] max-w-7xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
                     
                     {/* Left Panel: Info */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">

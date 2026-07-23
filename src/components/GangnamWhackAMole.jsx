@@ -142,7 +142,7 @@ const GangnamWhackAMole = ({ onClose, user }) => {
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-               <div className={`relative bg-amber-950/80 backdrop-blur-xl rounded-3xl p-6 md:p-10 border-2 border-orange-900 shadow-[0_0_80px_rgba(217,119,6,0.3)] max-w-5xl w-full flex flex-col lg:flex-row gap-10 items-center animate-in zoom-in-95 duration-500 ${hitHole !== null ? 'wam-shake' : ''}`}>
+               <div className={`relative bg-amber-950/80 backdrop-blur-xl rounded-3xl p-6 md:p-10 border-2 border-orange-900 shadow-[0_0_80px_rgba(217,119,6,0.3)] max-w-6xl w-full flex flex-col lg:flex-row gap-10 items-center animate-in zoom-in-95 duration-500 ${hitHole !== null ? 'wam-shake' : ''}`}>
 
                     {/* Left Panel: Info */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
