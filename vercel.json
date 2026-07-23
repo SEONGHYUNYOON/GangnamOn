@@ -6,6 +6,10 @@
           {
                "path": "/api/gangnam-news",
                "schedule": "5 21 * * *"
+          },
+          {
+               "path": "/api/keep-alive",
+               "schedule": "0 3 * * *"
           }
      ],
      "rewrites": [
