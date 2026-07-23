@@ -145,12 +145,12 @@ const GangnamLounge = ({ onExit, user, beanCount = 0, updateBeanCount }) => {
 
      const renderContent = () => {
           if (activeFeature === 'block') return <GangnamBlockGame onClose={handleCloseFeature} user={user} />;
-          if (activeFeature === 'snake') return <GangnamSnake onClose={handleCloseFeature} user={user} />;
+          if (activeFeature === 'snake') return <GangnamSnake onClose={handleCloseFeature} user={user} beanCount={beanCount} updateBeanCount={updateBeanCount} />;
           if (activeFeature === 'whack') return <GangnamWhackAMole onClose={handleCloseFeature} user={user} />;
-          if (activeFeature === 'brick') return <GangnamBrickBreaker onClose={handleCloseFeature} user={user} />;
+          if (activeFeature === 'brick') return <GangnamBrickBreaker onClose={handleCloseFeature} user={user} beanCount={beanCount} updateBeanCount={updateBeanCount} />;
           if (activeFeature === 'reaction') return <GangnamReactionTest onClose={handleCloseFeature} user={user} />;
           if (activeFeature === 'typing') return <GangnamTypingGame onClose={handleCloseFeature} user={user} />;
-          if (activeFeature === 'towerdefense') return <TowerDefense onClose={handleCloseFeature} user={user} />;
+          if (activeFeature === 'towerdefense') return <TowerDefense onClose={handleCloseFeature} user={user} beanCount={beanCount} updateBeanCount={updateBeanCount} />;
           if (activeFeature === 'game2048') return <GangnamGame2048 onClose={handleCloseFeature} user={user} />;
           if (activeFeature === 'flapon') return <GangnamFlapOn onClose={handleCloseFeature} user={user} />;
           if (activeFeature === 'memory') return <GangnamMemoryMatch onClose={handleCloseFeature} user={user} />;
