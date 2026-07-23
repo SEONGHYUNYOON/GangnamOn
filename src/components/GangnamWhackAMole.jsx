@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, RotateCw, Play, Trophy } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const ROWS = 2;
 const COLS = 3;
@@ -19,9 +19,11 @@ const GangnamWhackAMole = ({ onClose, user }) => {
      const [gameOver, setGameOver] = useState(false);
      const [rankList, setRankList] = useState(() => getRankTop10('whack', true));
      const [hitHole, setHitHole] = useState(null); // For hit effect
+     const [combo, setCombo] = useState(0); // 연속 히트 표시용
      const timerRef = useRef(null);
      const popRef = useRef(null);
      const hideRef = useRef(null);
+     const streakRef = useRef(0); // 연속 히트 카운트 (사운드/이펙트 전용)
      const gameOverRef = useRef(gameOver);
      gameOverRef.current = gameOver;
 
@@ -31,10 +33,13 @@ const GangnamWhackAMole = ({ onClose, user }) => {
           popRef.current = setTimeout(() => {
                if (gameOverRef.current) return;
                const idx = Math.floor(Math.random() * (ROWS * COLS));
-               soundManager.playJump();
+               playSound('pop');
                setActiveHole(idx);
                const hideDelay = 700 + Math.random() * 500;
                hideRef.current = setTimeout(() => {
+                    // 놓친 두더지 → 콤보 끊김
+                    streakRef.current = 0;
+                    setCombo(0);
                     setActiveHole(null);
                     schedulePop();
                }, hideDelay);
@@ -53,7 +58,7 @@ const GangnamWhackAMole = ({ onClose, user }) => {
      useEffect(() => {
           if (!gameStarted || gameOver) return;
           if (timeLeft <= 0) {
-               soundManager.playGameOver();
+               playSound('gameover');
                setGameOver(true);
                if (score > 0) {
                     const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
@@ -64,7 +69,7 @@ const GangnamWhackAMole = ({ onClose, user }) => {
           }
           timerRef.current = setInterval(() => {
                setTimeLeft(t => {
-                    if (t <= 5 && t > 1) soundManager.playTick();
+                    if (t <= 5 && t > 1) playSound('tick');
                     return t - 1;
                });
           }, 1000);
@@ -73,35 +78,72 @@ const GangnamWhackAMole = ({ onClose, user }) => {
 
      const whack = (idx) => {
           if (activeHole === idx) {
-               soundManager.playHit();
+               streakRef.current += 1;
+               setCombo(streakRef.current);
+               playSound(streakRef.current >= 3 ? 'combo' : 'hit');
                setScore(s => s + 10);
                setActiveHole(null);
                setHitHole(idx);
-               setTimeout(() => setHitHole(null), 200); // Remove hit effect
+               setTimeout(() => setHitHole(null), 300); // Remove hit effect
                if (hideRef.current) clearTimeout(hideRef.current);
                hideRef.current = null;
                schedulePop();
+          } else if (gameStarted && !gameOver) {
+               // 빈 구멍 클릭 → 콤보 끊김
+               playSound('wrong');
+               streakRef.current = 0;
+               setCombo(0);
           }
      };
 
      const startGame = useCallback(() => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click');
           setScore(0);
           setTimeLeft(ROUND_SEC);
           setActiveHole(null);
           setHitHole(null);
+          streakRef.current = 0;
+          setCombo(0);
           setGameOver(false);
           setGameStarted(true);
      }, []);
 
      return (
           <div className="fixed inset-0 z-[70] bg-[#1a0f0a] flex items-center justify-center p-4">
+               {/* 두더지 등장/타격 이펙트 키프레임 (이 컴포넌트 전용) */}
+               <style>{`
+                    @keyframes wamRise {
+                         0% { transform: translateY(100%) scale(0.7); }
+                         70% { transform: translateY(-6%) scale(1.05); }
+                         100% { transform: translateY(0) scale(1); }
+                    }
+                    @keyframes wamSquash {
+                         0% { transform: scale(1.3, 0.5); opacity: 1; }
+                         60% { transform: scale(0.9, 1.15); opacity: 1; }
+                         100% { transform: scale(1, 1); opacity: 0.9; }
+                    }
+                    @keyframes wamBurst {
+                         0% { transform: rotate(var(--ang)) translateY(-8px) scale(0.4); opacity: 1; }
+                         100% { transform: rotate(var(--ang)) translateY(-52px) scale(1); opacity: 0; }
+                    }
+                    @keyframes wamComboPop {
+                         0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+                         60% { transform: translateX(-50%) scale(1.15); opacity: 1; }
+                         100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                    }
+                    @keyframes wamShake {
+                         0%, 100% { transform: translateX(0); }
+                         25% { transform: translateX(-5px); }
+                         75% { transform: translateX(5px); }
+                    }
+                    .wam-shake { animation: wamShake 0.2s ease-in-out; }
+               `}</style>
+
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-               <div className={`relative bg-amber-950/80 backdrop-blur-xl rounded-3xl p-6 md:p-10 border-2 border-orange-900 shadow-[0_0_80px_rgba(217,119,6,0.3)] max-w-5xl w-full flex flex-col lg:flex-row gap-10 items-center animate-in zoom-in-95 duration-500 ${hitHole !== null ? 'animate-shake' : ''}`}>
-                    
+               <div className={`relative bg-amber-950/80 backdrop-blur-xl rounded-3xl p-6 md:p-10 border-2 border-orange-900 shadow-[0_0_80px_rgba(217,119,6,0.3)] max-w-5xl w-full flex flex-col lg:flex-row gap-10 items-center animate-in zoom-in-95 duration-500 ${hitHole !== null ? 'wam-shake' : ''}`}>
+
                     {/* Left Panel: Info */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
                          <div className="flex justify-between items-start lg:hidden mb-2">
@@ -158,28 +200,48 @@ const GangnamWhackAMole = ({ onClose, user }) => {
 
                     {/* Right Panel: Game Board */}
                     <div className="w-full lg:w-2/3 flex justify-center relative">
+                         {/* 콤보 배너 */}
+                         {combo >= 2 && gameStarted && !gameOver && (
+                              <div key={combo} className="absolute -top-6 left-1/2 z-40 pointer-events-none" style={{ animation: 'wamComboPop 0.25s ease-out both' }}>
+                                   <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400 drop-shadow-[0_0_12px_rgba(250,204,21,0.6)] whitespace-nowrap">🔥 COMBO x{combo}</span>
+                              </div>
+                         )}
+
                          <div className="grid gap-4 md:gap-6 w-full max-w-lg" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
                               {Array.from({ length: ROWS * COLS }).map((_, idx) => (
                                    <button
                                         key={idx}
                                         onClick={() => whack(idx)}
                                         disabled={!gameStarted || gameOver}
-                                        className={`relative aspect-square rounded-3xl overflow-hidden transition-all duration-100 disabled:cursor-default 
+                                        className={`relative aspect-square rounded-3xl overflow-hidden transition-all duration-100 disabled:cursor-default
                                              ${hitHole === idx ? 'bg-orange-600 scale-95 border-b-0 translate-y-2' : 'bg-gradient-to-b from-amber-800 to-amber-950 border-amber-700 border-b-8 hover:border-b-4 hover:translate-y-1 active:border-b-0 active:translate-y-2'}
                                              shadow-[0_10px_20px_rgba(0,0,0,0.5)]`}
                                    >
-                                        {/* Hole Depth */}
-                                        <div className="absolute inset-x-4 inset-y-4 rounded-full bg-black/60 shadow-[inset_0_10px_20px_rgba(0,0,0,0.8)] flex items-end justify-center overflow-hidden">
-                                             {/* Mole */}
+                                        {/* 잔디 표면 하이라이트 (좌상단 광원) */}
+                                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(255,255,255,0.14),transparent_55%)] pointer-events-none" />
+
+                                        {/* Hole Depth — 움푹 파인 굴 (radial-gradient + inset shadow) */}
+                                        <div className="absolute inset-x-4 inset-y-4 rounded-full bg-[radial-gradient(ellipse_at_50%_30%,#000000_0%,#120a04_45%,#2b1a0b_78%,#4a2f16_100%)] shadow-[inset_0_14px_24px_rgba(0,0,0,0.9),inset_0_-3px_6px_rgba(255,255,255,0.08)] flex items-end justify-center overflow-hidden">
+                                             {/* 굴 앞턱 흙더미 */}
+                                             <div className="absolute bottom-0 inset-x-0 h-1/4 bg-[radial-gradient(ellipse_at_50%_100%,#5b3a1c_0%,#3a2410_60%,transparent_100%)] pointer-events-none" />
+
+                                             {/* Mole — 아래에서 솟아오르는 3D 팝 */}
                                              {activeHole === idx && hitHole !== idx && (
-                                                  <div className="text-6xl md:text-8xl select-none animate-in slide-in-from-bottom-full duration-150 ease-out pb-2 filter drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+                                                  <div
+                                                       className="relative text-6xl md:text-8xl select-none pb-2 filter drop-shadow-[0_8px_10px_rgba(0,0,0,0.7)]"
+                                                       style={{ animation: 'wamRise 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) both' }}
+                                                  >
                                                        {MOLE_EMOJI[idx % MOLE_EMOJI.length]}
                                                   </div>
                                              )}
-                                             {/* Hit Effect */}
+
+                                             {/* Hit Effect — 찌부러짐 + 별 파편 */}
                                              {hitHole === idx && (
                                                   <div className="absolute inset-0 flex items-center justify-center bg-white/20">
-                                                       <span className="text-5xl md:text-7xl animate-ping select-none">💥</span>
+                                                       <span className="text-5xl md:text-7xl select-none" style={{ animation: 'wamSquash 0.3s ease-out both' }}>💥</span>
+                                                       {[0, 60, 120, 180, 240, 300].map(ang => (
+                                                            <span key={ang} className="absolute text-xl md:text-2xl select-none" style={{ '--ang': `${ang}deg`, animation: 'wamBurst 0.3s ease-out both' }}>⭐</span>
+                                                       ))}
                                                   </div>
                                              )}
                                         </div>

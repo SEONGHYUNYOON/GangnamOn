@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, RotateCw, Play, ArrowUp, ArrowDown, ArrowLeft as ArrowLeftIcon, ArrowRight, Trophy } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const COLS = 24;
 const ROWS = 18;
@@ -39,8 +39,7 @@ const GangnamSnake = ({ onClose, user }) => {
      }, [snake]);
 
      const startGame = useCallback(() => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click');
           const start = [{ x: 10, y: 9 }, { x: 9, y: 9 }, { x: 8, y: 9 }];
           const used = new Set(start.map(s => `${s.x},${s.y}`));
           let fx, fy;
@@ -63,9 +62,11 @@ const GangnamSnake = ({ onClose, user }) => {
      useEffect(() => {
           if (gameStarted && gameOver && score > 0) {
                const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
+               const prevBest = getRankTop10('snake', true)[0]?.score || 0;
                addScore('snake', name, score, true);
                setRankList(getRankTop10('snake', true));
-               soundManager.playGameOver();
+               // 최고 기록 갱신이면 승리 팡파레, 아니면 게임오버 사운드
+               playSound(score > prevBest ? 'win' : 'gameover');
           }
      }, [gameStarted, gameOver, score, user]);
 
@@ -79,6 +80,7 @@ const GangnamSnake = ({ onClose, user }) => {
                     const newHead = { x: (head.x + d.dx + COLS) % COLS, y: (head.y + d.dy + ROWS) % ROWS };
 
                     if (prev.some((s, i) => i > 0 && s.x === newHead.x && s.y === newHead.y)) {
+                         playSound('hit');
                          setGameOver(true);
                          triggerShake();
                          return prev;
@@ -88,7 +90,7 @@ const GangnamSnake = ({ onClose, user }) => {
                     let next = [newHead, ...prev];
                     if (!ate) next = next.slice(0, -1);
                     else {
-                         soundManager.playCoin();
+                         playSound('coin');
                          setScore(s => s + 10);
                          setSpeed(sp => Math.max(80, sp - 2));
                          const f = randomFood();
@@ -112,7 +114,7 @@ const GangnamSnake = ({ onClose, user }) => {
                if (key === 'ArrowDown' && d.dy === 0) { nextDirRef.current = { dx: 0, dy: 1 }; changed = true; }
                if (key === 'ArrowLeft' && d.dx === 0) { nextDirRef.current = { dx: -1, dy: 0 }; changed = true; }
                if (key === 'ArrowRight' && d.dx === 0) { nextDirRef.current = { dx: 1, dy: 0 }; changed = true; }
-               if (changed) soundManager.playMove();
+               if (changed) playSound('move');
           };
           window.addEventListener('keydown', handleKey);
           return () => window.removeEventListener('keydown', handleKey);
@@ -123,11 +125,13 @@ const GangnamSnake = ({ onClose, user }) => {
           if (d.dx !== 0 && dx !== 0) return;
           if (d.dy !== 0 && dy !== 0) return;
           nextDirRef.current = { dx, dy };
-          soundManager.playMove();
+          playSound('move');
      };
 
      return (
           <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* 먹이가 둥실거리는 애니메이션 */}
+               <style>{`@keyframes food-bob { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-4px) scale(1.1); } }`}</style>
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-900/20 rounded-full blur-[100px] pointer-events-none" />
 
@@ -136,27 +140,28 @@ const GangnamSnake = ({ onClose, user }) => {
                     {/* Header / Mobile Title */}
                     <div className="w-full flex justify-between items-center lg:hidden mb-4">
                          <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 tracking-wider">NEON SNAKE</h2>
-                         <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                         <button onClick={() => { playSound('click'); onClose(); }} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
                               <ArrowLeft className="w-6 h-6" />
                          </button>
                     </div>
 
-                    {/* Game Board */}
+                    {/* Game Board — perspective + 살짝 기울여 3D 테이블 느낌 */}
+                    <div className="shrink-0" style={{ perspective: '1000px' }}>
                     <div
-                         className="relative rounded-2xl overflow-hidden bg-black/60 border-2 border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.3)] shrink-0 flex items-center justify-center"
-                         style={{ width: COLS * CELL_SIZE, height: ROWS * CELL_SIZE }}
+                         className="relative rounded-2xl overflow-hidden bg-black/60 border-2 border-emerald-500/50 shadow-[0_25px_55px_rgba(0,0,0,.55),0_0_30px_rgba(16,185,129,0.3)] flex items-center justify-center"
+                         style={{ width: COLS * CELL_SIZE, height: ROWS * CELL_SIZE, transform: 'rotateX(3deg)', transformOrigin: 'top center' }}
                     >
                          {/* Grid Pattern */}
                          <div className="absolute inset-0 opacity-10"
                               style={{ backgroundImage: `linear-gradient(#10b981 1px, transparent 1px), linear-gradient(90deg, #10b981 1px, transparent 1px)`, backgroundSize: `${CELL_SIZE}px ${CELL_SIZE}px` }} />
 
-                         {/* Snake */}
+                         {/* Snake — 그라데이션 + 베벨로 입체감, 머리는 살짝 크게 + 강한 글로우 */}
                          {snake.map((seg, i) => {
                               const isHead = i === 0;
                               return (
                                    <div
                                         key={i}
-                                        className={`absolute rounded-sm transition-all duration-75 ${isHead ? 'bg-emerald-300 shadow-[0_0_15px_rgba(110,231,183,1)] z-10' : 'bg-emerald-600/80 shadow-[0_0_10px_rgba(5,150,105,0.6)]'}`}
+                                        className={`absolute rounded-md transition-all duration-75 ${isHead ? 'bg-gradient-to-b from-emerald-200 to-emerald-500 shadow-[inset_0_2px_0_rgba(255,255,255,.6),0_3px_6px_rgba(0,0,0,.45),0_0_18px_rgba(110,231,183,1)] z-10 scale-110' : 'bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-[inset_0_1px_0_rgba(255,255,255,.25),0_3px_5px_rgba(0,0,0,.4),0_0_8px_rgba(5,150,105,.5)]'}`}
                                         style={{ left: seg.x * CELL_SIZE + 2, top: seg.y * CELL_SIZE + 2, width: CELL_SIZE - 4, height: CELL_SIZE - 4 }}
                                    >
                                         {isHead && <div className="w-full h-full relative"><div className="absolute w-1.5 h-1.5 bg-black rounded-full top-1 left-1" /><div className="absolute w-1.5 h-1.5 bg-black rounded-full top-1 right-1" /></div>}
@@ -164,10 +169,10 @@ const GangnamSnake = ({ onClose, user }) => {
                               );
                          })}
 
-                         {/* Food */}
+                         {/* Food — 둥실거리며 떠 있는 느낌 + 바닥 그림자 */}
                          <div
-                              className="absolute flex items-center justify-center text-2xl select-none filter drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-pulse"
-                              style={{ left: food.x * CELL_SIZE, top: food.y * CELL_SIZE, width: CELL_SIZE, height: CELL_SIZE }}
+                              className="absolute flex items-center justify-center text-2xl select-none"
+                              style={{ left: food.x * CELL_SIZE, top: food.y * CELL_SIZE, width: CELL_SIZE, height: CELL_SIZE, animation: 'food-bob 1.1s ease-in-out infinite', filter: 'drop-shadow(0 6px 4px rgba(0,0,0,.5)) drop-shadow(0 0 10px rgba(255,255,255,.8))' }}
                          >
                               {foodEmoji}
                          </div>
@@ -201,12 +206,13 @@ const GangnamSnake = ({ onClose, user }) => {
                               </div>
                          )}
                     </div>
+                    </div>
 
                     {/* Right Panel */}
                     <div className="flex-1 w-full lg:w-72 flex flex-col gap-6">
                          <div className="hidden lg:flex justify-between items-start w-full">
                               <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 tracking-wider">NEON<br/>SNAKE</h2>
-                              <button onClick={onClose} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
+                              <button onClick={() => { playSound('click'); onClose(); }} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
                                    <ArrowLeft className="w-6 h-6" />
                               </button>
                          </div>

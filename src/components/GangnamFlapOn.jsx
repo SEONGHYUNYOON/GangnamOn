@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const W = 360;
 const H = 520;
@@ -11,13 +11,14 @@ const GAP = 150;
 const GRAVITY = 0.4;
 const FLAP = -6;
 const PIPE_SPEED = 3.5;
+const MAX_PARTICLES = 60;
 
 const GangnamFlapOn = ({ onClose, user }) => {
      const canvasRef = useRef(null);
      const [phase, setPhase] = useState('idle');
      const [score, setScore] = useState(0);
      const [rankList, setRankList] = useState(() => getRankTop10('flapon', true));
-     const stateRef = useRef({ birdY: H / 2, birdVy: 0, pipes: [], frame: 0, score: 0 });
+     const stateRef = useRef({ birdY: H / 2, birdVy: 0, pipes: [], frame: 0, score: 0, parts: [] });
      const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
      const [shake, setShake] = useState(false);
 
@@ -27,9 +28,8 @@ const GangnamFlapOn = ({ onClose, user }) => {
      };
 
      const reset = useCallback(() => {
-          soundManager.init();
-          soundManager.playCoin();
-          stateRef.current = { birdY: H / 2, birdVy: 0, pipes: [], frame: 0, score: 0 };
+          playSound('click');
+          stateRef.current = { birdY: H / 2, birdVy: 0, pipes: [], frame: 0, score: 0, parts: [] };
           setScore(0);
           setPhase('playing');
           setRankList(getRankTop10('flapon', true));
@@ -38,12 +38,12 @@ const GangnamFlapOn = ({ onClose, user }) => {
      const flap = useCallback(() => {
           if (phase === 'idle') { reset(); return; }
           if (phase === 'over') return;
-          soundManager.playMove(); // Use move sound for flapping
+          playSound('whoosh'); // Flap sound
           stateRef.current.birdVy = FLAP;
      }, [phase, reset]);
 
      const endGame = useCallback(() => {
-          soundManager.playExplosion();
+          playSound('gameover');
           triggerShake();
           setPhase('over');
           const s = stateRef.current.score;
@@ -80,7 +80,14 @@ const GangnamFlapOn = ({ onClose, user }) => {
                          p.passed = true;
                          s.score++;
                          setScore(s.score);
-                         soundManager.playCoin(); // Point gained
+                         playSound('score'); // Gate passed
+                         // Gold sparkle burst on gate pass
+                         for (let i = 0; i < 8; i++) {
+                              if (s.parts.length >= MAX_PARTICLES) break;
+                              const angle = (Math.PI * 2 * i) / 8 + Math.random() * 0.6;
+                              const speed = 1 + Math.random() * 2;
+                              s.parts.push({ x: bx, y: s.birdY, vx: Math.cos(angle) * speed - 1.5, vy: Math.sin(angle) * speed, life: 1, color: '#fde047' });
+                         }
                     }
                     const inX = bx + BIRD_R > p.x && bx - BIRD_R < p.x + PIPE_W;
                     if (inX && (s.birdY - BIRD_R < p.gapY || s.birdY + BIRD_R > p.gapY + GAP)) {
@@ -93,12 +100,30 @@ const GangnamFlapOn = ({ onClose, user }) => {
                const ctx = canvasRef.current?.getContext('2d');
                if (ctx) {
                     ctx.clearRect(0, 0, W, H);
-                    
-                    // Background
-                    ctx.fillStyle = '#0f172a'; // slate-900
+
+                    // Night-sky gradient background
+                    const sky = ctx.createLinearGradient(0, 0, 0, H);
+                    sky.addColorStop(0, '#16224a');
+                    sky.addColorStop(0.5, '#0f172a');
+                    sky.addColorStop(1, '#050810');
+                    ctx.fillStyle = sky;
                     ctx.fillRect(0, 0, W, H);
-                    
-                    // Cyberpunk Skyline
+
+                    // Moon glow (light pool for depth)
+                    const moon = ctx.createRadialGradient(W - 70, 80, 8, W - 70, 80, 120);
+                    moon.addColorStop(0, 'rgba(253, 230, 138, 0.5)');
+                    moon.addColorStop(0.2, 'rgba(253, 230, 138, 0.12)');
+                    moon.addColorStop(1, 'rgba(253, 230, 138, 0)');
+                    ctx.fillStyle = moon;
+                    ctx.fillRect(0, 0, W, H);
+
+                    // Parallax skyline: far layer (half speed, darker)
+                    ctx.fillStyle = '#141d33';
+                    for (let i = 0; i < 9; i++) {
+                         ctx.fillRect(i * 46 - (Math.floor(s.frame * 0.5) % 46), H - 140 - (i % 4) * 24, 34, 140 + (i % 3) * 18);
+                    }
+
+                    // Parallax skyline: near layer (full speed)
                     ctx.fillStyle = '#1e293b';
                     for (let i = 0; i < 8; i++) {
                          ctx.fillRect(i * 50 - (s.frame % 50), H - 80 - (i % 3) * 30, 40, 80 + (i % 4) * 20);
@@ -108,43 +133,91 @@ const GangnamFlapOn = ({ onClose, user }) => {
                          ctx.fillStyle = '#1e293b';
                     }
 
-                    // Pipes (Neon bars)
+                    // Pipes (cylindrical neon columns)
                     s.pipes.forEach(p => {
+                         const barrel = ctx.createLinearGradient(p.x, 0, p.x + PIPE_W, 0);
+                         barrel.addColorStop(0, '#064e3b');
+                         barrel.addColorStop(0.3, '#10b981');
+                         barrel.addColorStop(0.5, '#6ee7b7');
+                         barrel.addColorStop(0.7, '#10b981');
+                         barrel.addColorStop(1, '#053b2e');
                          ctx.shadowBlur = 15;
                          ctx.shadowColor = 'rgba(16, 185, 129, 0.8)'; // emerald-500 glow
-                         ctx.fillStyle = '#059669'; // emerald-600
-                         
+                         ctx.fillStyle = barrel;
+
                          // Top pipe
                          ctx.beginPath();
                          ctx.roundRect(p.x, 0, PIPE_W, p.gapY, [0, 0, 8, 8]);
                          ctx.fill();
-                         
+
                          // Bottom pipe
                          ctx.beginPath();
                          ctx.roundRect(p.x, p.gapY + GAP, PIPE_W, H - p.gapY - GAP, [8, 8, 0, 0]);
                          ctx.fill();
-
-                         // Inner neon tube
                          ctx.shadowBlur = 0;
-                         ctx.fillStyle = '#34d399'; // emerald-400
-                         ctx.fillRect(p.x + PIPE_W/2 - 4, 0, 8, p.gapY - 10);
-                         ctx.fillRect(p.x + PIPE_W/2 - 4, p.gapY + GAP + 10, 8, H - p.gapY - GAP - 10);
+
+                         // Pipe lips at the gap (lit from above)
+                         const lip = ctx.createLinearGradient(0, p.gapY - 14, 0, p.gapY);
+                         lip.addColorStop(0, '#34d399');
+                         lip.addColorStop(1, '#065f46');
+                         ctx.fillStyle = lip;
+                         ctx.beginPath();
+                         ctx.roundRect(p.x - 4, p.gapY - 14, PIPE_W + 8, 14, 4);
+                         ctx.fill();
+                         const lip2 = ctx.createLinearGradient(0, p.gapY + GAP, 0, p.gapY + GAP + 14);
+                         lip2.addColorStop(0, '#6ee7b7');
+                         lip2.addColorStop(1, '#047857');
+                         ctx.fillStyle = lip2;
+                         ctx.beginPath();
+                         ctx.roundRect(p.x - 4, p.gapY + GAP, PIPE_W + 8, 14, 4);
+                         ctx.fill();
                     });
 
-                    // Bird (Glowing Orb)
+                    // Sparkle / trail particles (fading circles)
+                    if (s.frame % 3 === 0 && s.parts.length < MAX_PARTICLES) {
+                         s.parts.push({ x: bx - BIRD_R, y: s.birdY, vx: -2.2, vy: 0, life: 0.6, color: '#fbbf24' });
+                    }
+                    for (let i = s.parts.length - 1; i >= 0; i--) {
+                         const pt = s.parts[i];
+                         pt.x += pt.vx;
+                         pt.y += pt.vy;
+                         pt.life -= 0.03;
+                         if (pt.life <= 0 || pt.x < -10) {
+                              s.parts.splice(i, 1);
+                              continue;
+                         }
+                         ctx.globalAlpha = Math.max(0, pt.life);
+                         ctx.fillStyle = pt.color;
+                         ctx.beginPath();
+                         ctx.arc(pt.x, pt.y, 1.5 + pt.life * 3, 0, Math.PI * 2);
+                         ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+
+                    // Bird (glossy 3D orb)
+                    const orb = ctx.createRadialGradient(bx - BIRD_R * 0.4, s.birdY - BIRD_R * 0.4, BIRD_R * 0.15, bx, s.birdY, BIRD_R);
+                    orb.addColorStop(0, '#fef3c7');
+                    orb.addColorStop(0.55, '#fbbf24');
+                    orb.addColorStop(1, '#b45309');
                     ctx.shadowBlur = 20;
                     ctx.shadowColor = 'rgba(245, 158, 11, 1)'; // amber-500 glow
-                    ctx.fillStyle = '#fbbf24'; // amber-400
+                    ctx.fillStyle = orb;
                     ctx.beginPath();
                     ctx.arc(bx, s.birdY, BIRD_R, 0, Math.PI * 2);
                     ctx.fill();
-                    
+
+                    ctx.shadowBlur = 0;
                     ctx.fillStyle = '#fff';
                     ctx.beginPath();
                     ctx.arc(bx - 4, s.birdY - 4, 4, 0, Math.PI * 2);
                     ctx.fill();
 
-                    ctx.shadowBlur = 0;
+                    // Vignette for depth
+                    const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.75);
+                    vig.addColorStop(0, 'rgba(0,0,0,0)');
+                    vig.addColorStop(1, 'rgba(0,0,0,0.4)');
+                    ctx.fillStyle = vig;
+                    ctx.fillRect(0, 0, W, H);
                }
                id = requestAnimationFrame(loop);
           };
@@ -207,9 +280,9 @@ const GangnamFlapOn = ({ onClose, user }) => {
                          </div>
                     </div>
 
-                    {/* Right Panel: Game Board */}
-                    <div className="w-full lg:w-2/3 flex flex-col items-center justify-center relative">
-                         <div className="relative rounded-3xl overflow-hidden border-4 border-slate-700 shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-black" style={{ width: W, height: H, maxWidth: '100%' }}>
+                    {/* Right Panel: Game Board (3D tilted table) */}
+                    <div className="w-full lg:w-2/3 flex flex-col items-center justify-center relative [perspective:800px]">
+                         <div className="relative rounded-3xl overflow-hidden border-4 border-slate-700 shadow-[0_30px_60px_rgba(0,0,0,0.8),0_0_50px_rgba(245,158,11,0.15)] bg-black [transform:rotateX(3deg)] origin-bottom" style={{ width: W, height: H, maxWidth: '100%' }}>
                               <canvas
                                    ref={canvasRef}
                                    width={W}

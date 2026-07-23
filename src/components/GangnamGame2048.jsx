@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const SIZE = 4;
 
@@ -70,21 +70,22 @@ const canMove = (grid) => {
      return false;
 };
 
+// 그라데이션 + 베벨(윗면 하이라이트/아랫면 두꺼운 그림자)로 타일에 입체감, 네온 글로우는 유지
 const tileColor = (v) => {
      const map = {
-          2: 'bg-slate-700 text-slate-200 border-slate-600', 
-          4: 'bg-slate-600 text-white border-slate-500',
-          8: 'bg-amber-600 text-white border-amber-500 shadow-[0_0_10px_rgba(217,119,6,0.5)]', 
-          16: 'bg-orange-500 text-white border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.6)]',
-          32: 'bg-red-500 text-white border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.7)]', 
-          64: 'bg-rose-600 text-white border-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.8)]',
-          128: 'bg-yellow-400 text-black border-yellow-300 shadow-[0_0_25px_rgba(250,204,21,0.9)] text-3xl', 
-          256: 'bg-yellow-300 text-black border-yellow-200 shadow-[0_0_30px_rgba(253,224,71,1)] text-3xl',
-          512: 'bg-lime-400 text-black border-lime-300 shadow-[0_0_35px_rgba(163,230,53,1)] text-3xl', 
-          1024: 'bg-emerald-400 text-black border-emerald-300 shadow-[0_0_40px_rgba(52,211,153,1)] text-2xl',
-          2048: 'bg-purple-500 text-white border-purple-400 shadow-[0_0_50px_rgba(168,85,247,1)] text-2xl',
+          2: 'bg-gradient-to-b from-slate-600 to-slate-800 text-slate-200 border-slate-500 shadow-[inset_0_2px_0_rgba(255,255,255,.15),0_4px_0_rgba(0,0,0,.4)]',
+          4: 'bg-gradient-to-b from-slate-500 to-slate-700 text-white border-slate-400 shadow-[inset_0_2px_0_rgba(255,255,255,.2),0_4px_0_rgba(0,0,0,.4)]',
+          8: 'bg-gradient-to-b from-amber-500 to-amber-700 text-white border-amber-400 shadow-[inset_0_2px_0_rgba(255,255,255,.35),0_4px_0_rgba(0,0,0,.35),0_0_10px_rgba(217,119,6,0.5)]',
+          16: 'bg-gradient-to-b from-orange-400 to-orange-600 text-white border-orange-300 shadow-[inset_0_2px_0_rgba(255,255,255,.4),0_4px_0_rgba(0,0,0,.35),0_0_15px_rgba(249,115,22,0.6)]',
+          32: 'bg-gradient-to-b from-red-400 to-red-600 text-white border-red-300 shadow-[inset_0_2px_0_rgba(255,255,255,.4),0_4px_0_rgba(0,0,0,.35),0_0_20px_rgba(239,68,68,0.7)]',
+          64: 'bg-gradient-to-b from-rose-500 to-rose-700 text-white border-rose-400 shadow-[inset_0_2px_0_rgba(255,255,255,.4),0_4px_0_rgba(0,0,0,.35),0_0_20px_rgba(225,29,72,0.8)]',
+          128: 'bg-gradient-to-b from-yellow-300 to-yellow-500 text-black border-yellow-200 shadow-[inset_0_2px_0_rgba(255,255,255,.6),0_4px_0_rgba(0,0,0,.3),0_0_25px_rgba(250,204,21,0.9)] text-3xl',
+          256: 'bg-gradient-to-b from-yellow-200 to-yellow-400 text-black border-yellow-100 shadow-[inset_0_2px_0_rgba(255,255,255,.7),0_4px_0_rgba(0,0,0,.3),0_0_30px_rgba(253,224,71,1)] text-3xl',
+          512: 'bg-gradient-to-b from-lime-300 to-lime-500 text-black border-lime-200 shadow-[inset_0_2px_0_rgba(255,255,255,.6),0_4px_0_rgba(0,0,0,.3),0_0_35px_rgba(163,230,53,1)] text-3xl',
+          1024: 'bg-gradient-to-b from-emerald-300 to-emerald-500 text-black border-emerald-200 shadow-[inset_0_2px_0_rgba(255,255,255,.6),0_4px_0_rgba(0,0,0,.3),0_0_40px_rgba(52,211,153,1)] text-2xl',
+          2048: 'bg-gradient-to-b from-purple-400 to-purple-600 text-white border-purple-300 shadow-[inset_0_2px_0_rgba(255,255,255,.5),0_4px_0_rgba(0,0,0,.35),0_0_50px_rgba(168,85,247,1)] text-2xl',
      };
-     return map[v] || 'bg-fuchsia-600 text-white border-fuchsia-500 shadow-[0_0_50px_rgba(192,38,211,1)] text-2xl';
+     return map[v] || 'bg-gradient-to-b from-fuchsia-500 to-fuchsia-700 text-white border-fuchsia-400 shadow-[inset_0_2px_0_rgba(255,255,255,.5),0_4px_0_rgba(0,0,0,.35),0_0_50px_rgba(192,38,211,1)] text-2xl';
 };
 
 const GangnamGame2048 = ({ onClose, user }) => {
@@ -96,8 +97,7 @@ const GangnamGame2048 = ({ onClose, user }) => {
      const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
 
      const start = () => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click');
           setGrid(initGrid());
           setScore(0);
           setGameOver(false);
@@ -106,7 +106,7 @@ const GangnamGame2048 = ({ onClose, user }) => {
      };
 
      const reset = useCallback(() => {
-          soundManager.playCoin();
+          playSound('click');
           setGrid(initGrid());
           setScore(0);
           setGameOver(false);
@@ -118,15 +118,19 @@ const GangnamGame2048 = ({ onClose, user }) => {
           setGrid(prev => {
                const { grid: moved, score: gained, moved: didMove } = moveGrid(prev, dir);
                if (!didMove) return prev;
-               
-               if (gained > 0) soundManager.playHit(); // Merged sound
-               else soundManager.playMove(); // Slide sound
+
+               // 2048 최초 달성 → 승리 팡파레 / 큰 합체 → 스코어음 / 일반 합체 → 팝 / 슬라이드 → 이동음
+               const reached2048 = moved.flat().includes(2048) && !prev.flat().includes(2048);
+               if (reached2048) playSound('win');
+               else if (gained > 0) playSound(gained >= 64 ? 'score' : 'pop');
+               else playSound('move');
 
                const withSpawn = spawnTile(moved);
                setScore(s => {
                     const nextScore = s + gained;
                     if (!canMove(withSpawn)) {
-                         soundManager.playGameOver();
+                         const prevBest = getRankTop10('game2048', true)[0]?.score || 0;
+                         playSound(nextScore > prevBest ? 'win' : 'gameover');
                          setGameOver(true);
                          if (nextScore > 0) addScore('game2048', name, nextScore, true);
                          setRankList(getRankTop10('game2048', true));
@@ -162,6 +166,8 @@ const GangnamGame2048 = ({ onClose, user }) => {
 
      return (
           <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* 타일 등장/변화 시 팝 애니메이션 */}
+               <style>{`@keyframes tile-pop { 0% { transform: scale(.7); opacity: .6; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }`}</style>
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-900/10 rounded-full blur-[150px] pointer-events-none" />
 
@@ -171,14 +177,14 @@ const GangnamGame2048 = ({ onClose, user }) => {
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
                          <div className="flex justify-between items-start lg:hidden mb-2">
                               <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 tracking-wider">NEON 2048</h2>
-                              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                              <button onClick={() => { playSound('click'); onClose(); }} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
                                    <ArrowLeft className="w-6 h-6" />
                               </button>
                          </div>
 
                          <div className="hidden lg:flex justify-between items-center w-full">
                               <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 drop-shadow-sm leading-tight">NEON<br/>2048</h2>
-                              <button onClick={onClose} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
+                              <button onClick={() => { playSound('click'); onClose(); }} className="bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
                                    <ArrowLeft className="w-6 h-6" />
                               </button>
                          </div>
@@ -215,11 +221,12 @@ const GangnamGame2048 = ({ onClose, user }) => {
                          </div>
                     </div>
 
-                    {/* Right Panel: Game Board */}
-                    <div className="w-full lg:w-2/3 flex flex-col items-center justify-center relative min-h-[400px]">
-                         
+                    {/* Right Panel: Game Board — perspective + 살짝 기울여 3D 테이블 느낌 */}
+                    <div className="w-full lg:w-2/3 flex flex-col items-center justify-center relative min-h-[400px]" style={{ perspective: '900px' }}>
+
                          <div
-                              className="bg-[#0f172a] p-3 md:p-4 rounded-3xl border-4 border-[#1e293b] shadow-[0_0_40px_rgba(0,0,0,0.8)] touch-none select-none w-full max-w-md relative overflow-hidden"
+                              className="bg-[#0f172a] p-3 md:p-4 rounded-3xl border-4 border-[#1e293b] shadow-[0_25px_60px_rgba(0,0,0,.8),0_0_40px_rgba(250,204,21,0.08)] touch-none select-none w-full max-w-md relative overflow-hidden"
+                              style={{ transform: 'rotateX(4deg)', transformOrigin: 'top center' }}
                               onTouchStart={onTouchStart}
                               onTouchEnd={onTouchEnd}
                          >
@@ -228,8 +235,9 @@ const GangnamGame2048 = ({ onClose, user }) => {
 
                               <div className="grid grid-cols-4 gap-2 md:gap-3 relative z-10">
                                    {grid.flat().map((v, i) => (
-                                        <div key={i} className={`aspect-square rounded-xl md:rounded-2xl flex items-center justify-center text-2xl md:text-4xl font-black transition-all duration-150 border-2
-                                             ${v ? tileColor(v) : 'bg-slate-800 border-slate-700 shadow-inner text-transparent'}`}>
+                                        <div key={`${i}-${v}`} className={`aspect-square rounded-xl md:rounded-2xl flex items-center justify-center text-2xl md:text-4xl font-black transition-all duration-150 border-2
+                                             ${v ? tileColor(v) : 'bg-slate-900/70 border-slate-700/70 shadow-[inset_0_3px_6px_rgba(0,0,0,.6)] text-transparent'}`}
+                                             style={v ? { animation: 'tile-pop .16s ease-out' } : undefined}>
                                              {v || ''}
                                         </div>
                                    ))}

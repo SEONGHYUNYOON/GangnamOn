@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, Trophy, RotateCw, ArrowDown, ArrowRight, ArrowUp, Play, Pause, X, Zap } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 // === TETRIS CONSTANTS ===
 const ROWS = 20;
@@ -9,15 +9,15 @@ const COLS = 10;
 const BLOCK_SIZE = 36;
 const SPEEDS = { 1: 800, 2: 700, 3: 600, 4: 500, 5: 400, 6: 300, 7: 200, 8: 100 };
 
-// Premium Neon Colors with glowing shadows
+// Premium Neon Colors — 입체감을 위한 그라데이션 + 베벨(윗면 하이라이트/아랫면 그림자) + 네온 글로우
 const TETROMINOS = {
-     I: { shape: [[1, 1, 1, 1]], color: 'bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.8),inset_0_0_10px_rgba(255,255,255,0.5)] border-2 border-cyan-200' },
-     J: { shape: [[1, 0, 0], [1, 1, 1]], color: 'bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8),inset_0_0_10px_rgba(255,255,255,0.5)] border-2 border-blue-300' },
-     L: { shape: [[0, 0, 1], [1, 1, 1]], color: 'bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.8),inset_0_0_10px_rgba(255,255,255,0.5)] border-2 border-orange-300' },
-     O: { shape: [[1, 1], [1, 1]], color: 'bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.8),inset_0_0_10px_rgba(255,255,255,0.5)] border-2 border-yellow-200' },
-     S: { shape: [[0, 1, 1], [1, 1, 0]], color: 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.8),inset_0_0_10px_rgba(255,255,255,0.5)] border-2 border-green-300' },
-     T: { shape: [[0, 1, 0], [1, 1, 1]], color: 'bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.8),inset_0_0_10px_rgba(255,255,255,0.5)] border-2 border-purple-300' },
-     Z: { shape: [[1, 1, 0], [0, 1, 1]], color: 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.8),inset_0_0_10px_rgba(255,255,255,0.5)] border-2 border-red-300' }
+     I: { shape: [[1, 1, 1, 1]], color: 'bg-gradient-to-b from-cyan-300 to-cyan-600 shadow-[inset_0_2px_0_rgba(255,255,255,.55),inset_0_-3px_0_rgba(0,0,0,.35),0_3px_5px_rgba(0,0,0,.5),0_0_12px_rgba(34,211,238,.7)] border border-cyan-200/80' },
+     J: { shape: [[1, 0, 0], [1, 1, 1]], color: 'bg-gradient-to-b from-blue-400 to-blue-700 shadow-[inset_0_2px_0_rgba(255,255,255,.55),inset_0_-3px_0_rgba(0,0,0,.35),0_3px_5px_rgba(0,0,0,.5),0_0_12px_rgba(59,130,246,.7)] border border-blue-300/80' },
+     L: { shape: [[0, 0, 1], [1, 1, 1]], color: 'bg-gradient-to-b from-orange-400 to-orange-700 shadow-[inset_0_2px_0_rgba(255,255,255,.55),inset_0_-3px_0_rgba(0,0,0,.35),0_3px_5px_rgba(0,0,0,.5),0_0_12px_rgba(249,115,22,.7)] border border-orange-300/80' },
+     O: { shape: [[1, 1], [1, 1]], color: 'bg-gradient-to-b from-yellow-300 to-yellow-600 shadow-[inset_0_2px_0_rgba(255,255,255,.55),inset_0_-3px_0_rgba(0,0,0,.35),0_3px_5px_rgba(0,0,0,.5),0_0_12px_rgba(250,204,21,.7)] border border-yellow-200/80' },
+     S: { shape: [[0, 1, 1], [1, 1, 0]], color: 'bg-gradient-to-b from-green-400 to-green-700 shadow-[inset_0_2px_0_rgba(255,255,255,.55),inset_0_-3px_0_rgba(0,0,0,.35),0_3px_5px_rgba(0,0,0,.5),0_0_12px_rgba(34,197,94,.7)] border border-green-300/80' },
+     T: { shape: [[0, 1, 0], [1, 1, 1]], color: 'bg-gradient-to-b from-purple-400 to-purple-700 shadow-[inset_0_2px_0_rgba(255,255,255,.55),inset_0_-3px_0_rgba(0,0,0,.35),0_3px_5px_rgba(0,0,0,.5),0_0_12px_rgba(168,85,247,.7)] border border-purple-300/80' },
+     Z: { shape: [[1, 1, 0], [0, 1, 1]], color: 'bg-gradient-to-b from-red-400 to-red-700 shadow-[inset_0_2px_0_rgba(255,255,255,.55),inset_0_-3px_0_rgba(0,0,0,.35),0_3px_5px_rgba(0,0,0,.5),0_0_12px_rgba(239,68,68,.7)] border border-red-300/80' }
 };
 
 const RANDOM_TETROMINO = () => {
@@ -42,15 +42,16 @@ const GangnamBlockGame = ({ onClose, user }) => {
      useEffect(() => {
           if (gameStarted && gameOver && score > 0) {
                const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
+               const prevBest = getRankTop10('block', true)[0]?.score || 0;
                addScore('block', name, score, true);
                setRankList(getRankTop10('block', true));
-               soundManager.playGameOver();
+               // 최고 기록 갱신이면 승리 팡파레, 아니면 게임오버 사운드
+               playSound(score > prevBest ? 'win' : 'gameover');
           }
      }, [gameStarted, gameOver, score, user]);
 
      const startGame = useCallback(() => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click');
           setGrid(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
           setScore(0);
           setGameOver(false);
@@ -91,7 +92,7 @@ const GangnamBlockGame = ({ onClose, user }) => {
 
      const placePiece = (targetPiece = activePiece) => {
           if (!targetPiece) return;
-          soundManager.playDrop();
+          playSound('hit');
           const { shape, pos, color } = targetPiece;
           const newGrid = grid.map(row => [...row]);
 
@@ -126,7 +127,7 @@ const GangnamBlockGame = ({ onClose, user }) => {
           }
 
           if (lines > 0) {
-               soundManager.playClearLine();
+               playSound('combo');
                triggerShake();
                setScore(prev => {
                     const newScore = prev + (lines * 100 * (lines === 4 ? 2 : 1));
@@ -158,7 +159,7 @@ const GangnamBlockGame = ({ onClose, user }) => {
           if (!activePiece || gameOver || isPaused) return;
           const newPos = { x: activePiece.pos.x + dx, y: activePiece.pos.y + dy };
           if (!checkCollision(activePiece.shape, newPos, grid)) {
-               soundManager.playMove();
+               playSound('move');
                setActivePiece(prev => ({ ...prev, pos: newPos }));
           }
      };
@@ -167,14 +168,14 @@ const GangnamBlockGame = ({ onClose, user }) => {
           if (!activePiece || gameOver || isPaused) return;
           const rotated = activePiece.shape[0].map((_, i) => activePiece.shape.map(row => row[i]).reverse());
           if (!checkCollision(rotated, activePiece.pos, grid)) {
-               soundManager.playRotate();
+               playSound('move');
                setActivePiece(prev => ({ ...prev, shape: rotated }));
           } else {
                if (!checkCollision(rotated, { ...activePiece.pos, x: activePiece.pos.x - 1 }, grid)) {
-                    soundManager.playRotate();
+                    playSound('move');
                     setActivePiece(prev => ({ ...prev, shape: rotated, pos: { ...prev.pos, x: prev.pos.x - 1 } }));
                } else if (!checkCollision(rotated, { ...activePiece.pos, x: activePiece.pos.x + 1 }, grid)) {
-                    soundManager.playRotate();
+                    playSound('move');
                     setActivePiece(prev => ({ ...prev, shape: rotated, pos: { ...prev.pos, x: prev.pos.x + 1 } }));
                }
           }
@@ -182,6 +183,7 @@ const GangnamBlockGame = ({ onClose, user }) => {
 
      const handleHardDrop = () => {
           if (!activePiece || gameOver || isPaused) return;
+          playSound('whoosh');
           let dropY = activePiece.pos.y;
           while (!checkCollision(activePiece.shape, { x: activePiece.pos.x, y: dropY + 1 }, grid)) {
                dropY++;
@@ -232,6 +234,8 @@ const GangnamBlockGame = ({ onClose, user }) => {
 
      return (
           <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* 블록 고정 시 살짝 튀어나오는 팝 애니메이션 */}
+               <style>{`@keyframes block-pop { 0% { transform: scale(.6); } 70% { transform: scale(1.08); } 100% { transform: scale(1); } }`}</style>
                {/* Ambient Background Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/20 rounded-full blur-[120px] pointer-events-none" />
                
@@ -247,7 +251,7 @@ const GangnamBlockGame = ({ onClose, user }) => {
                                         {score.toLocaleString()}
                                    </div>
                               </div>
-                              <button onClick={onClose} className="ml-4 bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
+                              <button onClick={() => { playSound('click'); onClose(); }} className="ml-4 bg-white/5 hover:bg-white/20 text-white p-3 rounded-full transition-all backdrop-blur-md">
                                    <X className="w-6 h-6" />
                               </button>
                          </div>
@@ -261,10 +265,10 @@ const GangnamBlockGame = ({ onClose, user }) => {
                          </div>
                     </div>
 
-                    {/* Center Panel: Game Grid & Next Piece */}
-                    <div className="flex flex-col md:flex-row items-start gap-4">
-                         <div className="relative flex-shrink-0 bg-black/80 border-2 border-white/10 rounded-xl shadow-[0_0_40px_rgba(168,85,247,0.2)] overflow-hidden p-1"
-                              style={{ width: COLS * BLOCK_SIZE + 10, height: ROWS * BLOCK_SIZE + 10 }}>
+                    {/* Center Panel: Game Grid & Next Piece — perspective로 3D 테이블 느낌 */}
+                    <div className="flex flex-col md:flex-row items-start gap-4" style={{ perspective: '900px' }}>
+                         <div className="relative flex-shrink-0 bg-black/80 border-2 border-white/10 rounded-xl shadow-[0_25px_50px_rgba(0,0,0,.6),0_0_40px_rgba(168,85,247,0.25)] overflow-hidden p-1"
+                              style={{ width: COLS * BLOCK_SIZE + 10, height: ROWS * BLOCK_SIZE + 10, transform: 'rotateX(3deg)', transformOrigin: 'top center' }}>
                          {/* Grid Pattern */}
                          <div className="absolute inset-0 opacity-[0.03]"
                               style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: `${BLOCK_SIZE}px ${BLOCK_SIZE}px` }}>
@@ -274,19 +278,19 @@ const GangnamBlockGame = ({ onClose, user }) => {
                          <div className="absolute top-1 left-1">
                               {/* Ghost Piece */}
                               {activePiece && !gameOver && activePiece.shape.map((row, y) => row.map((cell, x) => (
-                                   cell ? <div key={`g-${y}-${x}`} className="absolute border-2 border-white/30 bg-white/5 rounded-sm"
+                                   cell ? <div key={`g-${y}-${x}`} className="absolute border-2 border-white/30 bg-white/5 rounded-[5px]"
                                         style={{ width: BLOCK_SIZE, height: BLOCK_SIZE, left: (activePiece.pos.x + x) * BLOCK_SIZE, top: (ghostY + y) * BLOCK_SIZE }} /> : null
                               )))}
 
-                              {/* Static Grid */}
+                              {/* Static Grid — 새로 고정된 블록은 팝 애니메이션 */}
                               {grid.map((row, y) => row.map((cell, x) => (
-                                   cell ? <div key={`s-${y}-${x}`} className={`absolute ${cell} rounded-sm`}
-                                        style={{ width: BLOCK_SIZE, height: BLOCK_SIZE, left: x * BLOCK_SIZE, top: y * BLOCK_SIZE }} /> : null
+                                   cell ? <div key={`s-${y}-${x}`} className={`absolute ${cell} rounded-[5px]`}
+                                        style={{ width: BLOCK_SIZE, height: BLOCK_SIZE, left: x * BLOCK_SIZE, top: y * BLOCK_SIZE, animation: 'block-pop .18s ease-out' }} /> : null
                               )))}
 
                               {/* Active Piece */}
                               {activePiece && !gameOver && activePiece.shape.map((row, y) => row.map((cell, x) => (
-                                   cell ? <div key={`a-${y}-${x}`} className={`absolute ${activePiece.color} rounded-sm`}
+                                   cell ? <div key={`a-${y}-${x}`} className={`absolute ${activePiece.color} rounded-[5px]`}
                                         style={{ width: BLOCK_SIZE, height: BLOCK_SIZE, left: (activePiece.pos.x + x) * BLOCK_SIZE, top: (activePiece.pos.y + y) * BLOCK_SIZE }} /> : null
                               )))}
                          </div>
@@ -324,7 +328,7 @@ const GangnamBlockGame = ({ onClose, user }) => {
                                              {nextPiece.shape.map((row, y) => (
                                                   <div key={y} className="flex justify-center">
                                                        {row.map((cell, x) => (
-                                                            <div key={x} className={`w-8 h-8 ${cell ? nextPiece.color : 'bg-transparent'}`} />
+                                                            <div key={x} className={`w-8 h-8 rounded-[5px] ${cell ? nextPiece.color : 'bg-transparent'}`} />
                                                        ))}
                                                   </div>
                                              ))}

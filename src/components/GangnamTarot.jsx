@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Sparkles, Heart, DollarSign, Clover, Share2, RefreshCw, Camera, Sun, Moon, Star, CloudRain, Zap, Anchor, Key, Gift, Music, Coffee, Smile, ThumbsUp, Map, Compass, Crown, Shield, Bell, Globe, Scale, Sprout, Droplet, Ghost, Book } from 'lucide-react';
+import { playSound } from '../lib/gameSounds';
 
 const GangnamTarot = ({ onClose, user }) => {
      const [step, setStep] = useState('topic'); // topic, shuffle, result
@@ -149,10 +150,17 @@ const GangnamTarot = ({ onClose, user }) => {
      const [flippedIndex, setFlippedIndex] = useState(null);
 
      const handleTopicSelect = (topic) => {
+          playSound('click');
           setSelectedTopic(topic);
           setStep('shuffle');
           setIsShuffling(true);
           setHoveredIndex(null);
+
+          // 카드를 섞는 동안 'whoosh'를 몇 번 겹쳐 뿌려준다 (너무 잦지 않게)
+          [120, 620, 1180, 1660].forEach((delay) => {
+               setTimeout(() => playSound('whoosh'), delay);
+          });
+
           setTimeout(() => setIsShuffling(false), 2000); // Shuffle animation duration
      };
 
@@ -160,6 +168,7 @@ const GangnamTarot = ({ onClose, user }) => {
           if (isShuffling || isFlipping) return;
 
           // 1. Lock interaction and start flip animation
+          playSound('click'); // 카드를 고르는 순간
           setIsFlipping(true);
           setFlippedIndex(index);
           setHoveredIndex(null);
@@ -193,28 +202,109 @@ const GangnamTarot = ({ onClose, user }) => {
           }
 
           // 3. Wait for animation then show result
+          setTimeout(() => playSound('pop'), 260); // 카드가 뒤집히며 앞면이 드러나는 순간
           setTimeout(() => {
                setStep('result');
                setIsFlipping(false);
                setFlippedIndex(null);
+               playSound('win'); // 리딩 공개
           }, 800);
      };
 
+     const handleReset = () => {
+          playSound('click');
+          setStep('topic');
+          setSelectedTopic(null);
+     };
+
      const handleShare = () => {
+          playSound('click');
           alert("📸 카드가 캡처되어 갤러리에 저장되었습니다! (시뮬레이션)");
      };
 
-     const CardBack = () => (
-          <div className="w-full h-full rounded-2xl border-4 border-white shadow-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden flex items-center justify-center">
-               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-50" />
-               <div className="w-24 h-24 rounded-full border-2 border-white/30 flex items-center justify-center">
-                    <Sparkles className="w-12 h-12 text-white/80 animate-pulse" />
+     // 카드 뒷면 문양: radial + conic 그라디언트를 여러 겹 쌓아 신비로운 패턴을 만든다
+     const cardBackPattern = {
+          backgroundImage: [
+               'radial-gradient(circle at 50% 50%, rgba(253,224,71,0.28) 0%, rgba(253,224,71,0.06) 34%, rgba(253,224,71,0) 55%)',
+               'conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.18) 0deg, rgba(255,255,255,0) 22deg, rgba(255,255,255,0.18) 45deg, rgba(255,255,255,0) 67deg, rgba(255,255,255,0.18) 90deg, rgba(255,255,255,0) 112deg, rgba(255,255,255,0.18) 135deg, rgba(255,255,255,0) 157deg, rgba(255,255,255,0.18) 180deg, rgba(255,255,255,0) 202deg, rgba(255,255,255,0.18) 225deg, rgba(255,255,255,0) 247deg, rgba(255,255,255,0.18) 270deg, rgba(255,255,255,0) 292deg, rgba(255,255,255,0.18) 315deg, rgba(255,255,255,0) 337deg)',
+               'radial-gradient(circle at 20% 16%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 9%)',
+               'radial-gradient(circle at 80% 24%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 7%)',
+               'radial-gradient(circle at 26% 82%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0) 7%)',
+               'radial-gradient(circle at 74% 88%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 9%)',
+               'linear-gradient(150deg, #312e81 0%, #6d28d9 46%, #9d174d 100%)'
+          ].join(', ')
+     };
+
+     // 금/보라 테두리 + 안쪽 음영 (겹겹의 box-shadow로 카드 두께를 표현)
+     const cardBackRim = {
+          boxShadow: [
+               'inset 0 0 0 1.5px rgba(253,224,71,0.6)',
+               'inset 0 0 0 5px rgba(67,20,120,0.85)',
+               'inset 0 0 22px rgba(12,4,30,0.55)',
+               '0 12px 26px -10px rgba(76,29,149,0.9)'
+          ].join(', ')
+     };
+
+     // 카드 앞면(공개면): 안쪽 하이라이트 + 바깥 그림자
+     const cardFrontRim = {
+          boxShadow: [
+               'inset 0 1px 0 rgba(255,255,255,0.9)',
+               'inset 0 0 0 1px rgba(255,255,255,0.7)',
+               'inset 0 -14px 24px -18px rgba(49,16,90,0.5)',
+               '0 14px 30px -12px rgba(49,16,90,0.55)'
+          ].join(', ')
+     };
+
+     const CardBack = ({ compact = false }) => (
+          <div
+               className="w-full h-full rounded-2xl relative overflow-hidden flex items-center justify-center"
+               style={{ ...cardBackPattern, ...cardBackRim }}
+          >
+               {/* 표면을 훑고 지나가는 은은한 광택 */}
+               <div className="absolute inset-0 pointer-events-none tarot-sheen" />
+               {/* 금색 이너 프레임 */}
+               <div className="absolute inset-[7px] rounded-xl border border-yellow-200/30 pointer-events-none" />
+               <div className={`${compact ? 'w-16 h-16' : 'w-24 h-24'} rounded-full border border-yellow-200/40 flex items-center justify-center bg-white/5 backdrop-blur-[1px] shadow-[0_0_20px_rgba(253,224,71,0.25)_inset]`}>
+                    <Sparkles className={`${compact ? 'w-8 h-8' : 'w-12 h-12'} text-yellow-100/90 animate-pulse drop-shadow-[0_0_6px_rgba(253,224,71,0.7)]`} />
                </div>
           </div>
      );
 
      return (
           <div className="flex flex-col h-full bg-gradient-to-b from-indigo-50 to-purple-100 relative overflow-hidden font-sans">
+               {/* 이 컴포넌트 전용 키프레임 (파일 자체 완결성을 위해 인라인으로 둔다) */}
+               <style>
+                    {`
+                    @keyframes tarotShuffleCard {
+                         0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.9); }
+                         25%  { transform: translate3d(-42px, -12px, 30px) rotate(-14deg) scale(0.95); }
+                         50%  { transform: translate3d(0, 6px, 0) rotate(0deg) scale(0.9); }
+                         75%  { transform: translate3d(42px, -12px, 30px) rotate(14deg) scale(0.95); }
+                         100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.9); }
+                    }
+                    @keyframes tarotSheen {
+                         0%   { transform: translateX(-130%); opacity: 0; }
+                         30%  { opacity: 0.9; }
+                         70%  { opacity: 0.9; }
+                         100% { transform: translateX(130%); opacity: 0; }
+                    }
+                    @keyframes tarotFloat {
+                         0%, 100% { transform: translateY(0px); }
+                         50%      { transform: translateY(-12px); }
+                    }
+                    @keyframes tarotAura {
+                         0%, 100% { opacity: 0.35; transform: scale(0.94); }
+                         50%      { opacity: 0.6;  transform: scale(1.06); }
+                    }
+                    .tarot-sheen {
+                         background: linear-gradient(102deg, rgba(255,255,255,0) 36%, rgba(255,255,255,0.32) 50%, rgba(255,255,255,0) 64%);
+                         animation: tarotSheen 5s ease-in-out infinite;
+                    }
+                    .tarot-float { animation: tarotFloat 3.4s ease-in-out infinite; }
+                    .tarot-aura  { animation: tarotAura 5s ease-in-out infinite; }
+                    `}
+               </style>
+
                {/* Header */}
                <div className="px-6 py-4 flex justify-between items-center z-10">
                     <button onClick={onClose} className="p-2 bg-white/50 backdrop-blur-md rounded-full hover:bg-white text-gray-600 transition-colors">
@@ -279,24 +369,21 @@ const GangnamTarot = ({ onClose, user }) => {
                     {/* STEP 2: SHUFFLE & PICK */}
                     {step === 'shuffle' && (
                          <div className="w-full h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-500 relative">
-                              <style>
-                                   {`
-                                   @keyframes shuffleCard {
-                                        0% { transform: translate(0, 0) rotate(0deg) scale(0.9); z-index: 1; }
-                                        25% { transform: translate(-40px, -10px) rotate(-15deg) scale(0.95); z-index: 10; }
-                                        50% { transform: translate(0, 5px) rotate(0deg) scale(0.9); z-index: 1; }
-                                        75% { transform: translate(40px, -10px) rotate(15deg) scale(0.95); z-index: 10; }
-                                        100% { transform: translate(0, 0) rotate(0deg) scale(0.9); z-index: 1; }
-                                   }
-                                   `}
-                              </style>
                               {!isFlipping && (
                                    <h3 className="text-xl font-bold text-purple-900 mb-12 animate-pulse whitespace-pre-wrap">
                                         {isShuffling ? "22장의 카드를 섞는 중입니다..." : "마음속으로 집중하고\n한 장을 뽑아주세요"}
                                    </h3>
                               )}
 
-                              <div className="relative w-full h-[360px] flex items-center justify-center perspective-[1000px] -mt-32">
+                              <div className="relative w-full h-[360px] flex items-center justify-center [perspective:1200px] [perspective-origin:50%_130%] -mt-32">
+                                   {/* 스프레드 뒤쪽 앰비언트 글로우 */}
+                                   <div
+                                        className="tarot-aura absolute w-[330px] h-[330px] rounded-full blur-[70px] pointer-events-none"
+                                        style={{ backgroundImage: 'radial-gradient(circle, rgba(192,132,252,0.75) 0%, rgba(244,114,182,0.45) 45%, rgba(129,140,248,0) 72%)' }}
+                                   />
+                                   {/* 테이블 위에 놓인 느낌을 주는 바닥 그림자 */}
+                                   <div className="absolute bottom-8 w-[300px] h-8 rounded-[50%] bg-purple-900/20 blur-xl pointer-events-none" />
+
                                    {/* Full Deck of 22 Cards (Major Arcana Count) */}
                                    {[...Array(22)].map((_, i) => {
                                         // Calculate Fan Layout (Tightened for Mobile/No Overflow)
@@ -310,10 +397,16 @@ const GangnamTarot = ({ onClose, user }) => {
                                         const xOffset = rotate * 2.0;
 
                                         const isSelected = flippedIndex === i;
+                                        const isHovered = hoveredIndex === i;
 
                                         // Random animation properties for shuffle
                                         const shuffleDelay = `${Math.random() * 0.5}s`;
                                         const shuffleDuration = `${0.3 + Math.random() * 0.2}s`;
+
+                                        // 테이블 위 실제 카드처럼 보이도록 살짝 눕히는 각도 (가장자리로 갈수록 더 눕는다)
+                                        const tiltX = 10 - Math.abs(rotate) * 0.08;
+
+                                        const spreadTransform = `translate3d(${xOffset}px, ${yOffset - (isHovered ? 22 : 0)}px, ${isHovered ? 60 : 0}px) rotate(${rotate}deg) rotateX(${isHovered ? 0 : tiltX}deg) scale(${isHovered ? 1.08 : 1})`;
 
                                         return (
                                              <div
@@ -321,40 +414,48 @@ const GangnamTarot = ({ onClose, user }) => {
                                                   onClick={() => handleCardPick(i)}
                                                   onMouseEnter={() => !isShuffling && !isFlipping && setHoveredIndex(i)}
                                                   onMouseLeave={() => !isShuffling && !isFlipping && setHoveredIndex(null)}
-                                                  className={`absolute w-28 h-48 rounded-xl cursor-pointer shadow-lg border border-white/40 transition-all duration-500 ease-out will-change-transform bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500
-                                                  ${isShuffling ? '' : 'hover:scale-110 hover:shadow-purple-500/50 hover:border-white'}
-                                                  ${isSelected ? 'z-[100] !transition-transform !duration-700' : ''}
+                                                  className={`absolute w-28 h-48 cursor-pointer transition-transform duration-500 ease-out will-change-transform [transform-style:preserve-3d]
+                                                  ${isSelected ? 'z-[100] !duration-700' : ''}
                                                   `}
                                                   style={{
-                                                       animation: isShuffling ? `shuffleCard ${shuffleDuration} ease-in-out infinite alternate` : 'none',
+                                                       animation: isShuffling ? `tarotShuffleCard ${shuffleDuration} ease-in-out infinite alternate` : 'none',
                                                        animationDelay: isShuffling ? shuffleDelay : '0s',
                                                        transform: isSelected
-                                                            ? 'translate(0, 0) rotateY(180deg) scale(1.5)' // Flip & Center
+                                                            ? 'translate3d(0, 0, 90px) rotate(0deg) rotateX(0deg) scale(1.45)' // Center & lift
                                                             : isShuffling
-                                                                 ? 'translate(0,0)' // Overridden by animation
-                                                                 : `translate(${xOffset}px, ${yOffset}px) rotate(${rotate}deg) translateZ(${hoveredIndex === i ? '50px' : '0px'})`,
-                                                       zIndex: isSelected ? 100 : (hoveredIndex === i ? 50 : i),
-                                                       backfaceVisibility: 'visible', // Enable 3D flip effect
-                                                       transformStyle: 'preserve-3d'
+                                                                 ? 'translate3d(0,0,0)' // Overridden by animation
+                                                                 : spreadTransform,
+                                                       zIndex: isSelected ? 100 : (isHovered ? 50 : i)
                                                   }}
                                              >
-                                                  {/* Front (Card Back Design) */}
-                                                  <div className="absolute inset-0 w-full h-full backface-hidden flex items-center justify-center">
-                                                       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-50" />
-                                                       <div className="w-20 h-20 rounded-full border-2 border-white/30 flex items-center justify-center">
-                                                            <Sparkles className="w-10 h-10 text-white/80 animate-pulse" />
-                                                       </div>
-                                                  </div>
-
-                                                  {/* Back (Revealed Content - Simplified for flip effect) */}
-                                                  <div className="absolute inset-0 w-full h-full bg-white rounded-xl shadow-inner rotate-y-180 backface-hidden flex items-center justify-center">
-                                                       {/* We show the result card face here during the flip */}
-                                                       {selectedCardResult && (
-                                                            <div className={`w-full h-full ${selectedCardResult.bg} p-2 flex flex-col items-center justify-center opacity-0 animate-in fade-in duration-300 delay-300 fill-mode-forwards`}>
-                                                                 <selectedCardResult.Icon className={`w-10 h-10 ${selectedCardResult.color} mb-2`} />
-                                                                 <span className="text-[10px] font-bold text-gray-800 text-center px-1 leading-tight">{selectedCardResult.name}</span>
+                                                  {/* 뽑힌 카드는 리딩이 준비되는 동안 천천히 떠 있는다 */}
+                                                  <div className={`w-full h-full [transform-style:preserve-3d] ${isSelected ? 'tarot-float' : ''}`}>
+                                                       {/* 실제 3D 뒤집기: 안쪽 래퍼만 rotateY 한다 */}
+                                                       <div
+                                                            className="relative w-full h-full [transform-style:preserve-3d] transition-transform duration-700 ease-in-out"
+                                                            style={{ transform: isSelected ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+                                                       >
+                                                            {/* Front Face (Card Back Design) */}
+                                                            <div className="absolute inset-0 rounded-xl overflow-hidden [backface-visibility:hidden]">
+                                                                 <CardBack compact />
                                                             </div>
-                                                       )}
+
+                                                            {/* Back Face (Revealed Content) */}
+                                                            <div
+                                                                 className="absolute inset-0 rounded-xl overflow-hidden bg-white flex items-center justify-center [backface-visibility:hidden] [transform:rotateY(180deg)]"
+                                                                 style={cardFrontRim}
+                                                            >
+                                                                 {/* We show the result card face here during the flip */}
+                                                                 {selectedCardResult && (
+                                                                      <div className={`relative w-full h-full ${selectedCardResult.bg} p-2 flex flex-col items-center justify-center opacity-0 animate-in fade-in duration-300 delay-300 fill-mode-forwards`}>
+                                                                           <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/10 to-purple-900/10" />
+                                                                           <div className="absolute inset-[6px] rounded-lg border border-white/70 pointer-events-none" />
+                                                                           <selectedCardResult.Icon className={`relative w-10 h-10 ${selectedCardResult.color} mb-2 drop-shadow-sm`} />
+                                                                           <span className="relative text-[10px] font-bold text-gray-800 text-center px-1 leading-tight">{selectedCardResult.name}</span>
+                                                                      </div>
+                                                                 )}
+                                                            </div>
+                                                       </div>
                                                   </div>
                                              </div>
                                         );
@@ -376,25 +477,36 @@ const GangnamTarot = ({ onClose, user }) => {
                          <div className="w-full flex flex-col items-center animate-in zoom-in duration-700 pb-10">
 
                               {/* Glowing Effect Background */}
-                              <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-white/30 rounded-full blur-[60px] pointer-events-none" />
+                              <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 pointer-events-none">
+                                   <div
+                                        className="tarot-aura w-full h-full rounded-full blur-[60px]"
+                                        style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(216,180,254,0.55) 45%, rgba(216,180,254,0) 72%)' }}
+                                   />
+                              </div>
 
                               {/* Polaroid Style Card */}
-                              <div className="bg-white p-4 pb-8 rounded-2xl shadow-2xl rotate-1 mb-8 max-w-xs mx-auto transform transition-transform hover:rotate-0 relative z-10 w-64">
-                                   {/* Pin Icon */}
-                                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-red-400 shadow-sm border border-white z-20" />
+                              <div className="[perspective:1000px] mb-8 relative z-10">
+                                   <div
+                                        className="relative bg-white p-4 pb-8 rounded-2xl rotate-1 max-w-xs mx-auto w-64 transition-transform duration-500 ease-out hover:rotate-0 hover:-translate-y-1.5 hover:scale-[1.02] [transform-style:preserve-3d]"
+                                        style={cardFrontRim}
+                                   >
+                                        {/* Pin Icon */}
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-red-400 shadow-sm border border-white z-20" />
 
-                                   <div className={`aspect-[2/3] w-full ${selectedCardResult.bg} rounded-xl overflow-hidden mb-4 relative flex items-center justify-center border-2 border-dashed border-black/5`}>
-                                        <div className={`p-6 rounded-full bg-white/30 backdrop-blur-sm shadow-sm`}>
-                                             <selectedCardResult.Icon className={`w-20 h-20 ${selectedCardResult.color}`} strokeWidth={1.5} />
+                                        <div className={`aspect-[2/3] w-full ${selectedCardResult.bg} rounded-xl overflow-hidden mb-4 relative flex items-center justify-center border-2 border-dashed border-black/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-30px_50px_-40px_rgba(49,16,90,0.55)]`}>
+                                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.75)_0%,rgba(255,255,255,0)_58%)] pointer-events-none" />
+                                             <div className="relative p-6 rounded-full bg-white/40 backdrop-blur-sm shadow-[0_10px_24px_-12px_rgba(49,16,90,0.6)]">
+                                                  <selectedCardResult.Icon className={`w-20 h-20 ${selectedCardResult.color}`} strokeWidth={1.5} />
+                                             </div>
+                                             <div className="absolute bottom-3 left-0 right-0 text-center">
+                                                  <span className={`text-xs font-black uppercase tracking-widest opacity-40 ${selectedCardResult.color}`}>Gangnam Tarot</span>
+                                             </div>
                                         </div>
-                                        <div className="absolute bottom-3 left-0 right-0 text-center">
-                                             <span className={`text-xs font-black uppercase tracking-widest opacity-40 ${selectedCardResult.color}`}>Gangnam Tarot</span>
-                                        </div>
-                                   </div>
-                                   <div className="text-center">
-                                        <h3 className="font-serif text-2xl font-bold text-gray-800 mb-1">{selectedCardResult.name}</h3>
-                                        <div className="text-purple-600 font-bold text-xs tracking-wide mt-1">
-                                             {selectedCardResult.keyword}
+                                        <div className="text-center">
+                                             <h3 className="font-serif text-2xl font-bold text-gray-800 mb-1">{selectedCardResult.name}</h3>
+                                             <div className="text-purple-600 font-bold text-xs tracking-wide mt-1">
+                                                  {selectedCardResult.keyword}
+                                             </div>
                                         </div>
                                    </div>
                               </div>
@@ -409,7 +521,7 @@ const GangnamTarot = ({ onClose, user }) => {
 
                               {/* Action Buttons */}
                               <div className="flex gap-3 w-full justify-center">
-                                   <button onClick={() => { setStep('topic'); setSelectedTopic(null); }}
+                                   <button onClick={handleReset}
                                         className="flex-1 py-4 bg-white border-2 border-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 shadow-sm">
                                         <RefreshCw className="w-5 h-5" /> 다시하기
                                    </button>

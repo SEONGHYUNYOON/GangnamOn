@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play, Users } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const AI_NAMES = ['민수', '지영', '현우', '수진', '태호', '유나'];
 const MAX_NUM = 7;
@@ -27,9 +27,9 @@ const GangnamNunchiGame = ({ onClose, user }) => {
 
      const clearTimer = () => { if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } };
 
-     const endGame = useCallback((surv) => {
+     const endGame = useCallback((surv, isClear = false) => {
           clearTimer();
-          soundManager.playGameOver();
+          if (!isClear) playSound('gameover'); // 클리어 시엔 win 효과음이 이미 재생됨
           triggerShake();
           setCanTap(false);
           setPhase('over');
@@ -42,11 +42,11 @@ const GangnamNunchiGame = ({ onClose, user }) => {
                const next = surv + 1;
                survivedRef.current = next;
                setSurvived(next);
-               soundManager.playCoin();
+               playSound('win'); // 라운드 생존
                addLog(`✅ 라운드 ${next} 생존!`, 'success');
                if (next >= 10) {
                     addLog('🏆 10라운드 클리어! 대단해요!', 'success');
-                    endGame(next);
+                    endGame(next, true);
                     return;
                }
                timerRef.current = setTimeout(() => {
@@ -63,14 +63,14 @@ const GangnamNunchiGame = ({ onClose, user }) => {
           timerRef.current = setTimeout(() => {
                const next = num + 1;
                setCurrentNum(next);
-               soundManager.playTick(); // sound for number increment
+               playSound('tick'); // 숫자 카운트음
 
                if (isUserTurn) {
                     setCanTap(true);
                     addLog('👉 당신 차례! 지금 누르세요!', 'highlight');
                     timerRef.current = setTimeout(() => {
                          addLog('💥 너무 늦었어요!', 'error');
-                         soundManager.playExplosion();
+                         playSound('wrong'); // 타이밍 실패
                          endGame(surv);
                     }, 1500 - (surv * 50)); // Gets faster each round
                } else {
@@ -81,8 +81,7 @@ const GangnamNunchiGame = ({ onClose, user }) => {
      }, [endGame]);
 
      const start = () => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click'); // 시작 버튼음
           clearTimer();
           survivedRef.current = 0;
           setPhase('playing');
@@ -98,12 +97,12 @@ const GangnamNunchiGame = ({ onClose, user }) => {
           if (phase !== 'playing') return;
           if (!canTap) {
                addLog('💥 너무 빨랐어요!', 'error');
-               soundManager.playExplosion();
+               playSound('wrong'); // 성급한 탭
                endGame(survivedRef.current);
                return;
           }
           clearTimer();
-          soundManager.playHit();
+          playSound('coin'); // 성공 탭
           setCanTap(false);
           const next = currentNum + 1;
           setCurrentNum(next);
@@ -113,11 +112,21 @@ const GangnamNunchiGame = ({ onClose, user }) => {
 
      return (
           <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* 3D 연출용 키프레임 (컴포넌트 스코프) */}
+               <style>{`
+                    @keyframes ngPop { 0% { opacity: 0.3; transform: scale(1.45); } 100% { opacity: 1; transform: scale(1); } }
+                    .ng-pop { animation: ngPop 0.22s ease-out both; }
+                    @keyframes ngTension { 0%, 100% { box-shadow: inset 0 0 40px rgba(20, 184, 166, 0.12); } 50% { box-shadow: inset 0 0 90px rgba(20, 184, 166, 0.32); } }
+                    .ng-tension { animation: ngTension 1.6s ease-in-out infinite; }
+                    @keyframes ngShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+                    .ng-shake { animation: ngShake 0.3s ease-in-out; }
+               `}</style>
+
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-teal-500/30 shadow-[0_0_60px_rgba(20,184,166,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
-                    
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-teal-500/30 shadow-[0_0_60px_rgba(20,184,166,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'ng-shake' : ''}`}>
+
                     {/* Left Panel: Info */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
                          <div className="flex justify-between items-start lg:hidden mb-2">
@@ -167,8 +176,8 @@ const GangnamNunchiGame = ({ onClose, user }) => {
                     </div>
 
                     {/* Right Panel: Game Area */}
-                    <div className="w-full lg:w-2/3 flex flex-col relative min-h-[400px]">
-                         
+                    <div className="w-full lg:w-2/3 flex flex-col relative min-h-[400px] [perspective:800px]">
+
                          {phase === 'idle' && (
                               <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center rounded-3xl border-2 border-teal-500/30">
                                    <div className="w-20 h-20 bg-teal-500/20 rounded-full flex items-center justify-center mb-6 border border-teal-400/30 shadow-[0_0_30px_rgba(20,184,166,0.3)]">
@@ -191,11 +200,13 @@ const GangnamNunchiGame = ({ onClose, user }) => {
 
                          {(phase === 'playing' || phase === 'over') && (
                               <div className="flex flex-col h-full gap-4">
-                                   
-                                   {/* Current Number Display */}
-                                   <div className="bg-black/60 rounded-3xl border-2 border-teal-500/30 p-8 text-center flex-1 flex flex-col items-center justify-center relative overflow-hidden shadow-[0_0_40px_rgba(20,184,166,0.1)]">
+
+                                   {/* Current Number Display (살짝 기울인 3D 전광판) */}
+                                   <div className="bg-black/60 rounded-3xl border-2 border-teal-500/30 p-8 text-center flex-1 flex flex-col items-center justify-center relative overflow-hidden shadow-[0_0_40px_rgba(20,184,166,0.1),inset_0_2px_0_rgba(255,255,255,0.05)] [transform:rotateX(3deg)]">
+                                        {/* 긴장 단계: 은은한 글로우 펄스 */}
+                                        {phase === 'playing' && !canTap && <div className="absolute inset-0 ng-tension pointer-events-none" />}
                                         {canTap && <div className="absolute inset-0 bg-green-500/10 animate-pulse" />}
-                                        <div className="text-8xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-teal-300 to-cyan-600 drop-shadow-2xl z-10">
+                                        <div key={currentNum} className="ng-pop text-8xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-teal-300 to-cyan-600 z-10" style={{ filter: 'drop-shadow(0 5px 0 rgba(8,51,68,0.9)) drop-shadow(0 14px 24px rgba(34,211,238,0.35))' }}>
                                              {currentNum || '-'}
                                         </div>
                                         <div className={`text-xl font-bold mt-4 z-10 ${canTap ? 'text-green-400 animate-bounce' : 'text-gray-500'}`}>
@@ -203,14 +214,14 @@ const GangnamNunchiGame = ({ onClose, user }) => {
                                         </div>
                                    </div>
 
-                                   {/* Action Button */}
+                                   {/* Action Button (아케이드 돔 버튼) */}
                                    <button
                                         onClick={handleTap}
                                         disabled={phase === 'over'}
-                                        className={`w-full py-6 rounded-3xl font-black text-2xl transition-all shadow-xl
-                                             ${canTap ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white border-2 border-green-300 shadow-[0_0_30px_rgba(34,197,94,0.6)] animate-pulse hover:scale-[1.02]' 
-                                             : phase === 'over' ? 'bg-gray-800 text-gray-600 border border-gray-700 cursor-not-allowed' 
-                                             : 'bg-gray-800 hover:bg-gray-700 text-gray-400 border border-gray-600'}`}
+                                        className={`w-full py-6 rounded-3xl font-black text-2xl transition-all duration-150 select-none relative
+                                             ${canTap ? '[background:radial-gradient(circle_at_50%_25%,#86efac_0%,#22c55e_45%,#15803d_100%)] text-white border-2 border-green-300 shadow-[inset_0_3px_0_rgba(255,255,255,0.5),inset_0_-8px_16px_rgba(20,83,45,0.6),0_10px_0_#14532d,0_16px_45px_rgba(34,197,94,0.6)] animate-pulse hover:scale-[1.02] active:translate-y-2 active:shadow-[inset_0_3px_0_rgba(255,255,255,0.4),inset_0_-4px_10px_rgba(20,83,45,0.6),0_3px_0_#14532d,0_8px_20px_rgba(34,197,94,0.5)]'
+                                             : phase === 'over' ? 'bg-gray-800 text-gray-600 border border-gray-700 cursor-not-allowed shadow-xl'
+                                             : '[background:radial-gradient(circle_at_50%_25%,#4b5563_0%,#1f2937_55%,#111827_100%)] text-gray-400 border border-gray-600 shadow-[inset_0_2px_0_rgba(255,255,255,0.1),inset_0_-6px_12px_rgba(0,0,0,0.6),0_8px_0_#030712,0_14px_30px_rgba(0,0,0,0.5)] active:translate-y-2 active:shadow-[inset_0_2px_0_rgba(255,255,255,0.08),inset_0_-3px_8px_rgba(0,0,0,0.6),0_2px_0_#030712,0_6px_14px_rgba(0,0,0,0.5)]'}`}
                                    >
                                         {canTap ? `${currentNum + 1} 외치기!` : phase === 'over' ? 'GAME OVER' : '대기 중...'}
                                    </button>
@@ -234,7 +245,7 @@ const GangnamNunchiGame = ({ onClose, user }) => {
 
                          {phase === 'over' && (
                               <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-3xl border-2 border-red-500/30">
-                                   <div className="text-5xl font-black text-red-500 mb-4 drop-shadow-[0_0_20px_rgba(239,68,68,0.8)]">OUT!</div>
+                                   <div className="ng-pop text-5xl font-black text-red-500 mb-4 drop-shadow-[0_0_20px_rgba(239,68,68,0.8)]">OUT!</div>
                                    <div className="text-2xl text-white font-black mb-8 font-mono">Survived: <span className="text-teal-400">{survived} Rounds</span></div>
                                    <button onClick={start} className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 backdrop-blur-md">
                                         <RotateCw className="w-5 h-5" /> PLAY AGAIN

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, RotateCw, Play, Trophy, Heart } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const PADDLE_W = 120;
 const PADDLE_H = 16;
@@ -15,12 +15,13 @@ const CANVAS_H = 600;
 const PADDLE_Y = CANVAS_H - 60;
 const BALL_SPEED = 4.5;
 const COLORS = [
-     { bg: '#ef4444', shadow: 'rgba(239, 68, 68, 0.8)' },
-     { bg: '#f97316', shadow: 'rgba(249, 115, 22, 0.8)' },
-     { bg: '#eab308', shadow: 'rgba(234, 179, 8, 0.8)' },
-     { bg: '#22c55e', shadow: 'rgba(34, 197, 94, 0.8)' },
-     { bg: '#3b82f6', shadow: 'rgba(59, 130, 246, 0.8)' }
+     { bg: '#ef4444', light: '#fca5a5', dark: '#991b1b', shadow: 'rgba(239, 68, 68, 0.8)' },
+     { bg: '#f97316', light: '#fdba74', dark: '#9a3412', shadow: 'rgba(249, 115, 22, 0.8)' },
+     { bg: '#eab308', light: '#fde047', dark: '#854d0e', shadow: 'rgba(234, 179, 8, 0.8)' },
+     { bg: '#22c55e', light: '#86efac', dark: '#166534', shadow: 'rgba(34, 197, 94, 0.8)' },
+     { bg: '#3b82f6', light: '#93c5fd', dark: '#1e40af', shadow: 'rgba(59, 130, 246, 0.8)' }
 ];
+const MAX_PARTICLES = 120;
 
 const GangnamBrickBreaker = ({ onClose, user }) => {
      const [paddleX, setPaddleX] = useState((CANVAS_W - PADDLE_W) / 2);
@@ -35,11 +36,32 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
      const canvasRef = useRef(null);
      const ballRef = useRef(ball);
      const savedRef = useRef(false);
+     const particlesRef = useRef([]);
+     const lastBounceRef = useRef(0);
+     const streakRef = useRef({ count: 0, last: 0 });
      ballRef.current = ball;
 
      const triggerShake = () => {
           setShake(true);
           setTimeout(() => setShake(false), 200);
+     };
+
+     // 'bounce'는 아주 자주 울릴 수 있어 60ms 스로틀
+     const playBounce = () => {
+          const now = Date.now();
+          if (now - lastBounceRef.current < 60) return;
+          lastBounceRef.current = now;
+          playSound('bounce');
+     };
+
+     const spawnParticles = (x, y, color) => {
+          const arr = particlesRef.current;
+          for (let i = 0; i < 8; i++) {
+               if (arr.length >= MAX_PARTICLES) break;
+               const angle = (Math.PI * 2 * i) / 8 + Math.random() * 0.6;
+               const speed = 1.5 + Math.random() * 2.5;
+               arr.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 1, life: 1, color });
+          }
      };
 
      const initBricks = useCallback(() => {
@@ -53,9 +75,10 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
      }, []);
 
      const startGame = useCallback(() => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click');
           savedRef.current = false;
+          particlesRef.current = [];
+          streakRef.current = { count: 0, last: 0 };
           setPaddleX((CANVAS_W - PADDLE_W) / 2);
           setBall({ x: CANVAS_W / 2, y: PADDLE_Y - BALL_R - 5, dx: BALL_SPEED * 0.7, dy: -BALL_SPEED });
           setBricks(initBricks());
@@ -72,8 +95,8 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
           const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
           if (score > 0) addScore('brick', name, score, true);
           setRankList(getRankTop10('brick', true));
-          soundManager.playGameOver();
-     }, [gameStarted, gameOver, score, user]);
+          playSound(lives > 0 ? 'win' : 'gameover');
+     }, [gameStarted, gameOver, score, lives, user]);
 
      useEffect(() => {
           if (!gameStarted || gameOver) return;
@@ -84,21 +107,21 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
                     y += dy;
                     if (x <= BALL_R || x >= CANVAS_W - BALL_R) {
                          dx = -dx;
-                         soundManager.playMove(); // Wall hit sound
+                         playBounce(); // Wall hit sound
                     }
                     if (y <= BALL_R) {
                          dy = -dy;
-                         soundManager.playMove();
+                         playBounce();
                     }
                     if (y >= PADDLE_Y - BALL_R && y <= PADDLE_Y + PADDLE_H &&
                          x >= paddleX - BALL_R && x <= paddleX + PADDLE_W + BALL_R) {
                          dy = -Math.abs(dy);
                          const hitPos = (x - paddleX) / PADDLE_W;
                          dx = (hitPos - 0.5) * 8; // Adjust angle based on where it hit the paddle
-                         soundManager.playJump(); // Paddle hit sound
+                         playBounce(); // Paddle hit sound
                     }
                     if (y > CANVAS_H + BALL_R) {
-                         soundManager.playExplosion();
+                         playSound('wrong');
                          setLives(l => {
                               triggerShake();
                               if (l <= 1) {
@@ -113,21 +136,24 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
                });
 
                setBricks(prev => {
-                    let hit = false;
                     const next = prev.map(b => {
                          if (!b.alive) return b;
                          const bx = b.x + b.w / 2;
                          const by = b.y + b.h / 2;
                          const ball = ballRef.current;
                          if (Math.abs(ball.x - bx) < b.w / 2 + BALL_R && Math.abs(ball.y - by) < b.h / 2 + BALL_R) {
-                              hit = true;
+                              const now = Date.now();
+                              const streak = streakRef.current;
+                              streak.count = now - streak.last < 900 ? streak.count + 1 : 1;
+                              streak.last = now;
+                              playSound(streak.count >= 3 ? 'combo' : 'hit');
+                              spawnParticles(bx, by, b.color.bg);
                               setScore(s => s + 10);
                               setBall(ball => ({ ...ball, dy: ball.y < by ? Math.abs(ball.dy) : -Math.abs(ball.dy) }));
                               return { ...b, alive: false };
                          }
                          return b;
                     });
-                    if (hit) soundManager.playHit();
                     const alive = next.filter(b => b.alive).length;
                     if (alive === 0) setGameOver(true);
                     return next;
@@ -161,38 +187,100 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
           if (!ctx) return;
           ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
-          // Draw Bricks
+          // Depth background: vertical gradient + top light pool
+          const bg = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+          bg.addColorStop(0, '#0d1530');
+          bg.addColorStop(0.55, '#070b18');
+          bg.addColorStop(1, '#02040a');
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+          const topLight = ctx.createRadialGradient(CANVAS_W / 2, 100, 40, CANVAS_W / 2, 100, 500);
+          topLight.addColorStop(0, 'rgba(59, 130, 246, 0.16)');
+          topLight.addColorStop(1, 'rgba(59, 130, 246, 0)');
+          ctx.fillStyle = topLight;
+          ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+          // Draw Bricks (top-lit gradient + bevel for 3D)
           bricks.filter(b => b.alive).forEach(b => {
-               ctx.shadowBlur = 15;
+               const grad = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h);
+               grad.addColorStop(0, b.color.light);
+               grad.addColorStop(0.5, b.color.bg);
+               grad.addColorStop(1, b.color.dark);
+               ctx.shadowBlur = 14;
                ctx.shadowColor = b.color.shadow;
-               ctx.fillStyle = b.color.bg;
+               ctx.fillStyle = grad;
                ctx.beginPath();
                ctx.roundRect(b.x, b.y, b.w, b.h, 4);
                ctx.fill();
-               // Inner highlight for premium look
-               ctx.fillStyle = 'rgba(255,255,255,0.3)';
+               ctx.shadowBlur = 0;
+               // Glass highlight on the upper half
+               ctx.fillStyle = 'rgba(255,255,255,0.28)';
                ctx.beginPath();
-               ctx.roundRect(b.x, b.y, b.w, b.h / 2, 4);
+               ctx.roundRect(b.x + 2, b.y + 2, b.w - 4, b.h / 2 - 2, 3);
+               ctx.fill();
+               // Bottom bevel shade
+               ctx.fillStyle = 'rgba(0,0,0,0.3)';
+               ctx.beginPath();
+               ctx.roundRect(b.x + 2, b.y + b.h - 5, b.w - 4, 3, 2);
                ctx.fill();
           });
 
-          // Draw Paddle
+          // Destruction particles (lightweight fading circles)
+          const parts = particlesRef.current;
+          for (let i = parts.length - 1; i >= 0; i--) {
+               const p = parts[i];
+               p.x += p.vx;
+               p.y += p.vy;
+               p.vy += 0.12;
+               p.life -= 0.035;
+               if (p.life <= 0) {
+                    parts.splice(i, 1);
+                    continue;
+               }
+               ctx.globalAlpha = Math.max(0, p.life);
+               ctx.fillStyle = p.color;
+               ctx.beginPath();
+               ctx.arc(p.x, p.y, 1.5 + p.life * 3, 0, Math.PI * 2);
+               ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+
+          // Draw Paddle (rounded, lit from above)
+          const paddleGrad = ctx.createLinearGradient(0, PADDLE_Y, 0, PADDLE_Y + PADDLE_H);
+          paddleGrad.addColorStop(0, '#d8b4fe');
+          paddleGrad.addColorStop(0.45, '#a855f7');
+          paddleGrad.addColorStop(1, '#6b21a8');
           ctx.shadowBlur = 20;
           ctx.shadowColor = 'rgba(168, 85, 247, 0.8)';
-          ctx.fillStyle = '#a855f7'; // Purple-500
+          ctx.fillStyle = paddleGrad;
           ctx.beginPath();
           ctx.roundRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, 8);
           ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = 'rgba(255,255,255,0.35)';
+          ctx.beginPath();
+          ctx.roundRect(paddleX + 6, PADDLE_Y + 2, PADDLE_W - 12, 4, 2);
+          ctx.fill();
 
-          // Draw Ball
-          ctx.shadowBlur = 15;
-          ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-          ctx.fillStyle = '#ffffff';
+          // Draw Ball (offset radial gradient = glossy sphere)
+          const ballGrad = ctx.createRadialGradient(ball.x - BALL_R * 0.4, ball.y - BALL_R * 0.4, BALL_R * 0.15, ball.x, ball.y, BALL_R);
+          ballGrad.addColorStop(0, '#ffffff');
+          ballGrad.addColorStop(0.6, '#dbeafe');
+          ballGrad.addColorStop(1, '#60a5fa');
+          ctx.shadowBlur = 18;
+          ctx.shadowColor = 'rgba(147, 197, 253, 0.9)';
+          ctx.fillStyle = ballGrad;
           ctx.beginPath();
           ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2);
           ctx.fill();
-
           ctx.shadowBlur = 0; // Reset
+
+          // Vignette for depth
+          const vig = ctx.createRadialGradient(CANVAS_W / 2, CANVAS_H / 2, CANVAS_H * 0.35, CANVAS_W / 2, CANVAS_H / 2, CANVAS_H * 0.85);
+          vig.addColorStop(0, 'rgba(0,0,0,0)');
+          vig.addColorStop(1, 'rgba(0,0,0,0.45)');
+          ctx.fillStyle = vig;
+          ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
      }, [bricks, paddleX, ball]);
 
      return (
@@ -258,9 +346,9 @@ const GangnamBrickBreaker = ({ onClose, user }) => {
                          </div>
                     </div>
 
-                    {/* Right Panel: Game Board */}
-                    <div className="w-full lg:w-2/3 flex justify-center relative">
-                         <div className="relative rounded-3xl overflow-hidden border-2 border-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.3)] bg-black/80" style={{ width: CANVAS_W, height: CANVAS_H }}>
+                    {/* Right Panel: Game Board (3D tilted table) */}
+                    <div className="w-full lg:w-2/3 flex justify-center relative [perspective:800px]">
+                         <div className="relative rounded-3xl overflow-hidden border-2 border-blue-500/50 shadow-[0_35px_70px_rgba(0,0,0,0.65),0_0_50px_rgba(59,130,246,0.3)] bg-black/80 [transform:rotateX(3deg)] origin-bottom" style={{ width: CANVAS_W, height: CANVAS_H }}>
                               
                               <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} className="block w-full h-full touch-none" />
                               

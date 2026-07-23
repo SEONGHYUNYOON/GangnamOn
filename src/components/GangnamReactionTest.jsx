@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { ArrowLeft, RotateCw, Play, Trophy, Zap } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const GangnamReactionTest = ({ onClose, user }) => {
      const [phase, setPhase] = useState('idle'); // 'idle' | 'wait' | 'ready' | 'result' | 'early'
@@ -11,15 +11,14 @@ const GangnamReactionTest = ({ onClose, user }) => {
      const startTimeRef = useRef(0);
 
      const startGame = useCallback(() => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click'); // 시작 버튼음
           setPhase('wait');
           setResultMs(null);
           setRankList(getRankTop10('reaction', false));
           const delay = 2000 + Math.random() * 4000; // 2~6 seconds random delay
           waitTimeoutRef.current = setTimeout(() => {
                setPhase('ready');
-               soundManager.playJump(); // Audio cue when it's ready
+               playSound('pop'); // 초록불 "go" 신호음
                startTimeRef.current = Date.now();
           }, delay);
      }, []);
@@ -27,7 +26,7 @@ const GangnamReactionTest = ({ onClose, user }) => {
      const handleClick = useCallback(() => {
           if (phase === 'wait') {
                clearTimeout(waitTimeoutRef.current);
-               soundManager.playExplosion(); // Early click sound
+               playSound('wrong'); // 성급한 클릭
                setPhase('early');
                return;
           }
@@ -35,7 +34,7 @@ const GangnamReactionTest = ({ onClose, user }) => {
                const ms = Date.now() - startTimeRef.current;
                setResultMs(ms);
                setPhase('result');
-               soundManager.playHit(); // Success click sound
+               playSound('score'); // 유효한 클릭 성공
                const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
                addScore('reaction', name, ms, false);
                setRankList(getRankTop10('reaction', false));
@@ -47,11 +46,19 @@ const GangnamReactionTest = ({ onClose, user }) => {
 
      return (
           <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* 3D 연출용 키프레임 (컴포넌트 스코프) */}
+               <style>{`
+                    @keyframes rtPop { 0% { opacity: 0; transform: scale(0.85) translateY(14px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+                    .rt-pop { animation: rtPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+                    @keyframes rtShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+                    .rt-shake { animation: rtShake 0.35s ease-in-out; }
+               `}</style>
+
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-900/20 rounded-full blur-[120px] pointer-events-none" />
 
                <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-10 border border-indigo-500/30 shadow-[0_0_80px_rgba(99,102,241,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-10 items-center lg:items-stretch animate-in zoom-in-95 duration-500`}>
-                    
+
                     {/* Left Panel: Leaderboard & Info */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
                          <div className="flex justify-between items-start lg:hidden mb-2">
@@ -92,76 +99,84 @@ const GangnamReactionTest = ({ onClose, user }) => {
                     </div>
 
                     {/* Right Panel: Game Area */}
-                    <div className="w-full lg:w-2/3 flex justify-center relative min-h-[400px]">
-                         <div
-                              onClick={handleClick}
-                              className={`w-full h-full rounded-3xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-150 select-none shadow-2xl relative overflow-hidden
-                                   ${phase === 'idle' ? 'bg-gray-800/80 border-indigo-500/30 hover:bg-gray-800' : ''}
-                                   ${phase === 'wait' ? 'bg-amber-500 border-amber-400 shadow-[0_0_80px_rgba(245,158,11,0.6)] animate-pulse' : ''}
-                                   ${phase === 'ready' ? 'bg-emerald-500 border-emerald-400 shadow-[0_0_100px_rgba(16,185,129,0.8)] scale-[1.02]' : ''}
-                                   ${phase === 'result' ? 'bg-indigo-900 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.4)]' : ''}
-                                   ${phase === 'early' ? 'bg-red-900 border-red-500 shadow-[0_0_50px_rgba(239,68,68,0.4)] animate-shake' : ''}`}
-                         >
-                              {/* Background Pattern for Idle */}
-                              {phase === 'idle' && (
-                                   <div className="absolute inset-0 opacity-10 pointer-events-none"
-                                        style={{ backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`, backgroundSize: `24px 24px` }}>
-                                   </div>
-                              )}
+                    <div className="w-full lg:w-2/3 flex justify-center relative min-h-[400px] [perspective:900px]">
+                         {/* 살짝 기울인 3D 무대 */}
+                         <div className="w-full min-h-[400px] [transform:rotateX(3deg)] [transform-style:preserve-3d]">
+                              <div
+                                   onClick={handleClick}
+                                   className={`w-full h-full rounded-3xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-150 select-none relative overflow-hidden active:translate-y-2 active:shadow-[inset_0_10px_24px_rgba(0,0,0,0.5)]
+                                        ${phase === 'idle' ? 'bg-gray-800/80 border-indigo-500/30 hover:bg-gray-800 shadow-[inset_0_2px_0_rgba(255,255,255,0.08),inset_0_-12px_24px_rgba(0,0,0,0.5),0_18px_45px_rgba(0,0,0,0.5)]' : ''}
+                                        ${phase === 'wait' ? 'bg-amber-500 border-amber-400 shadow-[inset_0_3px_0_rgba(255,255,255,0.4),inset_0_-12px_24px_rgba(120,53,15,0.5),0_0_80px_rgba(245,158,11,0.6)] animate-pulse' : ''}
+                                        ${phase === 'ready' ? 'bg-emerald-500 border-emerald-400 shadow-[inset_0_3px_0_rgba(255,255,255,0.45),inset_0_-12px_24px_rgba(6,78,59,0.55),0_0_100px_rgba(16,185,129,0.8)] scale-[1.02]' : ''}
+                                        ${phase === 'result' ? 'bg-indigo-900 border-indigo-500 shadow-[inset_0_2px_0_rgba(165,180,252,0.2),inset_0_-12px_24px_rgba(0,0,0,0.45),0_0_50px_rgba(99,102,241,0.4)]' : ''}
+                                        ${phase === 'early' ? 'bg-red-900 border-red-500 shadow-[inset_0_2px_0_rgba(252,165,165,0.2),inset_0_-12px_24px_rgba(0,0,0,0.45),0_0_50px_rgba(239,68,68,0.4)] rt-shake' : ''}`}
+                              >
+                                   {/* 3D 광택 하이라이트 (버튼 상단) */}
+                                   <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 via-white/5 to-transparent pointer-events-none" />
+                                   {/* 하단 깊이 셰이드 */}
+                                   <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
 
-                              {phase === 'idle' && (
-                                   <div className="z-10 flex flex-col items-center text-center p-8">
-                                        <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mb-6 border border-indigo-400/30 shadow-[0_0_30px_rgba(99,102,241,0.3)]">
-                                             <Zap className="w-10 h-10 text-cyan-400" />
+                                   {/* Background Pattern for Idle */}
+                                   {phase === 'idle' && (
+                                        <div className="absolute inset-0 opacity-10 pointer-events-none"
+                                             style={{ backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`, backgroundSize: `24px 24px` }}>
                                         </div>
-                                        <div className="text-3xl font-black text-white mb-6 tracking-widest drop-shadow-md">HOW TO PLAY</div>
-                                        <div className="space-y-4 mb-10 text-lg font-bold text-gray-300">
-                                             <p className="flex items-center justify-center gap-3"><span className="w-4 h-4 bg-amber-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.8)]"/> 화면이 <span className="text-amber-400">노란색</span>일 땐 대기!</p>
-                                             <p className="flex items-center justify-center gap-3"><span className="w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)]"/> 화면이 <span className="text-emerald-400">초록색</span>으로 바뀌면 즉시 클릭!</p>
-                                        </div>
-                                        <button onClick={(e) => { e.stopPropagation(); startGame(); }} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black py-4 px-12 rounded-full shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-transform hover:scale-105 flex items-center gap-3 text-xl">
-                                             <Play className="w-7 h-7 fill-white" /> START GAME
-                                        </button>
-                                   </div>
-                              )}
+                                   )}
 
-                              {phase === 'wait' && (
-                                   <div className="text-5xl font-black text-amber-950 flex items-center gap-4 animate-in zoom-in">
-                                        WAIT FOR GREEN...
-                                   </div>
-                              )}
+                                   {phase === 'idle' && (
+                                        <div className="z-10 flex flex-col items-center text-center p-8 rt-pop">
+                                             <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mb-6 border border-indigo-400/30 shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                                                  <Zap className="w-10 h-10 text-cyan-400" />
+                                             </div>
+                                             <div className="text-3xl font-black text-white mb-6 tracking-widest drop-shadow-md">HOW TO PLAY</div>
+                                             <div className="space-y-4 mb-10 text-lg font-bold text-gray-300">
+                                                  <p className="flex items-center justify-center gap-3"><span className="w-4 h-4 bg-amber-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.8)]"/> 화면이 <span className="text-amber-400">노란색</span>일 땐 대기!</p>
+                                                  <p className="flex items-center justify-center gap-3"><span className="w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)]"/> 화면이 <span className="text-emerald-400">초록색</span>으로 바뀌면 즉시 클릭!</p>
+                                             </div>
+                                             <button onClick={(e) => { e.stopPropagation(); startGame(); }} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black py-4 px-12 rounded-full shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-transform hover:scale-105 flex items-center gap-3 text-xl">
+                                                  <Play className="w-7 h-7 fill-white" /> START GAME
+                                             </button>
+                                        </div>
+                                   )}
 
-                              {phase === 'ready' && (
-                                   <div className="text-7xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)] flex flex-col items-center gap-4">
-                                        <Zap className="w-20 h-20 fill-white" />
-                                        CLICK NOW!
-                                   </div>
-                              )}
+                                   {phase === 'wait' && (
+                                        <div className="text-5xl font-black text-amber-950 flex items-center gap-4 rt-pop drop-shadow-[0_2px_0_rgba(255,255,255,0.35)]">
+                                             WAIT FOR GREEN...
+                                        </div>
+                                   )}
 
-                              {phase === 'result' && (
-                                   <div className="z-10 flex flex-col items-center animate-in slide-in-from-bottom-8">
-                                        <div className="text-sm font-black tracking-[0.3em] text-cyan-400 mb-2">REACTION TIME</div>
-                                        <div className="text-7xl md:text-8xl font-black text-white font-mono drop-shadow-[0_0_30px_rgba(255,255,255,0.5)] mb-2">
-                                             {resultMs}<span className="text-4xl text-indigo-300">ms</span>
+                                   {phase === 'ready' && (
+                                        <div className="text-7xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)] flex flex-col items-center gap-4 rt-pop">
+                                             <Zap className="w-20 h-20 fill-white" />
+                                             CLICK NOW!
                                         </div>
-                                        <div className="text-indigo-200 text-lg mb-10 font-bold">
-                                             {resultMs < 200 ? '⚡ LIGHTNING FAST! ⚡' : resultMs < 300 ? '🔥 GREAT SPEED! 🔥' : '👍 NOT BAD! 👍'}
-                                        </div>
-                                        <div className="text-gray-400 font-bold tracking-widest flex items-center gap-2">
-                                             <RotateCw className="w-5 h-5" /> CLICK ANYWHERE TO RESTART
-                                        </div>
-                                   </div>
-                              )}
+                                   )}
 
-                              {phase === 'early' && (
-                                   <div className="z-10 flex flex-col items-center animate-in slide-in-from-bottom-8">
-                                        <div className="text-6xl font-black text-red-300 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)] mb-4">TOO EARLY!</div>
-                                        <div className="text-red-200 text-lg mb-10 font-bold">You clicked before it turned green.</div>
-                                        <div className="text-gray-400 font-bold tracking-widest flex items-center gap-2">
-                                             <RotateCw className="w-5 h-5" /> CLICK ANYWHERE TO RESTART
+                                   {phase === 'result' && (
+                                        <div className="z-10 flex flex-col items-center rt-pop">
+                                             <div className="text-sm font-black tracking-[0.3em] text-cyan-400 mb-2">REACTION TIME</div>
+                                             <div className="text-7xl md:text-8xl font-black text-white font-mono drop-shadow-[0_0_30px_rgba(255,255,255,0.5)] mb-2">
+                                                  {resultMs}<span className="text-4xl text-indigo-300">ms</span>
+                                             </div>
+                                             <div className="text-indigo-200 text-lg mb-10 font-bold">
+                                                  {resultMs < 200 ? '⚡ LIGHTNING FAST! ⚡' : resultMs < 300 ? '🔥 GREAT SPEED! 🔥' : '👍 NOT BAD! 👍'}
+                                             </div>
+                                             <div className="text-gray-400 font-bold tracking-widest flex items-center gap-2">
+                                                  <RotateCw className="w-5 h-5" /> CLICK ANYWHERE TO RESTART
+                                             </div>
                                         </div>
-                                   </div>
-                              )}
+                                   )}
+
+                                   {phase === 'early' && (
+                                        <div className="z-10 flex flex-col items-center rt-pop">
+                                             <div className="text-6xl font-black text-red-300 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)] mb-4">TOO EARLY!</div>
+                                             <div className="text-red-200 text-lg mb-10 font-bold">You clicked before it turned green.</div>
+                                             <div className="text-gray-400 font-bold tracking-widest flex items-center gap-2">
+                                                  <RotateCw className="w-5 h-5" /> CLICK ANYWHERE TO RESTART
+                                             </div>
+                                        </div>
+                                   )}
+                              </div>
                          </div>
                     </div>
                </div>

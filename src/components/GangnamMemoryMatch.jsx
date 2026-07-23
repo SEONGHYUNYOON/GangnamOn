@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ArrowLeft, RotateCw, Trophy, Play, CheckCircle } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const EMOJIS = ['🏙️', '🚕', '🥟', '🏢', '🌃', '🚇', '🎡', '🌉'];
 
@@ -28,6 +28,7 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
      };
 
      const reset = useCallback(() => {
+          playSound('click');
           const shuffled = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
           setCards(shuffled.map((e, i) => ({ id: i, emoji: e, flipped: false, matched: false })));
           setFlipped([]);
@@ -39,8 +40,7 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
      }, []);
 
      const start = () => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click');
           const shuffled = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
           setCards(shuffled.map((e, i) => ({ id: i, emoji: e, flipped: false, matched: false })));
           setFlipped([]);
@@ -57,7 +57,7 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
           const card = cards.find(c => c.id === id);
           if (!card || card.flipped || card.matched || flipped.length >= 2) return;
 
-          soundManager.playTick();
+          playSound('click');
           const next = cards.map(c => c.id === id ? { ...c, flipped: true } : c);
           const nextFlipped = [...flipped, id];
           setCards(next);
@@ -68,11 +68,11 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
                const [a, b] = nextFlipped.map(i => next.find(c => c.id === i));
                if (a.emoji === b.emoji) {
                     setTimeout(() => {
-                         soundManager.playHit();
+                         playSound('pop');
                          setCards(prev => {
                               const updated = prev.map(c => (c.id === a.id || c.id === b.id) ? { ...c, matched: true, flipped: true } : c);
                               if (updated.every(c => c.matched)) {
-                                   soundManager.playGameOver();
+                                   playSound('win');
                                    const sec = Math.round((Date.now() - startTime) / 1000);
                                    const sc = calcScore(attempts + 1, sec);
                                    setFinalScore(sc);
@@ -86,7 +86,7 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
                     }, 400);
                } else {
                     setTimeout(() => {
-                         soundManager.playExplosion();
+                         playSound('wrong');
                          triggerShake();
                          setCards(prev => prev.map(c => (c.id === a.id || c.id === b.id) ? { ...c, flipped: false } : c));
                          setFlipped([]);
@@ -99,11 +99,26 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
 
      return (
           <div className="fixed inset-0 z-[70] bg-[#0A0A10] flex items-center justify-center p-4">
+               {/* 카드 매치/셰이크 이펙트 키프레임 (이 컴포넌트 전용) */}
+               <style>{`
+                    @keyframes mmMatchGlow {
+                         0% { box-shadow: 0 0 0 rgba(217, 70, 239, 0); }
+                         50% { box-shadow: 0 0 30px rgba(217, 70, 239, 0.8); }
+                         100% { box-shadow: 0 0 12px rgba(217, 70, 239, 0.3); }
+                    }
+                    @keyframes mmShake {
+                         0%, 100% { transform: translateX(0); }
+                         25% { transform: translateX(-5px); }
+                         75% { transform: translateX(5px); }
+                    }
+                    .mm-shake { animation: mmShake 0.2s ease-in-out; }
+               `}</style>
+
                {/* Ambient Glow */}
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-fuchsia-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-fuchsia-500/30 shadow-[0_0_60px_rgba(217,70,239,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'animate-shake' : ''}`}>
-                    
+               <div className={`relative bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-fuchsia-500/30 shadow-[0_0_60px_rgba(217,70,239,0.2)] max-w-5xl w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start animate-in zoom-in-95 duration-500 ${shake ? 'mm-shake' : ''}`}>
+
                     {/* Left Panel: Info */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
                          <div className="flex justify-between items-start lg:hidden mb-2">
@@ -160,21 +175,38 @@ const GangnamMemoryMatch = ({ onClose, user }) => {
 
                     {/* Right Panel: Game Board */}
                     <div className="w-full lg:w-2/3 flex justify-center relative min-h-[400px]">
-                         
-                         {/* Grid Board */}
-                         <div className="grid grid-cols-4 gap-3 md:gap-4 w-full max-w-md bg-black/60 p-4 md:p-6 rounded-3xl border-2 border-fuchsia-500/30 shadow-[0_0_40px_rgba(217,70,239,0.15)]">
+
+                         {/* Grid Board — 카드마다 원근감을 주는 3D 필드 */}
+                         <div className="grid grid-cols-4 gap-3 md:gap-4 w-full max-w-md bg-black/60 p-4 md:p-6 rounded-3xl border-2 border-fuchsia-500/30 shadow-[0_0_40px_rgba(217,70,239,0.15),inset_0_2px_12px_rgba(0,0,0,0.6)]">
                               {cards.map(c => (
                                    <button
                                         key={c.id}
                                         onClick={() => handleFlip(c.id)}
                                         disabled={!started || c.matched || done}
-                                        className={`relative aspect-square rounded-2xl md:rounded-3xl text-4xl md:text-5xl font-bold transition-all duration-300 border-2 shadow-lg perspective-1000
-                                             ${c.matched ? 'bg-fuchsia-900/50 border-fuchsia-500/50 scale-95 opacity-50 shadow-inner' : ''}
-                                             ${!c.matched && c.flipped ? 'bg-gradient-to-br from-fuchsia-600 to-pink-600 border-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.5)] scale-105 rotate-y-180' : ''}
-                                             ${!c.matched && !c.flipped ? 'bg-gray-800 border-gray-600 hover:border-fuchsia-400 hover:bg-gray-700 hover:-translate-y-1' : ''}`}
+                                        className="relative aspect-square [perspective:1000px] group disabled:cursor-default"
                                    >
-                                        <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-200">
-                                             {(c.flipped || c.matched) ? c.emoji : '?'}
+                                        {/* 회전축 래퍼 — 진짜 3D 카드 플립 */}
+                                        <div className={`relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] ${(c.flipped || c.matched) ? '[transform:rotateY(180deg)]' : ''} ${c.matched ? 'scale-95' : ''}`}>
+
+                                             {/* 뒷면 (물음표) */}
+                                             <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl md:rounded-3xl border-2 border-gray-600 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 flex items-center justify-center text-3xl md:text-4xl font-black text-fuchsia-300/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),inset_0_-4px_8px_rgba(0,0,0,0.5),0_6px_14px_rgba(0,0,0,0.5)] transition-colors group-hover:border-fuchsia-400/70">
+                                                  {/* 뒷면 광택 */}
+                                                  <div className="absolute inset-0 rounded-2xl md:rounded-3xl bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent_55%)] pointer-events-none" />
+                                                  ?
+                                             </div>
+
+                                             {/* 앞면 (이모지) */}
+                                             <div
+                                                  className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl md:rounded-3xl border-2 flex items-center justify-center text-4xl md:text-5xl
+                                                       ${c.matched
+                                                            ? 'bg-fuchsia-900/50 border-fuchsia-500/50 opacity-60 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]'
+                                                            : 'bg-gradient-to-br from-fuchsia-600 to-pink-600 border-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.5),inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-4px_10px_rgba(0,0,0,0.3)]'}`}
+                                                  style={c.matched ? { animation: 'mmMatchGlow 0.5s ease-out both' } : undefined}
+                                             >
+                                                  {/* 앞면 광택 */}
+                                                  <div className="absolute inset-0 rounded-2xl md:rounded-3xl bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.22),transparent_60%)] pointer-events-none" />
+                                                  <span className="drop-shadow-[0_4px_6px_rgba(0,0,0,0.4)]">{c.emoji}</span>
+                                             </div>
                                         </div>
                                    </button>
                               ))}

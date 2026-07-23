@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, RotateCw, Play, Trophy, Zap, Heart } from 'lucide-react';
 import { getRankTop10, addScore } from '../lib/gameRank';
-import { soundManager } from '../lib/soundManager';
+import { playSound } from '../lib/gameSounds';
 
 const COLS = 16;
 const ROWS = 10;
@@ -11,9 +11,9 @@ const GRID_W = COLS * CELL_SIZE;
 const GRID_H = ROWS * CELL_SIZE;
 
 const TOWERS = {
-     basic: { id: 'basic', name: '기본포탑', cost: 50, damage: 8, range: 4, rate: 800, icon: '🔫', color: 'bg-cyan-500', shadow: 'rgba(6,182,212,0.8)' },
-     fast: { id: 'fast', name: '연사포탑', cost: 75, damage: 4, range: 5, rate: 300, icon: '⚡', color: 'bg-yellow-400', shadow: 'rgba(250,204,21,0.8)' },
-     heavy: { id: 'heavy', name: '저격포탑', cost: 150, damage: 35, range: 4, rate: 1400, icon: '💥', color: 'bg-red-500', shadow: 'rgba(239,68,68,0.8)' },
+     basic: { id: 'basic', name: '기본포탑', cost: 50, damage: 8, range: 4, rate: 800, icon: '🔫', color: 'bg-cyan-500', hex: '#06b6d4', shadow: 'rgba(6,182,212,0.8)' },
+     fast: { id: 'fast', name: '연사포탑', cost: 75, damage: 4, range: 5, rate: 300, icon: '⚡', color: 'bg-yellow-400', hex: '#facc15', shadow: 'rgba(250,204,21,0.8)' },
+     heavy: { id: 'heavy', name: '저격포탑', cost: 150, damage: 35, range: 4, rate: 1400, icon: '💥', color: 'bg-red-500', hex: '#ef4444', shadow: 'rgba(239,68,68,0.8)' },
 };
 
 const isPath = (x, y) => y === PATH_ROW;
@@ -30,9 +30,12 @@ const TowerDefense = ({ onClose, user }) => {
      const [pendingBuild, setPendingBuild] = useState(null);
      const [rankList, setRankList] = useState(() => getRankTop10('towerdefense', true));
      const [shake, setShake] = useState(false);
+     const [shots, setShots] = useState([]);
      const moveRef = useRef(null);
      const spawnRef = useRef(null);
      const lastAttackRef = useRef({});
+     const spawnDoneRef = useRef(false);
+     const prevEnemyCountRef = useRef(0);
 
      const triggerShake = () => {
           setShake(true);
@@ -40,8 +43,7 @@ const TowerDefense = ({ onClose, user }) => {
      };
 
      const startGame = useCallback(() => {
-          soundManager.init();
-          soundManager.playCoin();
+          playSound('click');
           setGameState('playing');
           setGold(100);
           setLives(10);
@@ -49,13 +51,14 @@ const TowerDefense = ({ onClose, user }) => {
           setScore(0);
           setTowers([]);
           setEnemies([]);
+          setShots([]);
           setSelectedCell(null);
           setPendingBuild(null);
           setRankList(getRankTop10('towerdefense', true));
      }, []);
 
      const startWave = useCallback(() => {
-          soundManager.playJump();
+          playSound('click');
           setWave((w) => w + 1);
      }, []);
 
@@ -65,8 +68,10 @@ const TowerDefense = ({ onClose, user }) => {
           const count = 5 + Math.floor(w * 3.5);
           const hpBase = 20 + w * 12;
           let spawned = 0;
+          spawnDoneRef.current = false;
           const id = setInterval(() => {
                if (spawned >= count) {
+                    spawnDoneRef.current = true;
                     clearInterval(id);
                     return;
                }
@@ -87,7 +92,7 @@ const TowerDefense = ({ onClose, user }) => {
                setEnemies((prev) => prev.map((e) => {
                     const np = Math.min(1, e.progress + 0.025);
                     if (np >= 1) {
-                         soundManager.playExplosion();
+                         playSound('wrong');
                          triggerShake();
                          setLives((l) => l - 1);
                          return null;
@@ -107,6 +112,8 @@ const TowerDefense = ({ onClose, user }) => {
                          if (prev.length === 0) return prev;
                          const next = prev.map((e) => ({ ...e }));
                          let didHit = false;
+                         let didKill = false;
+                         const newShots = [];
 
                          currentTowers.forEach((tower) => {
                               const def = TOWERS[tower.type];
@@ -122,24 +129,46 @@ const TowerDefense = ({ onClose, user }) => {
                                    return dist <= def.range;
                               });
                               if (inRange.length === 0) return;
-                              
+
                               // Target furthest enemy
                               const target = inRange.reduce((a, b) => (a.progress > b.progress ? a : b));
                               const idx = next.findIndex((e) => e.id === target.id);
                               if (idx < 0) return;
-                              
+
                               next[idx].hp -= def.damage;
+                              next[idx].hitAt = now; // hit-flash timestamp (visual only)
                               lastAttackRef.current[tower.id] = now;
                               didHit = true;
 
+                              // Projectile beam (visual only)
+                              newShots.push({
+                                   id: `s-${tower.id}-${now}`,
+                                   t: now,
+                                   x1: tx * CELL_SIZE + CELL_SIZE / 2,
+                                   y1: ty * CELL_SIZE + CELL_SIZE / 2,
+                                   x2: target.progress * (COLS - 1) * CELL_SIZE + CELL_SIZE / 2,
+                                   y2: PATH_ROW * CELL_SIZE + CELL_SIZE / 2,
+                                   color: def.shadow,
+                              });
+
                               if (next[idx].hp <= 0) {
+                                   didKill = true;
                                    setGold((g) => g + 10 + wave * 2);
                                    setScore((s) => s + 15 + wave * 5);
                                    next.splice(idx, 1);
                               }
                          });
-                         
-                         if (didHit && Math.random() > 0.5) soundManager.playHit(); // Only play sometimes so it doesn't overlap crazy
+
+                         // Prune expired beams every tick; cap total count
+                         setShots((prevShots) => {
+                              const now = Date.now();
+                              const kept = prevShots.filter((sh) => now - sh.t < 200);
+                              if (newShots.length === 0 && kept.length === prevShots.length) return prevShots;
+                              return [...kept, ...newShots].slice(-40);
+                         });
+
+                         if (didHit) playSound('hit'); // Once per tick (max 10/s)
+                         if (didKill) playSound('pop');
 
                          return next;
                     });
@@ -150,9 +179,17 @@ const TowerDefense = ({ onClose, user }) => {
      }, [gameState, wave]);
 
 
+     // 웨이브 클리어 감지 (스폰 완료 후 적이 전멸했을 때)
+     useEffect(() => {
+          const prevCount = prevEnemyCountRef.current;
+          prevEnemyCountRef.current = enemies.length;
+          if (gameState !== 'playing' || wave === 0 || lives <= 0) return;
+          if (prevCount > 0 && enemies.length === 0 && spawnDoneRef.current) playSound('powerup');
+     }, [enemies.length, gameState, wave, lives]);
+
      useEffect(() => {
           if (lives <= 0 && gameState === 'playing') {
-               soundManager.playGameOver();
+               playSound('gameover');
                setGameState('defeat');
                const name = user?.user_metadata?.username || user?.email?.split('@')[0] || '게스트';
                if (score > 0) addScore('towerdefense', name, score, true);
@@ -165,10 +202,10 @@ const TowerDefense = ({ onClose, user }) => {
           const { x, y } = pendingBuild;
           const def = TOWERS[type];
           if (gold < def.cost) {
-               soundManager.playExplosion(); // error sound
+               playSound('wrong'); // error sound
                return;
           }
-          soundManager.playCoin(); // success build sound
+          playSound('coin'); // success build sound
           setGold((g) => g - def.cost);
           setTowers((t) => [...t, { id: `t-${Date.now()}`, x, y, type }]);
           setPendingBuild(null);
@@ -183,7 +220,7 @@ const TowerDefense = ({ onClose, user }) => {
                setPendingBuild(null);
                return;
           }
-          soundManager.playTick();
+          playSound('tick');
           setSelectedCell({ x, y });
           setPendingBuild({ x, y });
      };
@@ -198,7 +235,7 @@ const TowerDefense = ({ onClose, user }) => {
                     {/* Header */}
                     <div className="w-full flex justify-between items-center mb-6">
                          <div className="flex items-center gap-4">
-                              <button onClick={onClose} className="p-3 hover:bg-white/10 rounded-full transition-colors bg-white/5 backdrop-blur-md text-white border border-white/10">
+                              <button onClick={() => { playSound('click'); onClose(); }} className="p-3 hover:bg-white/10 rounded-full transition-colors bg-white/5 backdrop-blur-md text-white border border-white/10">
                                    <ArrowLeft className="w-6 h-6" />
                               </button>
                               <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 tracking-widest drop-shadow-md hidden md:block">NEON DEFENSE</h2>
@@ -216,11 +253,15 @@ const TowerDefense = ({ onClose, user }) => {
 
                     <div className="flex gap-8 w-full flex-col lg:flex-row justify-center">
                          
-                         {/* Game Board */}
-                         <div className="flex-1 flex flex-col items-center">
+                         {/* Game Board (3D tilted table) */}
+                         <div className="flex-1 flex flex-col items-center [perspective:800px]">
+                              <style>{`
+                                   @keyframes tdBeamFade { from { opacity: 0.9; } to { opacity: 0; } }
+                                   .td-beam { animation: tdBeamFade 0.2s linear forwards; }
+                              `}</style>
                               <div
-                                   className="relative rounded-2xl overflow-hidden border-2 border-slate-700 bg-black shadow-[0_0_40px_rgba(0,0,0,0.8)]"
-                                   style={{ width: GRID_W, height: GRID_H }}
+                                   className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-[0_30px_60px_rgba(0,0,0,0.75),0_0_40px_rgba(16,185,129,0.15)] [transform:rotateX(3deg)] origin-bottom"
+                                   style={{ width: GRID_W, height: GRID_H, background: 'radial-gradient(ellipse at 50% 20%, #0f1a2e 0%, #060a14 55%, #010204 100%)' }}
                               >
                                    {/* Grid Base */}
                                    {Array.from({ length: ROWS }).map((_, y) =>
@@ -234,21 +275,27 @@ const TowerDefense = ({ onClose, user }) => {
                                                        ${selectedCell?.x === x && selectedCell?.y === y ? 'bg-indigo-500/30 border-indigo-400/80 shadow-[inset_0_0_15px_rgba(99,102,241,0.5)] z-10 scale-105 rounded-md' : ''}`}
                                                   style={{ left: x * CELL_SIZE, top: y * CELL_SIZE, width: CELL_SIZE, height: CELL_SIZE }}
                                              >
-                                                  {/* Placed Tower */}
+                                                  {/* Placed Tower (3D pedestal: radial light + layered shadows) */}
                                                   {towers.find((t) => t.x === x && t.y === y) && (() => {
                                                        const t = towers.find((t) => t.x === x && t.y === y);
                                                        const def = TOWERS[t.type];
                                                        return (
-                                                            <div className={`w-full h-full flex flex-col items-center justify-center ${def.color} bg-opacity-20 rounded-md border border-white/20 shadow-[inset_0_0_10px_rgba(255,255,255,0.1)]`}>
-                                                                 <span className="text-xl filter drop-shadow-md">{def.icon}</span>
+                                                            <div
+                                                                 className="w-full h-full flex flex-col items-center justify-center rounded-md border border-white/25"
+                                                                 style={{
+                                                                      background: `radial-gradient(circle at 32% 25%, ${def.hex}66, ${def.hex}22 45%, rgba(0,0,0,0.65))`,
+                                                                      boxShadow: `0 6px 10px rgba(0,0,0,0.55), inset 0 2px 4px rgba(255,255,255,0.25), inset 0 -4px 6px rgba(0,0,0,0.5), 0 0 12px ${def.shadow}`,
+                                                                 }}
+                                                            >
+                                                                 <span className="text-xl" style={{ filter: `drop-shadow(0 2px 3px rgba(0,0,0,0.8)) drop-shadow(0 0 6px ${def.shadow})` }}>{def.icon}</span>
                                                             </div>
                                                        );
                                                   })()}
 
-                                                  {/* Path Decorators */}
+                                                  {/* Path Decorators (recessed groove) */}
                                                   {isPath(x, y) && (
-                                                       <div className="w-full h-full flex items-center justify-center">
-                                                            <div className="w-full h-2 bg-slate-700 opacity-50" />
+                                                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-black/60 via-slate-800/40 to-black/60 shadow-[inset_0_3px_6px_rgba(0,0,0,0.8)]">
+                                                            <div className="w-full h-2 bg-gradient-to-b from-slate-600 to-slate-800 opacity-60" />
                                                        </div>
                                                   )}
                                              </button>
@@ -258,14 +305,45 @@ const TowerDefense = ({ onClose, user }) => {
                                    {/* Path Highlight Line */}
                                    <div className="absolute h-1 bg-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.5)] pointer-events-none" style={{ left: 0, right: 0, top: PATH_ROW * CELL_SIZE + CELL_SIZE / 2 - 2 }} />
 
-                                   {/* Enemies */}
+                                   {/* Projectile Beams (fading trails) */}
+                                   {shots.map((sh) => {
+                                        const dx = sh.x2 - sh.x1;
+                                        const dy = sh.y2 - sh.y1;
+                                        const len = Math.sqrt(dx * dx + dy * dy);
+                                        const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+                                        return (
+                                             <div
+                                                  key={sh.id}
+                                                  className="absolute td-beam pointer-events-none z-20 rounded-full"
+                                                  style={{
+                                                       left: sh.x1,
+                                                       top: sh.y1,
+                                                       width: len,
+                                                       height: 2,
+                                                       transformOrigin: '0 50%',
+                                                       transform: `rotate(${angle}deg)`,
+                                                       background: `linear-gradient(90deg, ${sh.color}, rgba(255,255,255,0.9))`,
+                                                       boxShadow: `0 0 6px ${sh.color}`,
+                                                  }}
+                                             />
+                                        );
+                                   })}
+
+                                   {/* Enemies (glossy 3D orbs with hit flash) */}
                                    {enemies.map((e) => {
                                         const hpPercent = e.hp / e.maxHp;
+                                        const flashing = e.hitAt && Date.now() - e.hitAt < 130;
                                         return (
                                              <div
                                                   key={e.id}
-                                                  className="absolute w-8 h-8 -ml-4 -mt-4 flex items-center justify-center bg-red-950 rounded-full border-2 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.8)] text-[10px] font-black pointer-events-none"
-                                                  style={{ left: e.progress * (COLS - 1) * CELL_SIZE + CELL_SIZE / 2, top: PATH_ROW * CELL_SIZE + CELL_SIZE / 2 }}
+                                                  className="absolute w-8 h-8 -ml-4 -mt-4 flex items-center justify-center rounded-full border-2 border-red-500 text-[10px] font-black pointer-events-none"
+                                                  style={{
+                                                       left: e.progress * (COLS - 1) * CELL_SIZE + CELL_SIZE / 2,
+                                                       top: PATH_ROW * CELL_SIZE + CELL_SIZE / 2,
+                                                       background: 'radial-gradient(circle at 32% 28%, #fca5a5, #dc2626 45%, #450a0a 100%)',
+                                                       boxShadow: '0 6px 8px rgba(0,0,0,0.55), 0 0 15px rgba(239,68,68,0.8), inset 0 -3px 5px rgba(0,0,0,0.5)',
+                                                       filter: flashing ? 'brightness(2.2) saturate(0.5)' : 'none',
+                                                  }}
                                              >
                                                   <div className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50" />
                                                   <div className="absolute top-0 left-0 h-full bg-red-600 rounded-full transition-all" style={{ width: `${hpPercent * 100}%`, opacity: 0.5 }} />
@@ -330,7 +408,7 @@ const TowerDefense = ({ onClose, user }) => {
                                                        </button>
                                                   );
                                              })}
-                                             <button onClick={() => { setPendingBuild(null); setSelectedCell(null); }} className="flex flex-col items-center justify-center w-24 h-24 rounded-2xl border-2 bg-slate-900 border-slate-700 hover:bg-slate-800 hover:border-slate-500 transition-all text-gray-400 hover:text-white">
+                                             <button onClick={() => { playSound('click'); setPendingBuild(null); setSelectedCell(null); }} className="flex flex-col items-center justify-center w-24 h-24 rounded-2xl border-2 bg-slate-900 border-slate-700 hover:bg-slate-800 hover:border-slate-500 transition-all text-gray-400 hover:text-white">
                                                   <span className="text-sm font-bold mt-1">CANCEL</span>
                                              </button>
                                         </div>
